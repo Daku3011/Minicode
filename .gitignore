@@ -8,19 +8,7 @@ coverage
 *.log
 *.cache
 *.tmp
-*.bak
-*.swp
-*.swo
-*.zip
-*.tar.gz
-*.7z
-*.exe
-*.dll
-*.so
-*.dylib
-*.pem
-*.key
-*.crt
+
 
 backend/venv
 backend/__pycache__
