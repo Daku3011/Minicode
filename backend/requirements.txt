@@ -1,0 +1,10 @@
+fastapi
+sqlmodel
+python-dotenv
+pygithub
+httpx
+psycopg2-binary
+redis
+uvicorn
+python-jose[cryptography]
+google-genai
