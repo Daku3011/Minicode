@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 
-export default function GithubCallback() {
+function GithubCallbackContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { login } = useAuth();
@@ -66,5 +66,18 @@ export default function GithubCallback() {
             <h2 className="text-xl font-bold text-white">Authenticating with GitHub...</h2>
             <p className="text-muted-foreground">Please wait while we set up your session.</p>
         </div>
+    );
+}
+
+export default function GithubCallback() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                <h2 className="text-xl font-bold text-white">Loading...</h2>
+            </div>
+        }>
+            <GithubCallbackContent />
+        </Suspense>
     );
 }
