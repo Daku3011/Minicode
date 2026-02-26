@@ -137,11 +137,11 @@ async def github_callback(code: str, redirect_uri: Optional[str] = None, session
     github_user = await get_github_user_info(access_token)
     
     # Create or update user
-    statement = select(AppUser).where(AppUser.github_id == github_user["id"])
+    statement = select(User).where(User.github_id == github_user["id"])
     user = session.exec(statement).first()
     
     if not user:
-        user = AppUser(
+        user = User(
             username=github_user["login"],
             email=github_user.get("email") or f"{github_user['login']}@github.com",
             full_name=github_user.get("name"),
