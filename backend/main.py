@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Session, create_engine, select
-from typing import List
+from typing import List, Optional
 from dotenv import load_dotenv
 import httpx
 
@@ -109,16 +109,20 @@ def create_problem(
 
 # Auth Endpoints
 @app.get("/auth/github/callback")
-async def github_callback(code: str, session: Session = Depends(get_session)):
+async def github_callback(code: str, redirect_uri: Optional[str] = None, session: Session = Depends(get_session)):
     # Exchange code for token
+    params = {
+        "client_id": os.getenv("GITHUB_CLIENT_ID"),
+        "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
+        "code": code
+    }
+    if redirect_uri:
+        params["redirect_uri"] = redirect_uri
+
     async with httpx.AsyncClient() as client:
         response = await client.post(
             "https://github.com/login/oauth/access_token",
-            params={
-                "client_id": os.getenv("GITHUB_CLIENT_ID"),
-                "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
-                "code": code
-            },
+            params=params,
             headers={"Accept": "application/json"}
         )
         token_data = response.json()
