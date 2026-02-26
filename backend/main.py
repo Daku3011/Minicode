@@ -44,8 +44,8 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic
-    create_db_and_tables()
+    # Startup logic: Database tables are created via preDeployCommand (Render)
+    # or manually to avoid race conditions between Gunicorn workers.
     yield
     # Shutdown logic (if any)
 
