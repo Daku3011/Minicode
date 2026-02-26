@@ -8,3 +8,6 @@ redis
 uvicorn
 python-jose[cryptography]
 google-genai
+gunicorn
+passlib[bcrypt]
+python-multipart

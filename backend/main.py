@@ -14,8 +14,19 @@ from repo_manager import create_student_repo
 from judge import judge_submission
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/minicode")
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+
+# Connection pooling for high-traffic production use
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+    engine = create_engine(DATABASE_URL, connect_args=connect_args)
+else:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_size=20,           # Max persistent connections
+        max_overflow=10,        # Extra connections under load
+        pool_pre_ping=True,     # Verify connections before use
+        pool_recycle=300,       # Recycle connections every 5 min
+    )
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
@@ -35,9 +46,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="MiniCode API", lifespan=lifespan)
 
+# CORS: Read allowed origins from env (comma-separated), default "*" for dev
+cors_origins_str = os.getenv("CORS_ORIGINS", "*")
+cors_origins = [o.strip() for o in cors_origins_str.split(",")] if cors_origins_str != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,6 +61,11 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "Welcome to MiniCode API"}
+
+@app.get("/health")
+def health_check():
+    """Health check endpoint for load balancers and Render."""
+    return {"status": "healthy"}
 
 # Problem Endpoints
 @app.get("/problems", response_model=List[Problem])

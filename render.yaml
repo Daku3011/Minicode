@@ -1,0 +1,50 @@
+# Render Infrastructure-as-Code Blueprint
+# Deploy: Connect repo to Render, it auto-detects this file
+
+services:
+  # ================================
+  # Backend API (FastAPI + Gunicorn)
+  # ================================
+  - type: web
+    name: minicode-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter  # Upgrade to 'standard' or 'pro' for more traffic
+    region: oregon
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true  # Render auto-generates a secure value
+      - key: CORS_ORIGINS
+        sync: false  # Set to your frontend URL, e.g. https://minicode-web.onrender.com
+      - key: WEB_CONCURRENCY
+        value: "4"
+
+  # ================================
+  # Frontend (Next.js)
+  # ================================
+  - type: web
+    name: minicode-web
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: starter
+    region: oregon
+    branch: main
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false  # Set to your backend URL, e.g. https://minicode-api.onrender.com
+      - key: NEXT_PUBLIC_GITHUB_CLIENT_ID
+        sync: false
