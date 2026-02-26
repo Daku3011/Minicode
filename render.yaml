@@ -13,6 +13,7 @@ services:
     plan: starter  # Upgrade to 'standard' or 'pro' for more traffic
     region: oregon
     branch: main
+    preDeployCommand: "CREATE_TABLES=1 python main.py"
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL

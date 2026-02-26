@@ -128,9 +128,13 @@ In the **"Environment"** tab, add:
 
 - **Health Check Path:** `/health`
 
+### 3.4 Pre-deploy Command (Automatic)
+
+Render will automatically run `CREATE_TABLES=1 python main.py` before starting the web service. This creates your database tables exactly once, avoiding race conditions if you have multiple workers.
+
 5. Click **"Create Web Service"**
 
-### 3.4 Verify Backend
+### 3.5 Verify Backend
 
 Once deployed, visit:
 ```

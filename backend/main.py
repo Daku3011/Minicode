@@ -31,6 +31,11 @@ else:
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
+if __name__ == "__main__" and os.getenv("CREATE_TABLES"):
+    create_db_and_tables()
+    print("Tables created successfully")
+    exit(0)
+
 def get_session():
     with Session(engine) as session:
         yield session

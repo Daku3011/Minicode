@@ -3,6 +3,7 @@ from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 
 class User(SQLModel, table=True):
+    __tablename__ = "users"
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(index=True, unique=True)
     email: str = Field(index=True, unique=True)
@@ -24,7 +25,7 @@ class Problem(SQLModel, table=True):
     difficulty: str = Field(default="Easy") # Easy, Medium, Hard
     input_format: Optional[str] = None
     output_format: Optional[str] = None
-    author_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    author_id: Optional[int] = Field(default=None, foreign_key="users.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     author: Optional["User"] = Relationship(back_populates="created_problems")
@@ -42,7 +43,7 @@ class TestCase(SQLModel, table=True):
 
 class Submission(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id")
+    user_id: int = Field(foreign_key="users.id")
     problem_id: int = Field(foreign_key="problem.id")
     repo_url: Optional[str] = None
     commit_sha: Optional[str] = None
