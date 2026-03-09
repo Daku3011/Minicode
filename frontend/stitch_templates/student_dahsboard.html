@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MiniCode | Student Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#895bf5",
+                        "background-light": "#f6f5f8",
+                        "background-dark": "#0F172A",
+                        "slate-custom": "#1E293B",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at top right, rgba(137, 91, 245, 0.15), transparent);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 glass-panel border-b border-white/10 px-4 md:px-8 py-3">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg">
+<span class="material-symbols-outlined text-white text-2xl">terminal</span>
+</div>
+<h2 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">MiniCode</h2>
+</div>
+<div class="hidden md:flex flex-1 max-w-md mx-8">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-slate-custom/50 border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-primary focus:border-primary" placeholder="Search challenges, docs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary/20 border border-primary/30 rounded-full">
+<span class="material-symbols-outlined text-primary text-sm">military_tech</span>
+<span class="text-xs font-bold text-primary uppercase tracking-wider">Level 3: Code Ninja</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
+<span class="text-orange-500 text-sm">🔥</span>
+<span class="text-xs font-bold text-orange-500 uppercase tracking-wider">3 Days</span>
+</div>
+<div class="h-10 w-10 rounded-full border-2 border-primary overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="User profile avatar of Alex" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPn2Dqwzjqn_o8j8aqaxShjA0hKf0gEzqVGLba8jiM7irSHdMpdVifumQ8ZzPtuWajlyus7qFC1CvlFa-nHj785YI83jVU9uoU0EFUvxItna9qTwqN8gJagymg0kp_Sipsnpffimx6RtU3RNLFtAO3RIoXdyvzX6sFl7N1OqolnCIRZq55fXv7T3T973XO5n8qTmIfg9Bny-ZEoQn8bg051hkcShNDMctLgQdmbOLmsZ8bKkVGKmq0lhXxRmtvP3OKpA46C99pf2Dw"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 md:px-8 py-8 hero-gradient">
+<!-- Hero Section -->
+<section class="glass-panel rounded-3xl p-8 md:p-12 mb-8 relative overflow-hidden">
+<div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+<div class="max-w-2xl text-center md:text-left">
+<h1 class="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
+                        Welcome back, <span class="text-primary">Alex!</span> <br/> Ready to crush some code?
+                    </h1>
+<p class="text-slate-400 text-lg mb-8">
+                        You're in the top 5% of learners this week. Pick up right where you left off in <span class="text-white font-medium italic">Advanced Python Patterns.</span>
+</p>
+<button class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(137,91,245,0.4)] transition-all flex items-center gap-3 mx-auto md:mx-0">
+<span class="material-symbols-outlined">play_circle</span>
+                        Resume Learning
+                    </button>
+</div>
+<div class="relative w-64 h-64 flex items-center justify-center">
+<!-- Circular Ring Chart -->
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-slate-800" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-dasharray="690" stroke-dashoffset="172" stroke-width="12"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="text-4xl font-black text-white">75%</span>
+<span class="text-xs text-slate-400 uppercase tracking-widest">Mastered</span>
+</div>
+</div>
+</div>
+<!-- Decorative blur bg -->
+<div class="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/20 blur-[100px] rounded-full"></div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Topics & Progress -->
+<div class="lg:col-span-1 space-y-6">
+<div class="glass-panel rounded-2xl p-6">
+<h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                        Topics Mastered
+                    </h3>
+<div class="space-y-4">
+<div class="p-4 rounded-xl bg-slate-custom/40 border border-white/5">
+<div class="flex justify-between mb-2">
+<span class="text-sm font-semibold text-slate-200">Arrays &amp; Lists</span>
+<span class="text-xs font-bold text-green-400">100%</span>
+</div>
+<div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-green-500 w-full"></div>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-slate-custom/40 border border-white/5">
+<div class="flex justify-between mb-2">
+<span class="text-sm font-semibold text-slate-200">String Manipulation</span>
+<span class="text-xs font-bold text-green-400">100%</span>
+</div>
+<div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-green-500 w-full"></div>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-slate-custom/40 border border-white/5">
+<div class="flex justify-between mb-2">
+<span class="text-sm font-semibold text-slate-200">Loops &amp; Iteration</span>
+<span class="text-xs font-bold text-primary">85%</span>
+</div>
+<div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[85%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="glass-panel rounded-2xl p-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Global Rank</h3>
+<span class="text-primary font-bold">#1,402</span>
+</div>
+<div class="flex items-end gap-2 h-24">
+<div class="bg-primary/20 w-full rounded-t-lg h-1/3"></div>
+<div class="bg-primary/40 w-full rounded-t-lg h-2/3"></div>
+<div class="bg-primary w-full rounded-t-lg h-full"></div>
+<div class="bg-primary/60 w-full rounded-t-lg h-1/2"></div>
+<div class="bg-primary/30 w-full rounded-t-lg h-2/5"></div>
+</div>
+</div>
+</div>
+<!-- Right Column: Problem Feed -->
+<div class="lg:col-span-2 space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold text-white">Recommended for You</h3>
+<a class="text-primary text-sm font-semibold hover:underline" href="#">View Library</a>
+</div>
+<!-- Problem Card 1 -->
+<div class="glass-panel rounded-2xl p-6 hover:border-primary/50 transition-colors group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2.5 py-1 rounded bg-green-500/10 text-green-500 text-[10px] font-black uppercase tracking-widest border border-green-500/20">Easy</span>
+<span class="text-slate-500 text-xs">• 150 Points</span>
+</div>
+<h4 class="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">Implement a Custom Stack</h4>
+<p class="text-slate-400 text-sm line-clamp-2">Create a LIFO data structure from scratch using a basic list. Focus on push, pop, and peek methods with error handling.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold border border-white/5 transition-colors">
+<span class="material-symbols-outlined text-lg">cloud_sync</span>
+                                Provision GitHub Repo
+                            </button>
+<button class="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Problem Card 2 -->
+<div class="glass-panel rounded-2xl p-6 hover:border-primary/50 transition-colors group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2.5 py-1 rounded bg-yellow-500/10 text-yellow-500 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20">Medium</span>
+<span class="text-slate-500 text-xs">• 450 Points</span>
+</div>
+<h4 class="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">Recursive Directory Crawler</h4>
+<p class="text-slate-400 text-sm line-clamp-2">Build a script that walks through nested directories and counts file types. Master the OS module and recursive logic.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold border border-white/5 transition-colors">
+<span class="material-symbols-outlined text-lg">cloud_sync</span>
+                                Provision GitHub Repo
+                            </button>
+<button class="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Problem Card 3 -->
+<div class="glass-panel rounded-2xl p-6 hover:border-primary/50 transition-colors group">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2.5 py-1 rounded bg-yellow-500/10 text-yellow-500 text-[10px] font-black uppercase tracking-widest border border-yellow-500/20">Medium</span>
+<span class="text-slate-500 text-xs">• 500 Points</span>
+</div>
+<h4 class="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors">Async API Wrapper</h4>
+<p class="text-slate-400 text-sm line-clamp-2">Use aiohttp to fetch weather data from 10 different locations concurrently. Learn how to handle event loops.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold border border-white/5 transition-colors">
+<span class="material-symbols-outlined text-lg">cloud_sync</span>
+                                Provision GitHub Repo
+                            </button>
+<button class="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="max-w-7xl mx-auto px-4 md:px-8 py-12 border-t border-white/5 mt-12">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2 opacity-50">
+<span class="material-symbols-outlined text-xl">terminal</span>
+<span class="font-bold">MiniCode</span>
+</div>
+<div class="flex gap-8 text-sm text-slate-500">
+<a class="hover:text-primary" href="#">Docs</a>
+<a class="hover:text-primary" href="#">Curriculum</a>
+<a class="hover:text-primary" href="#">Support</a>
+<a class="hover:text-primary" href="#">Terms</a>
+</div>
+<p class="text-slate-600 text-xs">© 2024 MiniCode Platforms Inc. Keep coding.</p>
+</div>
+</footer>
+</body></html>

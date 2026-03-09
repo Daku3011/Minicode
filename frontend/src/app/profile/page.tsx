@@ -1,218 +1,156 @@
 "use client";
 
-import { Mail, Github, Calendar, Activity, CheckCircle2, Award, Clock, Trophy, Star } from "lucide-react";
-import { clsx } from "clsx";
-import { useAuth, User } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
+import { PlayCircle, BarChart3, Trophy } from "lucide-react";
+import ProblemCard from "@/components/ProblemCard";
 import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface ProfileStats {
-    solved: number;
-    rank: number;
-    xp: number;
-    streak: number;
-}
-
-interface RecentSubmission {
+interface Problem {
     id: number;
-    problem: string;
-    status: string;
-    time: string;
-}
-
-interface UserProfileData {
-    stats: ProfileStats;
-    recentSubmissions: RecentSubmission[];
+    title: string;
+    difficulty: string;
 }
 
 export default function ProfilePage() {
-    const { user, loading: authLoading } = useAuth();
-    const [profileData, setProfileData] = useState<UserProfileData | null>(null);
+    const { user } = useAuth();
+    const [problems, setProblems] = useState<Problem[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchProfile = async () => {
+        const fetchProblems = async () => {
             try {
-                if (user) {
-                    const response = await api.get("/auth/me");
-                    setProfileData({
-                        stats: response.data.stats,
-                        recentSubmissions: response.data.recentSubmissions,
-                    });
-                }
+                const response = await api.get("/problems");
+                setProblems(response.data);
             } catch (error) {
-                console.error("Failed to fetch profile stats:", error);
+                console.error("Failed to fetch problems:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProfile();
-    }, [user]);
-
-    if (authLoading || loading) {
-        return <div className="max-w-6xl mx-auto px-4 py-12 text-center text-white">Loading profile...</div>;
-    }
-
-    if (!user || !profileData) {
-        return <div className="max-w-6xl mx-auto px-4 py-12 text-center text-rose-500">Failed to load profile. Please log in.</div>;
-    }
+        fetchProblems();
+    }, []);
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-12">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: User Info */}
+        <main className="max-w-7xl mx-auto px-4 md:px-8 py-8 relative">
+            {/* Background Mesh Gradient */}
+            <div className="absolute inset-0 pointer-events-none opacity-40 mesh-gradient z-0"></div>
+
+            {/* Hero Section */}
+            <section className="glass-card rounded-3xl p-8 md:p-12 mb-8 relative overflow-hidden z-10 border-white/5 shadow-2xl">
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div className="max-w-2xl text-center md:text-left">
+                        <h1 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
+                            Welcome back, <span className="text-primary">{user?.username || 'Guest'}!</span> <br /> 
+                            Ready to crush some code?
+                        </h1>
+                        <p className="text-slate-400 text-lg mb-8">
+                            You're in the top 5% of learners this week. Pick up right where you left off in <span className="text-white font-medium italic">Advanced Python Patterns.</span>
+                        </p>
+                        <button className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-[0_0_20px_rgba(137,91,245,0.4)] transition-all flex items-center gap-3 mx-auto md:mx-0">
+                            <PlayCircle className="w-6 h-6" />
+                            Resume Learning
+                        </button>
+                    </div>
+                    
+                    <div className="relative w-64 h-64 flex items-center justify-center">
+                        {/* Circular Ring Chart */}
+                        <svg className="w-full h-full transform -rotate-90">
+                            <circle className="text-slate-800" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" strokeWidth="12"></circle>
+                            <circle className="text-primary transition-all duration-1000 ease-out" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" strokeDasharray="690" strokeDashoffset="172" strokeWidth="12" strokeLinecap="round"></circle>
+                        </svg>
+                        <div className="absolute flex flex-col items-center">
+                            <span className="text-4xl font-black text-white">75%</span>
+                            <span className="text-xs text-slate-400 uppercase tracking-widest mt-1">Mastered</span>
+                        </div>
+                    </div>
+                </div>
+                {/* Decorative blur bg */}
+                <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-primary/20 blur-[100px] rounded-full pointer-events-none"></div>
+            </section>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+                {/* Left Column: Topics & Progress */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="glass rounded-3xl p-8 flex flex-col items-center text-center">
-                        <div className="relative mb-6">
-                            <div className="w-32 h-32 rounded-3xl bg-primary flex items-center justify-center text-4xl font-black text-white relative z-10 rotate-3 overflow-hidden">
-                                {user.avatar_url ? (
-                                    <img src={user.avatar_url} alt="avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                    user.username?.slice(0, 2).toUpperCase()
-                                )}
+                    <div className="glass-card rounded-2xl p-6">
+                        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                            <BarChart3 className="text-primary w-5 h-5" />
+                            Topics Mastered
+                        </h3>
+                        <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-sm font-semibold text-slate-200">Arrays & Lists</span>
+                                    <span className="text-xs font-bold text-green-400">100%</span>
+                                </div>
+                                <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-full bg-green-500 w-full rounded-full"></div>
+                                </div>
                             </div>
-                            <div className="absolute -inset-2 bg-primary/20 blur-xl rounded-full" />
-                        </div>
-
-                        <h2 className="text-2xl font-bold text-white mb-1">{user.full_name || user.username}</h2>
-                        <p className="text-muted-foreground text-sm mb-4">@{user.username}</p>
-
-                        <div className="bg-white/5 border border-white/10 rounded-full px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-primary mb-6">
-                            {user.role}
-                        </div>
-
-                        <div className="w-full space-y-3">
-                            <div className="flex items-center space-x-3 text-sm text-muted-foreground p-3 rounded-xl bg-white/5 border border-white/5">
-                                <Mail className="w-4 h-4" />
-                                <span>{user.email}</span>
+                            <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-sm font-semibold text-slate-200">String Manipulation</span>
+                                    <span className="text-xs font-bold text-green-400">100%</span>
+                                </div>
+                                <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-full bg-green-500 w-full rounded-full"></div>
+                                </div>
                             </div>
-                            <div className="flex items-center space-x-3 text-sm text-muted-foreground p-3 rounded-xl bg-white/5 border border-white/5 text-left">
-                                <Github className="w-4 h-4" />
-                                <span className="truncate">github.com/{user.username}</span>
-                            </div>
-                            <div className="flex items-center space-x-3 text-sm text-muted-foreground p-3 rounded-xl bg-white/5 border border-white/5">
-                                <Calendar className="w-4 h-4" />
-                                <span>Joined {user.created_at}</span>
+                            <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5">
+                                <div className="flex justify-between mb-2">
+                                    <span className="text-sm font-semibold text-slate-200">Loops & Iteration</span>
+                                    <span className="text-xs font-bold text-primary">85%</span>
+                                </div>
+                                <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary w-[85%] rounded-full"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <div className="glass rounded-3xl p-8 bg-gradient-to-br from-indigo-500/10 to-transparent border-indigo-500/20">
-                        <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-widest">Badges</h3>
-                        <div className="grid grid-cols-3 gap-3 text-center">
-                            {[1, 2, 3].map((b) => (
-                                <div key={b} className="flex flex-col items-center">
-                                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-1 group hover:bg-yellow-500/20 transition-all cursor-pointer">
-                                        <Award className="w-6 h-6 text-muted-foreground group-hover:text-yellow-500" />
-                                    </div>
-                                    <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Level {b}</span>
-                                </div>
-                            ))}
+                    
+                    <div className="glass-card rounded-2xl p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <Trophy className="w-4 h-4 text-primary" />
+                                Global Rank
+                            </h3>
+                            <span className="text-primary font-bold text-lg">#1,402</span>
+                        </div>
+                        <div className="flex items-end gap-2 h-24 pt-4">
+                            <div className="bg-primary/20 w-full rounded-t-lg h-1/3 hover:bg-primary/40 transition-colors"></div>
+                            <div className="bg-primary/40 w-full rounded-t-lg h-2/3 hover:bg-primary/60 transition-colors"></div>
+                            <div className="bg-primary shadow-[0_0_15px_rgba(137,91,245,0.5)] w-full rounded-t-lg h-full"></div>
+                            <div className="bg-primary/60 w-full rounded-t-lg h-1/2 hover:bg-primary/80 transition-colors"></div>
+                            <div className="bg-primary/30 w-full rounded-t-lg h-2/5 hover:bg-primary/50 transition-colors"></div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column: Stats & Activity */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {[
-                            { label: "Solved", value: profileData.stats.solved, icon: CheckCircle2, color: "text-emerald-400" },
-                            { label: "Global Rank", value: `#${profileData.stats.rank}`, icon: Trophy, color: "text-yellow-400" },
-                            { label: "Total XP", value: profileData.stats.xp, icon: Star, color: "text-indigo-400" },
-                            { label: "Streak", value: `${profileData.stats.streak}d`, icon: Activity, color: "text-rose-400" }
-                        ].map((stat, i) => {
-                            const Icon = stat.icon;
-                            return (
-                                <div key={i} className="glass rounded-2xl p-6 flex flex-col items-center justify-center space-y-2 group hover:translate-y-[-4px] transition-all">
-                                    <div className={clsx("p-2 rounded-lg bg-white/5", stat.color)}>
-                                        <Icon className="w-5 h-5" />
-                                    </div>
-                                    <span className="text-2xl font-black text-white">{stat.value}</span>
-                                    <span className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">{stat.label}</span>
-                                </div>
-                            );
-                        })}
+                {/* Right Column: Problem Feed */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold text-white">Recommended for You</h3>
+                        <span className="text-primary text-sm font-semibold hover:underline cursor-pointer">View Library</span>
                     </div>
 
-                    <div className="glass rounded-3xl p-8">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-xl font-bold text-white">Recent Activity</h3>
-                            <button className="text-xs font-bold text-primary hover:underline">View All</button>
-                        </div>
-
-                        <div className="space-y-4">
-                            {profileData.recentSubmissions.map((sub) => (
-                                <div key={sub.id} className="flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-all group">
-                                    <div className="flex items-center space-x-4">
-                                        <div className={clsx(
-                                            "w-10 h-10 rounded-lg flex items-center justify-center",
-                                            sub.status === "accepted" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
-                                        )}>
-                                            {sub.status === "accepted" ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{sub.problem}</h4>
-                                            <div className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-0.5">
-                                                <Clock className="w-3 h-3" />
-                                                <span>{sub.time}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className={clsx(
-                                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
-                                        sub.status === "accepted" ? "text-emerald-400 bg-emerald-400/5" : "text-rose-400 bg-rose-400/5"
-                                    )}>
-                                        {sub.status}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Activity Heatmap Mockup */}
-                    <div className="glass rounded-3xl p-8">
-                        <h3 className="text-sm font-bold text-white mb-6 uppercase tracking-widest">Yearly Activity</h3>
-                        <div className="flex flex-wrap gap-1">
-                            {Array.from({ length: 52 }).map((_, i) => (
-                                <div key={i} className="w-3 h-3 rounded-sm bg-white/5 hover:bg-primary transition-colors cursor-pointer" />
-                            ))}
-                            {Array.from({ length: 50 }).map((_, i) => (
-                                <div key={i} className="w-3 h-3 rounded-sm bg-primary/20" />
-                            ))}
-                            {Array.from({ length: 20 }).map((_, i) => (
-                                <div key={i} className="w-3 h-3 rounded-sm bg-primary/50" />
-                            ))}
-                            {Array.from({ length: 10 }).map((_, i) => (
-                                <div key={i} className="w-3 h-3 rounded-sm bg-primary" />
-                            ))}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-4 italic text-right">Commit consistency is key to mastery.</p>
+                    <div className="space-y-4">
+                        {loading ? (
+                            [1, 2, 3].map((i) => (
+                                <div key={i} className="h-32 w-full bg-white/5 animate-pulse rounded-2xl border border-white/5" />
+                            ))
+                        ) : problems.length > 0 ? (
+                            problems.slice(0, 3).map((problem) => (
+                                <ProblemCard key={problem.id} problem={problem} />
+                            ))
+                        ) : (
+                            <div className="p-8 text-center text-slate-500 glass-card rounded-2xl">
+                                No challenges available right now.
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
-        </div>
-    );
-}
-
-function XCircle(props: React.SVGProps<SVGSVGElement>) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <circle cx="12" cy="12" r="10" />
-            <path d="m15 9-6 6" />
-            <path d="m9 9 6 6" />
-        </svg>
+        </main>
     );
 }

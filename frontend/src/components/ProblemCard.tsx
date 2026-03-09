@@ -1,60 +1,57 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Code2 } from "lucide-react";
-import { clsx } from "clsx";
+import { ChevronRight, CloudIcon, CloudLightning } from "lucide-react";
 
 interface Problem {
     id: number;
     title: string;
     difficulty: string;
-    status?: "solved" | "attempted" | "todo";
+    description?: string;
+    points?: number;
 }
 
-const difficultyColors = {
-    Easy: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-    Medium: "text-amber-400 bg-amber-400/10 border-amber-400/20",
-    Hard: "text-rose-400 bg-rose-400/10 border-rose-400/20",
+const difficultyStyles = {
+    Easy: "bg-green-500/10 text-green-500 border border-green-500/20",
+    Medium: "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20",
+    Hard: "bg-rose-500/10 text-rose-500 border border-rose-500/20",
 };
 
 export default function ProblemCard({ problem }: { problem: Problem }) {
+    const points = problem.points || (problem.difficulty === "Easy" ? 150 : problem.difficulty === "Medium" ? 300 : 500);
+
     return (
-        <Link
-            href={`/problems/${problem.id}`}
-            className="group relative flex items-center justify-between p-5 rounded-xl transition-all duration-300 glass hover:bg-white/10"
-        >
-            <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Code2 className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                </div>
-                <div>
-                    <h3 className="text-lg font-semibold text-white group-hover:text-primary-foreground transition-colors">
-                        {problem.title}
-                    </h3>
-                    <div className="flex items-center space-x-2 mt-1">
-                        <span
-                            className={clsx(
-                                "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
-                                difficultyColors[problem.difficulty as keyof typeof difficultyColors]
-                            )}
-                        >
+        <div className="glass-card rounded-2xl p-6 hover:border-primary/50 transition-colors group mb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className={`px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest ${difficultyStyles[problem.difficulty as keyof typeof difficultyStyles]}`}>
                             {problem.difficulty}
                         </span>
-                        <span className="text-xs text-muted-foreground">Solved by 152 students</span>
+                        <span className="text-slate-500 text-xs">• {points} Points</span>
                     </div>
+                    <Link href={`/problems/${problem.id}`}>
+                        <h4 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors cursor-pointer">
+                            {problem.title}
+                        </h4>
+                    </Link>
+                    <p className="text-slate-400 text-sm line-clamp-2">
+                        {problem.description || `Build a highly optimized solution for ${problem.title}. Connect your GitHub repo to get real-time AI mentoring and validation.`}
+                    </p>
+                </div>
+                
+                <div className="flex items-center gap-3 mt-4 md:mt-0">
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold border border-white/5 transition-colors">
+                        <CloudLightning className="w-4 h-4" />
+                        Provision Repo
+                    </button>
+                    <Link href={`/problems/${problem.id}`}>
+                        <button className="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all">
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
+                    </Link>
                 </div>
             </div>
-
-            <div className="flex items-center space-x-4">
-                <div className="hidden sm:flex flex-col items-end opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-xs font-medium text-primary">View Problem</span>
-                    <span className="text-[10px] text-muted-foreground">Click to enter sandbox</span>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-            </div>
-
-            {/* Hover background effect */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        </Link>
+        </div>
     );
 }

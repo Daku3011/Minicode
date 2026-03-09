@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#895bf5",
+                        "background-light": "#f6f5f8",
+                        "background-dark": "#151022",
+                        "emerald-accent": "#10b981",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(46, 35, 72, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(137, 91, 245, 0.2);
+        }
+        .success-glow {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+        }
+        .confetti-bg {
+            background-image: radial-gradient(circle at 20% 30%, rgba(137, 91, 245, 0.1) 0%, transparent 10%),
+                              radial-gradient(circle at 80% 10%, rgba(16, 185, 129, 0.1) 0%, transparent 10%),
+                              radial-gradient(circle at 50% 50%, rgba(137, 91, 245, 0.05) 0%, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden confetti-bg">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Header Section -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/20 px-6 py-4 md:px-20 lg:px-40">
+<div class="flex items-center gap-3">
+<div class="size-8 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-tight">MiniCode</h2>
+</div>
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-primary/20 text-primary hover:bg-primary/30 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<main class="flex-1 flex flex-col items-center py-8 px-6 md:px-20 lg:px-40">
+<div class="max-w-4xl w-full">
+<!-- Hero Section -->
+<div class="flex flex-col items-center text-center mb-10">
+<div class="mb-6 relative">
+<div class="absolute -inset-4 bg-emerald-accent/20 blur-xl rounded-full"></div>
+<div class="relative bg-emerald-accent/10 border border-emerald-accent/30 p-6 rounded-full">
+<span class="material-symbols-outlined text-emerald-accent text-6xl">celebration</span>
+</div>
+</div>
+<h1 class="text-slate-900 dark:text-slate-100 text-4xl md:text-5xl font-black leading-tight tracking-tight mb-2">Review complete!</h1>
+<p class="text-slate-500 dark:text-slate-400 text-lg">You're crushing it! Here's how your solution performed.</p>
+</div>
+<!-- Score Matrix Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+<!-- Correctness -->
+<div class="glass-panel success-glow rounded-xl p-6 flex flex-col gap-4 border-emerald-accent/20">
+<div class="flex items-center justify-between">
+<div class="bg-emerald-accent/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-emerald-accent">check_circle</span>
+</div>
+<span class="text-emerald-accent font-bold text-xs uppercase tracking-widest">Perfect</span>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="text-slate-400 text-sm font-medium">Correctness</h3>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold">100/100</p>
+</div>
+</div>
+<!-- Time Complexity -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="bg-primary/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">timer</span>
+</div>
+<span class="text-primary font-bold text-xs uppercase tracking-widest">Efficient</span>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="text-slate-400 text-sm font-medium">Time Complexity</h3>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold">O(n)</p>
+</div>
+</div>
+<!-- Code Quality -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<div class="bg-amber-500/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-amber-500">code</span>
+</div>
+<span class="text-amber-500 font-bold text-xs uppercase tracking-widest">Great</span>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="text-slate-400 text-sm font-medium">Code Quality</h3>
+<p class="text-slate-900 dark:text-slate-100 text-2xl font-bold">85/100</p>
+</div>
+</div>
+</div>
+<!-- Mentor's Notes Section -->
+<div class="flex flex-col gap-6">
+<h2 class="text-slate-900 dark:text-slate-100 text-2xl font-bold tracking-tight px-2">Mentor's Notes</h2>
+<div class="flex items-start gap-4">
+<div class="flex-shrink-0">
+<div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary shadow-lg shadow-primary/20">
+<img alt="AI Mentor" class="w-full h-full object-cover" data-alt="Friendly AI robot avatar with glowing purple accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDk4ePyBmBWaaF-Rk_AfBoMMQNs_OaslSPe2K88S_wktrmQnvZWZ2ULLwFgBkVsz5qp1bP7vqNaC8AoCI7bKsfVRnzvf3AFBgKulUqdz8PKHHx4GEk4B9htaXBRDRQ_gG1S_w1F8Jt9nVVznsZLCk4EfFAqz5zNzJH5i_CDMs4c6MVhlBJ_nd4mII3xv_WXM4wV1OgKmUsshtYVbY-y9oCkE2fyhqN3NvwgkjWgtmhML8AbEpzzj6z6UUnD1UaLms2inS5QXv2ZAcd"/>
+</div>
+<div class="flex justify-center mt-1">
+<span class="bg-primary text-[10px] font-bold text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">AI Mentor</span>
+</div>
+</div>
+<div class="relative flex-1">
+<div class="glass-panel rounded-2xl rounded-tl-none p-6 shadow-xl">
+<p class="text-slate-900 dark:text-slate-200 text-lg leading-relaxed">
+<span class="font-bold text-primary">Awesome job using a HashMap!</span> Your approach to reducing the time complexity was spot on. 
+                                        <br/><br/>
+                                        Next time, try to handle the edge case where the array is empty to reach that perfect 100/100 code quality score. Keep it up! 🚀
+                                    </p>
+</div>
+<!-- Chat Bubble Triangle -->
+<div class="absolute top-0 -left-2 w-0 h-0 border-t-[12px] border-t-primary/20 border-r-[12px] border-r-transparent"></div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary hover:bg-primary/90 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2">
+<span>Next Challenge</span>
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<button class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 font-bold py-4 px-10 rounded-xl transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-lg">history</span>
+<span>Review Code</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom decorative spacer -->
+<footer class="py-10 text-center text-slate-500 dark:text-slate-600 text-sm">
+                MiniCode AI Learning Platform © 2024
+            </footer>
+</div>
+</div>
+</body></html>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-background: hsl(224 71% 4%);
@@ -13,8 +14,10 @@
   --color-input: hsl(216 34% 17%);
   --color-card: hsl(224 71% 4%);
   --color-card-foreground: hsl(213 31% 91%);
-  --color-primary: hsl(263.4 70% 50.4%);
+  --color-primary: #895bf5;
   --color-primary-foreground: hsl(210 40% 98%);
+  --color-background-light: #f6f5f8;
+  --color-background-dark: #151022;
   --color-secondary: hsl(222.2 47.4% 11.2%);
   --color-secondary-foreground: hsl(210 40% 98%);
   --color-destructive: hsl(0 63% 31%);
@@ -38,11 +41,19 @@
   }
 }
 
-.glass {
-  background: rgba(15, 23, 42, 0.7);
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mesh-gradient {
+  background-color: #151022;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(137, 91, 245, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(137, 91, 245, 0.1) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(21, 16, 34, 1) 0px, transparent 100%);
 }
 
 .gradient-text {

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#895bf5",
+                        "accent-cyan": "#22d3ee",
+                        "background-light": "#f6f5f8",
+                        "background-dark": "#0f0a1e",
+                        "surface-dark": "#1a142e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(26, 20, 46, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(137, 91, 245, 0.1);
+        }
+        .neon-glow-purple { box-shadow: 0 0 15px rgba(137, 91, 245, 0.3); }
+        .neon-glow-cyan { box-shadow: 0 0 15px rgba(34, 211, 238, 0.3); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between border-b border-primary/10 bg-surface-dark/50 px-6 py-3 sticky top-0 z-50 backdrop-blur-md">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<div class="size-8 bg-primary/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">terminal</span>
+</div>
+<h2 class="text-slate-100 text-xl font-bold tracking-tight">MiniCode <span class="text-primary/80 font-medium text-sm ml-1 uppercase tracking-widest">Faculty</span></h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-primary text-sm font-semibold border-b-2 border-primary pb-1" href="#">Dashboard</a>
+<a class="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors" href="#">Curriculum</a>
+<a class="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors" href="#">Student Roster</a>
+<a class="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors" href="#">Reports</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="bg-surface-dark border-primary/20 rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-primary focus:border-primary w-64" placeholder="Search problems or students..." type="text"/>
+</div>
+<button class="p-2 rounded-xl bg-surface-dark hover:bg-primary/20 text-slate-300 transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-accent-cyan rounded-full"></span>
+</button>
+<div class="size-10 rounded-full border-2 border-primary/30 p-0.5">
+<img class="size-full rounded-full object-cover" data-alt="Faculty profile portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4zQ0FyWFo9r4HQ5qDVahT-8d4FdElG89LQYUhmZTqI-yOufT2IDE1XkEcqjEHsWMA8JmSqEmLW-P2jJbQHPffQvSa_xxsM0oCDX-JhDVHj0nZ7xvf6lPQPZm7CREG9dhGIrqNWsJwuDPCKAweK6wqcRfo73_GbqNvbduKv8SRv6MamRDyTZF0PsEE_QPdJrFTxL70jes8gc3nySFTECGeFEkghAwz1bVOyxUd0No6TzMCpjyQX7MP2NpWUFhmNzQsaYRTDAHw97f6"/>
+</div>
+</div>
+</header>
+<main class="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+<!-- Header & Stats Overview -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+<div>
+<h1 class="text-4xl font-black text-slate-100 tracking-tight">Faculty Overview</h1>
+<p class="text-slate-400 mt-2">Real-time performance analytics for CS101: Data Structures</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm">add</span> New Assignment
+                        </button>
+<button class="bg-surface-dark border border-primary/20 text-slate-100 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/10 transition-all">
+<span class="material-symbols-outlined text-sm">download</span> Export Data
+                        </button>
+</div>
+</div>
+<!-- High-Level Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-panel p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary font-light">terminal</span>
+</div>
+<p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Total Submissions</p>
+<div class="flex items-baseline gap-3 mt-2">
+<h3 class="text-3xl font-bold text-slate-100">12,482</h3>
+<span class="text-accent-cyan text-sm font-bold flex items-center"><span class="material-symbols-outlined text-xs">trending_up</span> +12.5%</span>
+</div>
+<div class="mt-4 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-3/4 rounded-full neon-glow-purple"></div>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-accent-cyan font-light">check_circle</span>
+</div>
+<p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Avg Pass Rate</p>
+<div class="flex items-baseline gap-3 mt-2">
+<h3 class="text-3xl font-bold text-slate-100">78.4%</h3>
+<span class="text-accent-cyan text-sm font-bold flex items-center"><span class="material-symbols-outlined text-xs">trending_up</span> +3.2%</span>
+</div>
+<div class="mt-4 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+<div class="h-full bg-accent-cyan w-[78%] rounded-full neon-glow-cyan"></div>
+</div>
+</div>
+<div class="glass-panel p-6 rounded-xl relative overflow-hidden group border-l-4 border-orange-500/50">
+<p class="text-slate-400 text-sm font-medium uppercase tracking-wider">Most Struggled Problem</p>
+<div class="flex items-baseline gap-3 mt-2">
+<h3 class="text-xl font-bold text-slate-100">Linked List Reversal</h3>
+</div>
+<p class="text-orange-400 text-xs font-bold mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">warning</span> 42% failure rate this week
+                        </p>
+<div class="mt-4 flex -space-x-2">
+<div class="size-6 rounded-full border border-background-dark bg-slate-800 flex items-center justify-center text-[10px]">+14 students flagging</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Problem Manager Table -->
+<div class="lg:col-span-2 space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">format_list_bulleted</span> Problem Manager
+                            </h2>
+<button class="text-primary text-sm font-semibold hover:underline">View All</button>
+</div>
+<div class="glass-panel rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-primary/5 text-slate-400 text-xs uppercase tracking-widest">
+<tr>
+<th class="px-6 py-4 font-semibold">Problem Name</th>
+<th class="px-6 py-4 font-semibold">Difficulty</th>
+<th class="px-6 py-4 font-semibold">Success</th>
+<th class="px-6 py-4 font-semibold">Status</th>
+<th class="px-6 py-4 font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-primary/5">
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 font-medium text-slate-200">Binary Tree In-order</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 bg-yellow-500/10 text-yellow-500 rounded text-[10px] font-bold uppercase">Medium</span></td>
+<td class="px-6 py-4 text-slate-400">88%</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-accent-cyan">
+<span class="size-2 rounded-full bg-accent-cyan neon-glow-cyan animate-pulse"></span>
+                                                Active
+                                            </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 font-medium text-slate-200">Two Sum Optimization</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 bg-green-500/10 text-green-500 rounded text-[10px] font-bold uppercase">Easy</span></td>
+<td class="px-6 py-4 text-slate-400">94%</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-accent-cyan">
+<span class="size-2 rounded-full bg-accent-cyan neon-glow-cyan"></span>
+                                                Active
+                                            </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 font-medium text-slate-200">LRU Cache Design</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-[10px] font-bold uppercase">Hard</span></td>
+<td class="px-6 py-4 text-slate-400">21%</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-slate-500">
+<span class="size-2 rounded-full bg-slate-600"></span>
+                                                Draft
+                                            </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 font-medium text-slate-200">Merge K Sorted Lists</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 bg-red-500/10 text-red-500 rounded text-[10px] font-bold uppercase">Hard</span></td>
+<td class="px-6 py-4 text-slate-400">45%</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-accent-cyan">
+<span class="size-2 rounded-full bg-accent-cyan neon-glow-cyan"></span>
+                                                Active
+                                            </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Student Insights View -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-accent-cyan">analytics</span> Student Insights
+                            </h2>
+</div>
+<div class="glass-panel p-6 rounded-xl space-y-6">
+<div class="flex items-center gap-4 border-b border-primary/10 pb-4">
+<div class="size-12 rounded-full border border-primary/30 p-0.5">
+<img class="size-full rounded-full object-cover" data-alt="Student profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFrjvqZZCtX1jNA8GpnfnGNlYH1JTtKJcGVzx-Itw8RYZbZ7N-mHHXxpyRIX67R7FBPR8QyeW1QKkEHroau8xfZmLbI1uGLGGUo4gRzQ85VZ7w2I8SGtt4Q4J9Oyb9V1DhBhemtjRstpmXLfBzbDHeMJ-VAUmxFmDieXbLUGkiOAEOJ2Dz_tEQvf8DlHmHnD2U34qbYr-oXad5TiwEueVXZwXZhXXKKr19Al4y0Q4E3-qE0aZeNKLCJsANRD7Ji6uk4J_7e_ANC-3P"/>
+</div>
+<div>
+<h4 class="text-slate-100 font-bold">Alex Rivera</h4>
+<p class="text-slate-400 text-xs">CS Major • Sophomore</p>
+</div>
+</div>
+<div class="space-y-4">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Commit Timeline (Past 7 Days)</p>
+<div class="flex items-end justify-between gap-1 h-32 px-2">
+<div class="w-full bg-primary/20 rounded-t-sm h-1/4 hover:bg-primary transition-all group relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 px-2 py-1 rounded text-[10px] hidden group-hover:block whitespace-nowrap">4 commits</div>
+</div>
+<div class="w-full bg-primary/20 rounded-t-sm h-2/4 hover:bg-primary transition-all group relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 px-2 py-1 rounded text-[10px] hidden group-hover:block whitespace-nowrap">8 commits</div>
+</div>
+<div class="w-full bg-accent-cyan rounded-t-sm h-full hover:bg-accent-cyan/80 transition-all group relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 px-2 py-1 rounded text-[10px] hidden group-hover:block whitespace-nowrap">15 commits</div>
+</div>
+<div class="w-full bg-primary/20 rounded-t-sm h-1/3 hover:bg-primary transition-all group relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 px-2 py-1 rounded text-[10px] hidden group-hover:block whitespace-nowrap">5 commits</div>
+</div>
+<div class="w-full bg-primary/20 rounded-t-sm h-1/5 hover:bg-primary transition-all group relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 px-2 py-1 rounded text-[10px] hidden group-hover:block whitespace-nowrap">2 commits</div>
+</div>
+<div class="w-full bg-primary/40 rounded-t-sm h-3/4 hover:bg-primary transition-all group relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 px-2 py-1 rounded text-[10px] hidden group-hover:block whitespace-nowrap">12 commits</div>
+</div>
+<div class="w-full bg-primary/20 rounded-t-sm h-1/2 hover:bg-primary transition-all group relative">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 px-2 py-1 rounded text-[10px] hidden group-hover:block whitespace-nowrap">9 commits</div>
+</div>
+</div>
+<div class="flex justify-between text-[10px] text-slate-500 font-medium pt-2">
+<span>MON</span>
+<span>TUE</span>
+<span>WED</span>
+<span>THU</span>
+<span>FRI</span>
+<span>SAT</span>
+<span>SUN</span>
+</div>
+</div>
+<div class="bg-primary/5 rounded-lg p-4 border border-primary/10">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-accent-cyan">lightbulb</span>
+<div>
+<p class="text-xs text-slate-300 leading-relaxed"><strong class="text-accent-cyan">Insight:</strong> Alex performs 3x better on Graph problems during morning hours. Suggest moving advanced modules to earlier sessions.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Meta -->
+<footer class="mt-auto p-6 border-t border-primary/5 bg-surface-dark/30">
+<div class="max-w-7xl mx-auto flex flex-col md:row items-center justify-between gap-4 text-slate-500 text-xs">
+<p>© 2024 MiniCode Education Systems. All Rights Reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Faculty Guidelines</a>
+<a class="hover:text-primary transition-colors" href="#">System Status</a>
+</div>
+</div>
+</footer>
+</div>
+</div>
+</body></html>

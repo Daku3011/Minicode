@@ -1,4 +1,4 @@
-<p align="center">
+ <p align="center">
   <img src="https://img.shields.io/badge/MiniCode-AI_Powered_Coding_Arena-8B5CF6?style=for-the-badge&labelColor=0F172A" />
 </p>
 
@@ -72,26 +72,26 @@ Score + detailed AI feedback displayed instantly
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────┐
 │                   Frontend                       │
 │           Next.js 16 + TailwindCSS 4             │
 │     React 19 · Framer Motion · Lucide Icons      │
-│                                                   │
+│                                                  │
 │  /login  /problems  /problems/[id]  /leaderboard │
-│  /admin/users  /faculty/dashboard  /profile       │
-└────────────────────┬────────────────────────────┘
+│  /admin/users  /faculty/dashboard  /profile      │
+└────────────────────┬─────────────────────────────┘
                      │ Axios + JWT
                      ▼
 ┌─────────────────────────────────────────────────┐
-│                   Backend                        │
-│              FastAPI + Uvicorn                    │
-│                                                   │
-│  Auth     ── GitHub OAuth + Password (bcrypt)    │
-│  Models   ── SQLModel (User, Problem, TestCase,  │
-│               Submission)                         │
-│  Judge    ── Gemini 2.5 Flash AI Analysis        │
-│  Repos    ── PyGithub (auto repo provisioning)   │
-│  DB       ── SQLite (dev) / PostgreSQL (prod)    │
+│                   Backend                       │
+│              FastAPI + Uvicorn                  │
+│                                                 │
+│  Auth     ── GitHub OAuth + Password (bcrypt)   │
+│  Models   ── SQLModel (User, Problem, TestCase, │
+│               Submission)                       │
+│  Judge    ── Gemini 2.5 Flash AI Analysis       │
+│  Repos    ── PyGithub (auto repo provisioning)  │
+│  DB       ── SQLite (dev) / PostgreSQL (prod)   │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -113,7 +113,23 @@ git clone https://github.com/your-username/LeetCodeCodingClub.git
 cd LeetCodeCodingClub
 ```
 
-### 2. Backend Setup
+### 2. Quick Setup (Docker Recommended)
+
+The easiest way to run MiniCode locally is with Docker Compose:
+
+```bash
+cp .env.example .env
+# Edit .env with your GitHub OAuth and Gemini API keys
+docker compose up --build
+```
+
+Then visit **[http://localhost:3000](http://localhost:3000)** and start coding! 🎉
+
+---
+
+### 3. Manual Local Setup
+
+#### Backend Setup
 
 ```bash
 cd backend
@@ -124,7 +140,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-pip install passlib python-multipart bcrypt==4.1.2
 
 # Configure environment
 cp .env.example .env  # Then edit with your keys
@@ -147,7 +162,7 @@ python seed.py
 uvicorn main:app --reload --port 8000
 ```
 
-### 3. Frontend Setup
+#### Frontend Setup
 
 ```bash
 cd frontend
@@ -164,7 +179,7 @@ echo "NEXT_PUBLIC_GITHUB_CLIENT_ID=your_github_oauth_client_id" >> .env.local
 npm run dev
 ```
 
-### 4. Open in Browser
+#### Open in Browser
 
 Visit **[http://localhost:3000](http://localhost:3000)** and start coding! 🎉
 
@@ -278,7 +293,6 @@ LeetCodeCodingClub/
 
 ## 📈 Roadmap
 
-- [ ] Docker Compose for one-command deployment
 - [ ] Traditional test-case-based judge (Docker sandboxed execution)
 - [ ] Multiple AI Judge personas (CTO, Professor, Roast mode)
 - [ ] Real-time leaderboard updates via WebSocket

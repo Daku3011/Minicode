@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Welcome to MiniCode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#895bf5",
+                        "background-light": "#f6f5f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .mesh-gradient {
+            background-color: #151022;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(137, 91, 245, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(137, 91, 245, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(21, 16, 34, 1) 0px, transparent 100%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+<div class="relative flex min-h-screen w-full flex-col lg:flex-row">
+<!-- Left Side: Visual/Branding -->
+<div class="relative hidden lg:flex w-1/2 flex-col justify-between p-12 mesh-gradient overflow-hidden">
+<!-- Abstract Mesh Visual (Decorative) -->
+<div class="absolute inset-0 opacity-30" data-alt="Abstract dark purple mesh background with neon accents" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBsVUwlEMkNKH5AFqHy3-hQsdxt0vQgawSc44X1zb4yxWyL-8Amz-i6qbVGnPF2HaslNrWvPpvlmAFCtXxbVi-1uZtvRd32wdFLNFrXCd1F4xfoT1-nw2UekKcWrBrTzsHBqoPVrlecP6bv-uZv8KFYGzfrxck3hnBPDIOe3kYcpZiZvqpWbDGAeXd59K3jqQreXIylldg8TtQGgaB5mMAlnU_azawKg61LyRtRSFJbhingmHoJpZmrxYuhk6XWCPWw7i7z5klk5knd'); background-size: cover; background-position: center;">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
+<div class="relative z-10 flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight text-white">MiniCode</h2>
+</div>
+<div class="relative z-10 space-y-6">
+<h1 class="text-6xl font-black leading-tight tracking-tighter text-white">
+                    Master your skills.<br/>
+<span class="text-primary">Real repos.</span><br/>
+                    AI Feedback.
+                </h1>
+<p class="max-w-md text-lg text-slate-400">
+                    Step into a production-ready environment. Solve real engineering challenges with the guidance of advanced AI.
+                </p>
+<div class="flex gap-8 pt-8 border-t border-slate-800">
+<div>
+<div class="text-2xl font-bold text-white">500+</div>
+<div class="text-sm text-slate-500 uppercase tracking-widest">Active Repos</div>
+</div>
+<div>
+<div class="text-2xl font-bold text-white">10k+</div>
+<div class="text-sm text-slate-500 uppercase tracking-widest">Developers</div>
+</div>
+<div>
+<div class="text-2xl font-bold text-white">99%</div>
+<div class="text-sm text-slate-500 uppercase tracking-widest">AI Accuracy</div>
+</div>
+</div>
+</div>
+<div class="relative z-10 text-sm text-slate-500">
+                © 2024 MiniCode Labs. All rights reserved.
+            </div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="flex flex-1 items-center justify-center p-6 sm:p-12 lg:w-1/2 bg-background-light dark:bg-background-dark">
+<div class="w-full max-w-md space-y-8">
+<!-- Mobile Header -->
+<div class="lg:hidden flex flex-col items-center gap-4 mb-12">
+<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
+<span class="material-symbols-outlined text-3xl">terminal</span>
+</div>
+<div class="text-center">
+<h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">MiniCode</h1>
+<p class="text-slate-500 dark:text-slate-400 mt-2">Master your skills. Real repos. AI Feedback.</p>
+</div>
+</div>
+<!-- Glassmorphic Card -->
+<div class="glass-card rounded-2xl p-8 shadow-2xl dark:shadow-primary/5">
+<div class="mb-8 text-center lg:text-left">
+<h2 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
+<p class="text-slate-500 dark:text-slate-400 mt-1">Sign in to continue your journey</p>
+</div>
+<div class="space-y-4">
+<button class="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-slate-900 dark:bg-white px-5 py-4 text-white dark:text-slate-900 transition-transform active:scale-95">
+<svg class="h-6 w-6" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path>
+</svg>
+<span class="text-base font-bold">Continue with GitHub</span>
+</button>
+<div class="relative py-4">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
+</div>
+<div class="relative flex justify-center text-sm">
+<span class="bg-background-light dark:bg-background-dark px-2 text-slate-500">New to MiniCode?</span>
+</div>
+</div>
+<button class="flex w-full cursor-pointer items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 px-5 py-4 text-slate-900 dark:text-white transition-all hover:bg-slate-100 dark:hover:bg-slate-800/50">
+<span class="text-base font-semibold">Create an account</span>
+</button>
+</div>
+<div class="mt-10 flex flex-col gap-3">
+<a class="text-center text-sm font-medium text-primary hover:underline underline-offset-4" href="#">
+                            Faculty / Admin Login
+                        </a>
+<p class="text-center text-xs text-slate-500 px-6 leading-relaxed">
+                            By continuing, you agree to our <a class="underline" href="#">Terms of Service</a> and <a class="underline" href="#">Privacy Policy</a>.
+                        </p>
+</div>
+</div>
+<!-- Footer Features (Mobile only hint) -->
+<div class="lg:hidden grid grid-cols-1 gap-4 mt-8">
+<div class="flex items-start gap-3 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/50">
+<span class="material-symbols-outlined text-primary">terminal</span>
+<div>
+<h3 class="font-bold text-sm">Real Repositories</h3>
+<p class="text-xs text-slate-500">Ship code to actual projects.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/50">
+<span class="material-symbols-outlined text-primary">psychology</span>
+<div>
+<h3 class="font-bold text-sm">AI Mentorship</h3>
+<p class="text-xs text-slate-500">Instant reviews and guidance.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

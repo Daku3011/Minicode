@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MiniCode - Problem Solving Arena</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#895bf5",
+                        "accent-cyan": "#06b6d4",
+                        "background-light": "#f6f5f8",
+                        "background-dark": "#0d0a16",
+                        "surface-dark": "#1b1429",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glowing-primary {
+            box-shadow: 0 0 20px rgba(137, 91, 245, 0.4);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2e2348;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased h-screen overflow-hidden">
+<div class="flex flex-col h-full">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between border-b border-primary/20 bg-surface-dark/50 backdrop-blur-md px-8 py-3 z-20">
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="size-9 bg-primary flex items-center justify-center rounded-lg shadow-lg">
+<span class="material-symbols-outlined text-white text-2xl">terminal</span>
+</div>
+<h2 class="text-slate-100 text-xl font-bold tracking-tight">MiniCode</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6 ml-4">
+<a class="text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">Dashboard</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary pb-1" href="#">Arena</a>
+<a class="text-slate-400 hover:text-primary text-sm font-medium transition-colors" href="#">Leaderboard</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-accent-cyan rounded-full"></span>
+</button>
+</div>
+<div class="h-10 w-10 rounded-full border-2 border-primary/30 p-0.5 overflow-hidden">
+<img alt="User profile" class="w-full h-full rounded-full object-cover" data-alt="User profile avatar circular" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9hbPM2F9P8LAZdtvyMdpyMDuC9sOeH_VWVLUEYZO4s41q8HHL4RwfXpIJzCwT9jaJlX0gXFeDg3gIOvOXUWMhHB5X_jmL_vushyoFSpgOKp-3ISRYpXOUxdNIfe2h4hOkGQ1S6K1HPhhVkFdhB_VXp7vb-GyG4YXLYxW6JFldPw1BsRBqVsTVYJBmisodAFCwmS6VjcEH9h7d_C6VZKWdv3zifqcwGN_4fg5Te-XEYQM3IvEi1eQjVZUegGyt_0CyzekV51tGKYcf"/>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex flex-1 overflow-hidden">
+<!-- Left Pane: Problem Description -->
+<section class="w-1/2 flex flex-col border-r border-primary/10 bg-surface-dark/30 custom-scrollbar overflow-y-auto">
+<div class="p-8 max-w-2xl mx-auto w-full">
+<div class="flex items-center gap-2 text-primary mb-4 font-mono text-xs uppercase tracking-widest">
+<span class="bg-primary/20 px-2 py-0.5 rounded">Level: Easy</span>
+<span class="text-slate-500">•</span>
+<span>Array &amp; Hashing</span>
+</div>
+<h1 class="text-4xl font-extrabold text-white mb-6">Two Sum</h1>
+<div class="prose prose-invert prose-slate mb-8">
+<p class="text-slate-300 leading-relaxed text-lg">
+                            Given an array of integers <code class="font-mono text-accent-cyan">nums</code> and an integer <code class="font-mono text-accent-cyan">target</code>, return indices of the two numbers such that they add up to target.
+                        </p>
+<p class="text-slate-400 mt-4">
+                            You may assume that each input would have exactly one solution, and you may not use the same element twice.
+                        </p>
+</div>
+<!-- Visual Logic Breakdown -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-6 mb-8">
+<h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-accent-cyan">account_tree</span>
+                            LOGIC BREAKDOWN
+                        </h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between gap-4">
+<div class="flex-1 flex flex-col items-center p-3 rounded-lg border border-primary/20 bg-surface-dark">
+<span class="text-[10px] text-slate-500 mb-1">INPUT</span>
+<span class="font-mono text-sm text-accent-cyan">[2, 7, 11, 15]</span>
+</div>
+<span class="material-symbols-outlined text-primary">arrow_forward</span>
+<div class="flex-1 flex flex-col items-center p-3 rounded-lg border border-primary/20 bg-surface-dark">
+<span class="text-[10px] text-slate-500 mb-1">TARGET</span>
+<span class="font-mono text-sm text-accent-cyan">9</span>
+</div>
+</div>
+<!-- Visual Loop Representation -->
+<div class="relative py-4 px-2 border-l-2 border-dashed border-primary/30 ml-4">
+<div class="flex items-center gap-3 mb-4">
+<div class="size-8 rounded-full bg-accent-cyan/20 border border-accent-cyan flex items-center justify-center text-accent-cyan font-bold text-sm">1</div>
+<div class="bg-surface-dark border border-primary/20 p-2 rounded text-sm text-slate-300 font-mono">
+                                        Check <span class="text-white">2</span>... Need <span class="text-accent-cyan">7</span> (9 - 2)
+                                    </div>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold text-sm">2</div>
+<div class="bg-primary/10 border border-primary/40 p-2 rounded text-sm text-white font-mono">
+                                        Found <span class="text-accent-cyan font-bold">7</span> at index [1]! 
+                                    </div>
+</div>
+</div>
+<div class="flex justify-center">
+<div class="px-4 py-2 bg-gradient-to-r from-primary to-accent-cyan rounded-lg text-white font-mono text-xs font-bold">
+                                    RESULT: [0, 1]
+                                </div>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 rounded-lg bg-surface-dark border border-slate-800">
+<div class="font-mono text-sm">
+<span class="text-slate-500">Input:</span> <span class="text-accent-cyan">nums = [3,2,4], target = 6</span>
+</div>
+<div class="font-mono text-sm">
+<span class="text-slate-500">Output:</span> <span class="text-primary">[1,2]</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Pane: Code Status & Evaluation -->
+<section class="w-1/2 flex flex-col bg-surface-dark/50 relative">
+<!-- Github Connection Widget -->
+<div class="p-6">
+<div class="bg-background-dark/80 border border-primary/20 rounded-xl p-4 flex items-center justify-between shadow-xl">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-lg bg-slate-800 flex items-center justify-center">
+<svg class="w-8 h-8 text-white fill-current" viewbox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.041-1.61-4.041-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-white font-bold">Connected to Github</h4>
+<span class="flex h-2 w-2 rounded-full bg-green-500"></span>
+</div>
+<p class="text-slate-500 font-mono text-xs">username / <span class="text-primary">minicode-two-sum</span></p>
+</div>
+</div>
+<button class="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1 bg-slate-800/50 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-sm">sync</span>
+                            Switch Repo
+                        </button>
+</div>
+</div>
+<!-- Live Status Tracker -->
+<div class="flex-1 px-8 py-4">
+<div class="flex flex-col gap-4">
+<h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Execution Pipeline</h3>
+<!-- Timeline Items -->
+<div class="space-y-6 relative ml-2">
+<div class="absolute left-[-9px] top-2 bottom-2 w-0.5 bg-slate-800"></div>
+<div class="relative flex items-center gap-4">
+<div class="size-4 rounded-full bg-green-500 ring-4 ring-green-500/10 z-10"></div>
+<div class="flex flex-col">
+<span class="text-slate-200 text-sm font-medium">Fetching repository...</span>
+<span class="text-slate-500 text-[10px] font-mono">Commit hash: 7e2f9a1</span>
+</div>
+</div>
+<div class="relative flex items-center gap-4">
+<div class="size-4 rounded-full bg-primary ring-4 ring-primary/20 z-10"></div>
+<div class="flex flex-col">
+<span class="text-slate-100 text-sm font-bold">Running test suites...</span>
+<div class="flex gap-1 mt-2">
+<div class="h-1 w-8 bg-green-500 rounded"></div>
+<div class="h-1 w-8 bg-green-500 rounded"></div>
+<div class="h-1 w-8 bg-primary animate-pulse rounded"></div>
+<div class="h-1 w-8 bg-slate-800 rounded"></div>
+</div>
+</div>
+</div>
+<div class="relative flex items-center gap-4 opacity-40">
+<div class="size-4 rounded-full bg-slate-700 z-10"></div>
+<div class="flex flex-col">
+<span class="text-slate-500 text-sm font-medium">Validating runtime complexity</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pseudo-terminal output for fun -->
+<div class="mt-12 bg-black/40 border border-slate-800 rounded-lg p-4 font-mono text-sm h-48 custom-scrollbar overflow-y-auto">
+<div class="flex items-center gap-2 mb-2">
+<span class="text-green-500">✓</span>
+<span class="text-slate-300">Test Case 1: nums=[2,7,11,15], target=9 -&gt; [0,1]</span>
+</div>
+<div class="flex items-center gap-2 mb-2">
+<span class="text-green-500">✓</span>
+<span class="text-slate-300">Test Case 2: nums=[3,2,4], target=6 -&gt; [1,2]</span>
+</div>
+<div class="flex items-center gap-2 mb-2">
+<span class="text-primary">⧖</span>
+<span class="text-slate-100">Test Case 3: nums=[3,3], target=6 -&gt; [0,1] ... running</span>
+</div>
+<div class="animate-pulse inline-block w-2 h-4 bg-primary ml-1 align-middle"></div>
+</div>
+</div>
+<!-- Footer Action -->
+<div class="p-8 bg-background-dark/80 backdrop-blur-md border-t border-primary/20">
+<button class="w-full h-16 rounded-xl bg-gradient-to-r from-primary via-primary to-accent-cyan text-white font-bold text-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.01] active:scale-[0.99] glowing-primary group">
+<span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">refresh</span>
+                        SYNC &amp; EVALUATE CODE
+                    </button>
+<p class="text-center mt-4 text-slate-500 text-xs font-mono">
+                        Last synced: 2 minutes ago from <span class="text-slate-400">master</span> branch
+                    </p>
+</div>
+</section>
+</main>
+<!-- Status Bar -->
+<footer class="bg-surface-dark border-t border-primary/10 px-6 py-2 flex items-center justify-between text-[11px] font-mono text-slate-500">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="size-2 rounded-full bg-accent-cyan"></span>
+<span>API: Connected</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span>Latency: 24ms</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span>UTF-8</span>
+<span>Python 3.11</span>
+<span class="text-primary font-bold">PREMIUM ACCESS</span>
+</div>
+</footer>
+</div>
+</body></html>

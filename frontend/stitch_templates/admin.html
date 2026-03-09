@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MiniCode Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#895bf5",
+                        "background-light": "#f6f5f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased font-display">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 flex-shrink-0 border-r border-slate-200 dark:border-primary/20 bg-white dark:bg-background-dark flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg">
+<span class="material-symbols-outlined text-white">terminal</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight">MiniCode</h2>
+</div>
+<nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+<p class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 py-4">Main Menu</p>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+                    User Management
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">monitor_heart</span>
+                    System Health
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">api</span>
+                    API Logs
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-primary/20 space-y-4">
+<div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-primary/5">
+<div class="flex flex-col">
+<span class="text-xs font-bold uppercase text-slate-500">Maintenance</span>
+<span class="text-sm font-medium">Service Mode</span>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-300 dark:bg-slate-700">
+<span class="inline-block h-4 w-4 transform rounded-full bg-white transition translate-x-1"></span>
+</button>
+</div>
+<button class="w-full py-2.5 px-4 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-primary/20">
+                    Deploy Update
+                </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Top Navigation -->
+<header class="h-16 flex items-center justify-between px-8 border-b border-slate-200 dark:border-primary/20 bg-white/50 dark:bg-background-dark/50 backdrop-blur-md z-10">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-primary/10 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm placeholder:text-slate-500" placeholder="Search resources, users, or logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-background-dark"></span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-primary/20 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold">Admin User</p>
+<p class="text-xs text-slate-500 font-medium">Super Administrator</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary/30 object-cover" data-alt="User profile avatar of the administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBl4kN0PCk5hMHvA7E5BC6l7MX76DVp_DWazPqYbElNc1lk2N-xfJ2jishyFzG9rPQhJ0WGe3EXG6iPqJpSpwstC3V1UGovIiGaxjxXQmxWX0EwitvZs7QOMooR5KH_iSIu4CUWvYnKLQ3qar0qLxzG9jHhzrk2Ot6E4xuPJs19qt_H1DcJNA0be02in2A6Qn6T8hrxdeJJblZhrzNcJcERSNLXyfY5Bq_z6AograD62Bta9P01xAZ8GQSOnThBnvSAWguXSXX2aG76"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8">
+<!-- Hero Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="text-3xl font-black tracking-tight">System Overview</h1>
+<p class="text-slate-500 dark:text-slate-400 font-medium mt-1">Real-time health monitoring and control portal.</p>
+</div>
+<div class="flex items-center gap-2 text-sm font-bold text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                        All Systems Operational
+                    </div>
+</div>
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="p-6 bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">api</span>
+</div>
+<span class="text-emerald-500 text-xs font-bold">+12.5%</span>
+</div>
+<p class="text-sm font-medium text-slate-500">API Usage</p>
+<h3 class="text-2xl font-black mt-1">892,401<span class="text-slate-400 text-lg font-normal">/1M</span></h3>
+<div class="mt-4 w-full bg-slate-100 dark:bg-primary/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 89%;"></div>
+</div>
+</div>
+<div class="p-6 bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="text-emerald-500 text-xs font-bold">+5.2%</span>
+</div>
+<p class="text-sm font-medium text-slate-500">Active Users</p>
+<h3 class="text-2xl font-black mt-1">12,405</h3>
+<p class="text-xs text-slate-400 mt-2">Peak: 14.2k today</p>
+</div>
+<div class="p-6 bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+<span class="material-symbols-outlined">database</span>
+</div>
+<span class="text-slate-400 text-xs font-bold">Stable</span>
+</div>
+<p class="text-sm font-medium text-slate-500">DB Health</p>
+<h3 class="text-2xl font-black mt-1">99.98%</h3>
+<p class="text-xs text-slate-400 mt-2">Latency: 24ms avg</p>
+</div>
+<div class="p-6 bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-red-500/10 rounded-lg text-red-500">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<span class="text-red-500 text-xs font-bold">+2 New</span>
+</div>
+<p class="text-sm font-medium text-slate-500">System Alerts</p>
+<h3 class="text-2xl font-black mt-1">04</h3>
+<p class="text-xs text-slate-400 mt-2">2 critical incidents</p>
+</div>
+</div>
+<!-- Main Grid Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- User Management Grid -->
+<div class="lg:col-span-2 bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="p-6 border-b border-slate-200 dark:border-primary/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div>
+<h3 class="text-lg font-bold">User Management</h3>
+<p class="text-sm text-slate-500">Filter and manage platform accounts</p>
+</div>
+<div class="flex gap-2">
+<button class="p-2 bg-slate-100 dark:bg-primary/10 rounded-lg hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+<button class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors">
+                                    Add User
+                                </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-primary/10 text-xs font-bold uppercase text-slate-500">
+<tr>
+<th class="px-6 py-4">User</th>
+<th class="px-6 py-4">Role</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Joined</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-primary/10">
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">JD</div>
+<div>
+<p class="text-sm font-bold">John Doe</p>
+<p class="text-xs text-slate-500">john@minicode.io</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 text-[10px] font-black uppercase rounded bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">Developer</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Active
+                                            </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">Oct 12, 2023</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 font-bold text-xs">AS</div>
+<div>
+<p class="text-sm font-bold">Alice Smith</p>
+<p class="text-xs text-slate-500">alice@design.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 text-[10px] font-black uppercase rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">Designer</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-slate-400">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                                Offline
+                                            </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">Nov 02, 2023</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold text-xs">MR</div>
+<div>
+<p class="text-sm font-bold">Mike Ross</p>
+<p class="text-xs text-slate-500">mike@law.org</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 text-[10px] font-black uppercase rounded bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">Manager</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-emerald-500">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Active
+                                            </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">Dec 21, 2023</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary transition-colors">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-slate-200 dark:border-primary/10 flex items-center justify-between">
+<span class="text-xs text-slate-500 font-medium">Showing 3 of 1,240 users</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-slate-100 dark:bg-primary/10 rounded-md text-xs font-bold disabled:opacity-50">Prev</button>
+<button class="px-3 py-1 bg-primary text-white rounded-md text-xs font-bold">Next</button>
+</div>
+</div>
+</div>
+<!-- Side Widgets -->
+<div class="space-y-8">
+<!-- API Traffic Graph Component -->
+<div class="bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl p-6 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-bold text-sm">API Traffic (24h)</h3>
+<span class="text-[10px] font-black uppercase text-slate-400">Live</span>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-black">45.2k</span>
+<span class="text-xs font-bold text-emerald-500">+5.4%</span>
+</div>
+<div class="h-32 w-full relative group">
+<svg class="w-full h-full overflow-visible drop-shadow-xl" viewbox="0 0 100 40">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#895bf5" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#895bf5" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,35 Q10,10 20,25 T40,15 T60,30 T80,5 T100,20 V40 H0 Z" fill="url(#chartGradient)"></path>
+<path d="M0,35 Q10,10 20,25 T40,15 T60,30 T80,5 T100,20" fill="none" stroke="#895bf5" stroke-linecap="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+<span>00:00</span>
+<span>08:00</span>
+<span>16:00</span>
+<span>23:59</span>
+</div>
+</div>
+</div>
+<!-- System Alerts Card -->
+<div class="bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/20 rounded-xl p-6 shadow-sm">
+<h3 class="font-bold text-sm mb-4">Critical Alerts</h3>
+<div class="space-y-4">
+<div class="flex gap-4 items-start p-3 rounded-lg bg-red-500/5 border border-red-500/10">
+<div class="p-1 bg-red-500 rounded text-white">
+<span class="material-symbols-outlined text-xs">priority_high</span>
+</div>
+<div>
+<p class="text-xs font-bold text-red-500">Database Connection Error</p>
+<p class="text-[10px] text-slate-500 mt-0.5">Primary Cluster (AWS-US-EAST) timeout.</p>
+<p class="text-[10px] font-bold mt-1 text-slate-400">2 mins ago</p>
+</div>
+</div>
+<div class="flex gap-4 items-start p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+<div class="p-1 bg-amber-500 rounded text-white">
+<span class="material-symbols-outlined text-xs">warning</span>
+</div>
+<div>
+<p class="text-xs font-bold text-amber-500">High CPU Usage</p>
+<p class="text-[10px] text-slate-500 mt-0.5">Worker node-04 reached 92% threshold.</p>
+<p class="text-[10px] font-bold mt-1 text-slate-400">14 mins ago</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 text-xs font-bold text-primary hover:underline">View Incident Logs</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

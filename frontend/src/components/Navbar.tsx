@@ -2,21 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Terminal, Trophy, User, LogIn, LayoutDashboard, Shield, LogOut } from "lucide-react";
+import { Terminal, Search, Flame, LogIn, LogOut, Medal } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 
-const navItems = [
-    { name: "Problems", href: "/problems", icon: Terminal, roles: ["student", "faculty", "admin"] },
-    { name: "Leaderboard", href: "/leaderboard", icon: Trophy, roles: ["student", "faculty", "admin"] },
-    { name: "Faculty", href: "/faculty/dashboard", icon: LayoutDashboard, roles: ["faculty", "admin"] },
-    { name: "Admin", href: "/admin/users", icon: Shield, roles: ["admin"] },
-    { name: "Profile", href: "/profile", icon: User, roles: ["student", "faculty", "admin"] },
-];
-
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
-    const pathname = usePathname();
     const router = useRouter();
 
     const handleLogin = () => {
@@ -24,64 +15,75 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
-            <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                <Link href="/" className="flex items-center space-x-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                        <Terminal className="text-white w-5 h-5" />
+        <header className="sticky top-0 z-50 glass-card border-b border-white/10 px-4 md:px-8 py-3 bg-background-dark/80 backdrop-blur-xl">
+            <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <Link href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/dashboard' : '/problems') : "/"} className="flex items-center gap-3">
+                    <div className="bg-primary p-2 rounded-lg">
+                        <Terminal className="text-white w-6 h-6" />
                     </div>
-                    <span className="font-bold text-xl tracking-tight gradient-text">MiniCode</span>
+                    <h2 className="text-xl font-extrabold tracking-tight text-white hidden sm:block">MiniCode</h2>
                 </Link>
 
-                <div className="hidden md:flex items-center space-x-1">
-                    {!loading && user && navItems.filter(item => item.roles.includes(user.role)).map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={clsx(
-                                    "flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200",
-                                    isActive
-                                        ? "bg-white/10 text-white"
-                                        : "text-muted-foreground hover:bg-white/5 hover:text-white"
-                                )}
-                            >
-                                <Icon className="w-4 h-4" />
-                                <span className="text-sm font-medium">{item.name}</span>
-                            </Link>
-                        );
-                    })}
-                </div>
-
-                <div className="flex items-center space-x-4">
-                    {!loading && user ? (
-                        <div className="flex items-center space-x-4">
-                            <span className="text-sm font-medium text-white hidden sm:block">@{user.username}</span>
-                            {user.avatar_url && (
-                                <img src={user.avatar_url} alt="avatar" className="w-8 h-8 rounded-full border border-white/10" />
-                            )}
-                            <button
-                                onClick={logout}
-                                className="flex items-center space-x-2 px-3 py-1.5 bg-white/5 hover:bg-rose-500/20 text-muted-foreground hover:text-rose-400 text-sm font-medium rounded-md transition-all"
-                            >
-                                <LogOut className="w-4 h-4" />
-                            </button>
+                {user && (
+                    <div className="hidden md:flex flex-1 max-w-md mx-8">
+                        <div className="relative w-full">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input 
+                                type="text"
+                                className="w-full bg-slate-900/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:ring-primary focus:border-primary placeholder-slate-500 focus:outline-none" 
+                                placeholder="Search challenges, docs..." 
+                            />
                         </div>
+                    </div>
+                )}
+
+                <div className="flex items-center gap-4">
+                    {!loading && user ? (
+                        <>
+                            {user.role === "student" && (
+                                <>
+                                    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-primary/20 border border-primary/30 rounded-full">
+                                        <Medal className="text-primary w-4 h-4" />
+                                        <span className="text-xs font-bold text-primary uppercase tracking-wider">Level 3: Code Ninja</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
+                                        <Flame className="text-orange-500 w-4 h-4" />
+                                        <span className="text-xs font-bold text-orange-500 uppercase tracking-wider">3 Days</span>
+                                    </div>
+                                </>
+                            )}
+                            <div className="flex items-center gap-3 ml-2">
+                                <Link href="/profile" className="h-10 w-10 rounded-full border-2 border-primary overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
+                                    {user.avatar_url ? (
+                                        <img src={user.avatar_url} alt="Profile" className="h-full w-full object-cover" />
+                                    ) : (
+                                        <div className="h-full w-full bg-slate-800 flex items-center justify-center text-white font-bold">
+                                            {user.username.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                </Link>
+                                <button 
+                                    onClick={logout}
+                                    className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
+                                    title="Logout"
+                                >
+                                    <LogOut className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </>
                     ) : !loading && !user ? (
                         <button
                             onClick={handleLogin}
-                            className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium rounded-md transition-all"
+                            className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-all"
                         >
                             <LogIn className="w-4 h-4" />
                             <span>Login</span>
                         </button>
                     ) : (
-                        <div className="w-20 h-8 bg-white/5 animate-pulse rounded-md" />
+                        <div className="w-32 h-10 bg-white/5 animate-pulse rounded-xl" />
                     )}
                 </div>
             </div>
-        </nav>
+        </header>
     );
 }
