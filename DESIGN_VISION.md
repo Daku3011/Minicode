@@ -35,16 +35,18 @@ To achieve the "Wow" factor and feel highly premium:
 When generating these screens in Stitch, use the following feature sets and layouts:
 
 ### A. The Student Dashboard / Profile (`/profile`)
-**Vibe:** Welcoming, clear, encouraging.
+**Vibe:** Clean whiteboard aesthetic—light, sketchy, hand-drawn feel. A breath of fresh air compared to the dark coding arena.
 **Access:** Students reach this by clicking their profile photo in the navbar from any page.
+**Theme:** Light mode (`#FAFAF9`), sketch-borders, marker-highlight accents, sticky-note task lists, hand-drawn underlines.
 **Features to include:**
-- **Top Nav:** Profile picture, current level/title (e.g., "Level 3: Code Ninja"), and a flaming streak counter (🔥 3 Days). The main MiniCode logo links strictly to the `/problems` arena.
-- **Hero Section:** "Welcome back, [Name]! Ready to crush some code?" with a large, glowing button to "Resume Learning" or "Daily Challenge".
-- **Progress Widgets:** A visually appealing ring chart showing "Topics Mastered" (Arrays, Strings, Hash Maps).
-- **Problem Feed / Recent Activity:** Cards showing recommended problems or recent submissions. Each card has:
-  - Difficulty badge (colored dots: green/easy, yellow/med).
-  - "Provision GitHub Repo" button prominently displayed.
-  - Estimated time to solve.
+- **Sidebar:** Navigation for Dashboard, My Submissions, Achievements, Insights, Settings, and Docs. Includes a "Profile Completion" progress bar at the bottom.
+- **Welcome Hero:** Personalized greeting with the user's name and a hand-drawn underline. A "Start Coding" button links back to `/problems`.
+- **Metric Cards (4-column grid):** Problems Solved, Total Submissions, Current Streak, Global Rank. Each card has a gradient progress bar and a status badge.
+- **Activity Chart:** An SVG line chart showing submission activity over the past 7 days with a whiteboard-style gradient fill.
+- **Sticky-Note To-Do:** A rotated, yellow sticky note with checkboxes for the student's personal task list.
+- **Recent Activity Feed:** Shows recent submissions and syncs with avatars and timestamps.
+- **Topic Progress Table:** A data table showing mastery for each topic (Arrays, Strings, Loops) with progress bars, status badges, and action links.
+- **MiniCode Logo:** In the navbar, the logo links to `/problems` (the Coding Arena), not the dashboard.
 
 ### B. The Problem Solving Arena
 **Vibe:** Focused, professional, but not overwhelming.
