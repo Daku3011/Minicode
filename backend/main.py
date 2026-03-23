@@ -34,7 +34,6 @@ def create_db_and_tables():
 if __name__ == "__main__" and os.getenv("CREATE_TABLES"):
     create_db_and_tables()
     print("Tables created successfully")
-    exit(0)
 
 def get_session():
     with Session(engine) as session:
@@ -395,4 +394,5 @@ def get_me(user: User = Depends(get_current_user), session: Session = Depends(ge
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
