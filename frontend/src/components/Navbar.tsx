@@ -9,6 +9,11 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+
+    if (pathname === "/login") {
+        return null;
+    }
 
     const handleLogin = () => {
         router.push("/login");
