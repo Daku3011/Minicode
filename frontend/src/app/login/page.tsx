@@ -26,7 +26,8 @@ export default function LoginPage() {
 
     const handleGithubLogin = () => {
         const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo,user,user:email`;
+        const redirectUri = `${window.location.origin}/auth/github/callback`;
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=repo,user,user:email`;
     };
 
     const handleStaffLogin = async (e: React.FormEvent) => {
