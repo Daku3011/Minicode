@@ -1,6 +1,9 @@
 # 🚀 MiniCode Deployment Guide
 
-Deploy MiniCode with **Supabase** (database), **Render** (backend + frontend), and **Docker** containers optimized for high traffic.
+Deploy MiniCode with **Supabase** (database), **Render** or **Railway** (backend + frontend), and **Docker** containers optimized for high traffic.
+
+> [!TIP]
+> **New!** Looking for Railway instructions? See [RAILWAY_DEPLOYMENT.md](file:///home/dwarkeshramani/Projects/Minicode/RAILWAY_DEPLOYMENT.md) for a dedicated guide.
 
 ---
 

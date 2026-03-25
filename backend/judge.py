@@ -107,7 +107,8 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
         test_cases_info = "No test cases provided. Judge based on problem description."
     
     # 3. Run AI Judge
-    ai_result, error = await run_ai_judge(user_code, problem.description, test_cases_info)
+    ai_result_data = await run_ai_judge(user_code, problem.description, test_cases_info)
+    ai_result, error = ai_result_data
     
     if ai_result:
         submission.status = ai_result.get("status", "error")

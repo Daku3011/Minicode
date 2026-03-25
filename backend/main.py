@@ -1,12 +1,18 @@
 import os
+from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Session, create_engine, select
 from typing import List, Optional
 from dotenv import load_dotenv
 import httpx
+from fastapi.security import OAuth2PasswordRequestForm
+from auth import verify_password
+from pydantic import BaseModel
+import uvicorn
 
 load_dotenv()
+
 
 from models import User, Problem, Submission, TestCase
 from auth import get_current_user, create_access_token, get_github_user_info, get_session, require_admin, require_faculty
@@ -159,8 +165,6 @@ async def github_callback(code: str, redirect_uri: Optional[str] = None, session
     token = create_access_token(data={"sub": user.username})
     return {"access_token": token, "token_type": "bearer"}
 
-from fastapi.security import OAuth2PasswordRequestForm
-from auth import verify_password
 
 @app.post("/auth/login")
 async def login(
@@ -179,7 +183,6 @@ async def login(
     token = create_access_token(data={"sub": user.username})
     return {"access_token": token, "token_type": "bearer"}
 
-from pydantic import BaseModel
 
 class SubmissionRequest(BaseModel):
     language: str
@@ -365,7 +368,8 @@ def get_me(user: User = Depends(get_current_user), session: Session = Depends(ge
     problems_solved = len(problem_scores)
     
     recent_submissions = []
-    for sub in sorted(submissions, key=lambda x: x.timestamp, reverse=True)[:5]:
+    sorted_submissions = sorted(submissions, key=lambda x: (x.timestamp or datetime.min), reverse=True)
+    for sub in sorted_submissions[:5]:
         prob = session.get(Problem, sub.problem_id)
         recent_submissions.append({
             "id": sub.id,
@@ -393,6 +397,10 @@ def get_me(user: User = Depends(get_current_user), session: Session = Depends(ge
     }
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+=======
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+>>>>>>> e40f1fc (feat: Update deployment guides for Railway integration and enhance AI judge functionality)
