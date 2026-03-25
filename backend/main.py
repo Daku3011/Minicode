@@ -40,6 +40,9 @@ def create_db_and_tables():
 if __name__ == "__main__" and os.getenv("CREATE_TABLES"):
     create_db_and_tables()
     print("Tables created successfully")
+    if os.getenv("ONLY_CREATE_TABLES"):
+        import sys
+        sys.exit(0)
 
 def get_session():
     with Session(engine) as session:
