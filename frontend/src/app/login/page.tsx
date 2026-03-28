@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Terminal, Github, ArrowRight, Loader2, Code2, Zap } from "lucide-react";
+import { Terminal, Github, ArrowRight, Loader2, Code2, Zap, Users } from "lucide-react";
 import api from "@/lib/api";
 
 export default function LoginPage() {
@@ -26,7 +26,8 @@ export default function LoginPage() {
 
     const handleGithubLogin = () => {
         const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo,user,user:email`;
+        const redirectUri = process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URI || `${window.location.origin}/auth/github/callback`;
+        window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo,user,user:email&redirect_uri=${encodeURIComponent(redirectUri)}`;
     };
 
     const handleStaffLogin = async (e: React.FormEvent) => {
@@ -51,190 +52,150 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col lg:flex-row bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
-            {/* Left Side: Visual/Branding */}
-            <div className="relative hidden lg:flex w-1/2 flex-col justify-between p-12 mesh-gradient overflow-hidden">
-                {/* Abstract Mesh Visual (Decorative) */}
-                <div 
-                    className="absolute inset-0 opacity-30" 
-                    style={{
-                        backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBsVUwlEMkNKH5AFqHy3-hQsdxt0vQgawSc44X1zb4yxWyL-8Amz-i6qbVGnPF2HaslNrWvPpvlmAFCtXxbVi-1uZtvRd32wdFLNFrXCd1F4xfoT1-nw2UekKcWrBrTzsHBqoPVrlecP6bv-uZv8KFYGzfrxck3hnBPDIOe3kYcpZiZvqpWbDGAeXd59K3jqQreXIylldg8TtQGgaB5mMAlnU_azawKg61LyRtRSFJbhingmHoJpZmrxYuhk6XWCPWw7i7z5klk5knd')",
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                    }}
-                ></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
-                
-                <div className="relative z-10 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
-                        <Terminal className="text-white w-6 h-6" />
+        <div className="relative flex min-h-screen w-full flex-col items-center justify-center level-0 text-foreground antialiased overflow-hidden selection:bg-primary/30">
+            {/* Cinematic Background Glows */}
+            <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-primary/5 blur-[160px] rounded-full pointer-events-none animate-pulse" />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-accent/5 blur-[160px] rounded-full pointer-events-none animate-pulse" />
+
+            <div className="relative z-10 w-full max-w-2xl px-6 py-12 flex flex-col items-center">
+                {/* Branding: Technical Switch */}
+                <div className="flex items-center gap-4 mb-20 animate-in fade-in slide-in-from-top-8 duration-1000">
+                    <div className="liquid-gradient p-3 rounded-2xl light-emission">
+                        <Terminal className="text-primary-foreground w-7 h-7" />
                     </div>
-                    <h2 className="text-2xl font-bold tracking-tight text-white">MiniCode</h2>
+                    <h2 className="text-3xl font-bold tracking-tighter font-mono italic">
+                        MINICODE<span className="text-primary/40 font-sans">.io</span>
+                    </h2>
                 </div>
 
-                <div className="relative z-10 space-y-6">
-                    <h1 className="text-6xl font-black leading-tight tracking-tighter text-white">
-                        Master your skills.<br />
-                        <span className="text-primary">Real repos.</span><br />
-                        AI Feedback.
+                {/* Hero: Editorial Scale */}
+                <div className="text-center space-y-6 mb-20 animate-in fade-in slide-in-from-top-12 duration-1000 delay-200">
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tightest leading-[0.85] uppercase">
+                        Master the <br />
+                        <span className="text-primary italic">Logic.</span>
                     </h1>
-                    <p className="max-w-md text-lg text-slate-400">
-                        Step into a production-ready environment. Solve real engineering challenges with the guidance of advanced AI.
+                    <p className="text-xl md:text-2xl text-foreground/40 font-medium tracking-tight font-mono uppercase">
+                        High-Fidelity Code Execution & AI Feedback
                     </p>
-
-                    <div className="flex gap-8 pt-8 border-t border-slate-800">
-                        <div>
-                            <div className="text-2xl font-bold text-white">500+</div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest">Active Repos</div>
-                        </div>
-                        <div>
-                            <div className="text-2xl font-bold text-white">10k+</div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest">Developers</div>
-                        </div>
-                        <div>
-                            <div className="text-2xl font-bold text-white">99%</div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest">AI Accuracy</div>
-                        </div>
-                    </div>
                 </div>
 
-                <div className="relative z-10 text-sm text-slate-500">
-                    © 2026 MiniCode Labs. All rights reserved.
-                </div>
-            </div>
+                {/* Login Card: Glassmorphism & Tonal Layering */}
+                <div className="w-full max-w-sm glass rounded-[2.5rem] p-10 shadow-glass animate-in fade-in zoom-in-95 duration-1000 delay-300">
+                    <div className="space-y-8">
+                        {!isStaffMode ? (
+                            <>
+                                <button 
+                                    onClick={handleGithubLogin}
+                                    className="liquid-gradient w-full flex items-center justify-center gap-4 rounded-2xl px-6 py-5 text-primary-foreground font-bold text-lg light-emission hover:scale-[1.02] active:scale-95 transition-all shadow-atmospheric group"
+                                >
+                                    <Github className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                                    <span>Continue with GitHub</span>
+                                </button>
 
-            {/* Right Side: Login Form */}
-            <div className="flex flex-1 items-center justify-center p-6 sm:p-12 lg:w-1/2 bg-background-light dark:bg-background-dark">
-                <div className="w-full max-w-md space-y-8">
-                    {/* Mobile Header */}
-                    <div className="lg:hidden flex flex-col items-center gap-4 mb-12">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
-                            <Terminal className="w-8 h-8" />
-                        </div>
-                        <div className="text-center">
-                            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">MiniCode</h1>
-                            <p className="text-slate-500 dark:text-slate-400 mt-2">Master your skills. Real repos. AI Feedback.</p>
-                        </div>
-                    </div>
+                                <div className="relative flex items-center justify-center py-2">
+                                    <div className="w-full h-px bg-white/5" />
+                                    <span className="absolute bg-muted/50 px-4 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider text-foreground/30">
+                                        System Protocol
+                                    </span>
+                                </div>
 
-                    {/* Glassmorphic Card */}
-                    <div className="glass-card rounded-2xl p-8 shadow-2xl dark:shadow-primary/5">
-                        <div className="mb-8 text-center lg:text-left">
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
-                            <p className="text-slate-500 dark:text-slate-400 mt-1">
-                                {isStaffMode ? "Sign in to your staff portal" : "Sign in to continue your journey"}
-                            </p>
-                        </div>
+                                <button 
+                                    onClick={() => setIsStaffMode(true)}
+                                    className="level-2 w-full flex items-center justify-center gap-3 rounded-2xl px-6 py-4 text-foreground/80 font-bold hover:bg-primary/5 hover:text-primary transition-all group"
+                                >
+                                    <Users className="w-5 h-5 text-primary/60 group-hover:text-primary" />
+                                    <span>Staff & Admin Portal</span>
+                                </button>
 
-                        <div className="space-y-4">
-                            {!isStaffMode ? (
-                                <>
-                                    <button 
-                                        onClick={handleGithubLogin}
-                                        className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-slate-900 dark:bg-white px-5 py-4 text-white dark:text-slate-900 transition-transform active:scale-95"
-                                    >
-                                        <Github className="w-6 h-6" />
-                                        <span className="text-base font-bold">Continue with GitHub</span>
-                                    </button>
-
-                                    <div className="relative py-4">
-                                        <div className="absolute inset-0 flex items-center">
-                                            <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
-                                        </div>
-                                        <div className="relative flex justify-center text-sm">
-                                            <span className="bg-background-light dark:bg-transparent px-2 text-slate-500">Staff Access</span>
+                                {/* Active Pulse */}
+                                <div className="pt-4 flex flex-col items-center gap-4">
+                                    <div className="flex -space-x-3">
+                                        {[1, 2, 3].map((i) => (
+                                            <div key={i} className="h-10 w-10 md:h-12 md:w-12 rounded-full ring-4 ring-background level-2 overflow-hidden">
+                                                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`} alt="" />
+                                            </div>
+                                        ))}
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-full ring-4 ring-background liquid-gradient flex items-center justify-center text-[10px] md:text-xs font-bold text-primary-foreground">
+                                            +2K
                                         </div>
                                     </div>
-
-                                    <button 
-                                        onClick={() => setIsStaffMode(true)}
-                                        className="flex w-full cursor-pointer items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 px-5 py-4 text-slate-900 dark:text-white transition-all hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                                    >
-                                        <span className="text-base font-semibold">Faculty / Admin Login</span>
-                                    </button>
-                                </>
-                            ) : (
-                                <form onSubmit={handleStaffLogin} className="space-y-4">
-                                    {error && (
-                                        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold text-center">
-                                            {error}
-                                        </div>
+                                    <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.3em]">
+                                        Pulse: Stable Execution
+                                    </p>
+                                </div>
+                            </>
+                        ) : (
+                            <form onSubmit={handleStaffLogin} className="space-y-6">
+                                <div className="text-center mb-4">
+                                    <h2 className="text-xl font-bold font-mono">STAFF_ACCESS</h2>
+                                    <p className="text-xs text-foreground/40 uppercase tracking-widest font-medium">Verify Identity</p>
+                                </div>
+                                {error && (
+                                    <div className="p-4 rounded-xl level-2 border-l-4 border-destructive text-destructive text-[10px] font-bold uppercase tracking-wider animate-in fade-in bounce-in duration-300">
+                                        Error: {error}
+                                    </div>
+                                )}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-foreground/20 ml-2">Username</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        className="w-full level-1 rounded-2xl px-6 py-4 text-foreground placeholder:text-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all font-medium"
+                                        placeholder="admin_id"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-foreground/20 ml-2">Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full level-1 rounded-2xl px-6 py-4 text-foreground placeholder:text-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all font-medium"
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="liquid-gradient w-full flex items-center justify-center space-x-2 py-5 rounded-2xl text-primary-foreground font-bold light-emission hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                                        <>
+                                            <span className="uppercase tracking-widest">Execute Login</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </>
                                     )}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-2">Username</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                            placeholder="admin"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-2">Password</label>
-                                        <input
-                                            type="password"
-                                            required
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                            placeholder="••••••••"
-                                        />
-                                    </div>
+                                </button>
+                                <div className="text-center pt-2">
                                     <button
-                                        type="submit"
-                                        disabled={submitting}
-                                        className="w-full flex items-center justify-center space-x-2 bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(137,91,245,0.3)] disabled:opacity-50"
+                                        type="button"
+                                        onClick={() => setIsStaffMode(false)}
+                                        className="text-[10px] font-mono font-bold text-foreground/30 hover:text-primary transition-colors uppercase tracking-[0.2em]"
                                     >
-                                        {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                                            <>
-                                                <span>Sign In</span>
-                                                <ArrowRight className="w-4 h-4 ml-2" />
-                                            </>
-                                        )}
+                                        ← Protocol: Student
                                     </button>
-
-                                    <div className="pt-2 text-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsStaffMode(false)}
-                                            className="text-sm font-medium text-primary hover:underline underline-offset-4"
-                                        >
-                                            ← Back to Student Login
-                                        </button>
-                                    </div>
-                                </form>
-                            )}
-                        </div>
-
-                        {!isStaffMode && (
-                            <div className="mt-10 flex flex-col gap-3">
-                                <p className="text-center text-xs text-slate-500 px-6 leading-relaxed">
-                                    By continuing, you agree to our <a className="underline" href="#">Terms of Service</a> and <a className="underline" href="#">Privacy Policy</a>.
-                                </p>
-                            </div>
+                                </div>
+                            </form>
                         )}
                     </div>
+                </div>
 
-                    {/* Footer Features (Mobile only hint) */}
-                    <div className="lg:hidden grid grid-cols-1 gap-4 mt-8">
-                        <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/50">
-                            <Code2 className="text-primary w-5 h-5 mt-0.5" />
-                            <div>
-                                <h3 className="font-bold text-sm dark:text-white">Real Repositories</h3>
-                                <p className="text-xs text-slate-500">Ship code to actual projects.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/50">
-                            <Zap className="text-primary w-5 h-5 mt-0.5" />
-                            <div>
-                                <h3 className="font-bold text-sm dark:text-white">AI Mentorship</h3>
-                                <p className="text-xs text-slate-500">Instant reviews and guidance.</p>
-                            </div>
-                        </div>
+                {/* Footer Legal */}
+                <div className="mt-20 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
+                    <div className="flex items-center justify-center gap-6 mb-8 text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-foreground/20">
+                        <a href="#" className="hover:text-primary transition-colors">Legal</a>
+                        <span className="w-1 h-1 bg-white/10 rounded-full" />
+                        <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+                        <span className="w-1 h-1 bg-white/10 rounded-full" />
+                        <a href="#" className="hover:text-primary transition-colors">Security</a>
                     </div>
-
+                    <div className="inline-flex items-center gap-3 px-4 py-2 level-1 rounded-full text-[10px] font-mono font-bold text-foreground/40 uppercase tracking-widest shadow-atmospheric">
+                        <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                        Minicode Core v4.5.1_ALCHEMIST
+                    </div>
                 </div>
             </div>
         </div>

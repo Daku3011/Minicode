@@ -1,94 +1,112 @@
 "use client";
-
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Terminal, Search, Flame, LogIn, LogOut, Medal } from "lucide-react";
+import { Terminal, LayoutDashboard, Code2, Users, User, LogOut, Flame, Bell, Trophy } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
-    const router = useRouter();
     const pathname = usePathname();
 
-    if (pathname === "/login") {
+    if (pathname === "/login" || pathname?.startsWith("/auth")) {
         return null;
     }
 
-    const handleLogin = () => {
-        router.push("/login");
-    };
+    const navItems = [
+        { label: "Home", icon: LayoutDashboard, href: user?.role === 'admin' ? '/admin/users' : user?.role === 'faculty' ? '/faculty/dashboard' : '/problems' },
+        { label: "Arena", icon: Code2, href: "/problems" },
+        { label: "Rankings", icon: Trophy, href: "/leaderboard" },
+        { label: "Community", icon: Users, href: "#" },
+        { label: "Profile", icon: User, href: "/profile" },
+    ];
 
     return (
-        <header className="sticky top-0 z-50 glass-card border-b border-white/10 px-4 md:px-8 py-3 bg-background-dark/80 backdrop-blur-xl">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-                <Link href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/dashboard' : '/problems') : "/"} className="flex items-center gap-3">
-                    <div className="bg-primary p-2 rounded-lg">
-                        <Terminal className="text-white w-6 h-6" />
-                    </div>
-                    <h2 className="text-xl font-extrabold tracking-tight text-white hidden sm:block">MiniCode</h2>
-                </Link>
-
-                {user && (
-                    <div className="hidden md:flex flex-1 max-w-md mx-8">
-                        <div className="relative w-full">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input 
-                                type="text"
-                                className="w-full bg-slate-900/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:ring-primary focus:border-primary placeholder-slate-500 focus:outline-none" 
-                                placeholder="Search challenges, docs..." 
-                            />
+        <>
+            {/* Top Navbar (Desktop & Mobile) */}
+            <header className="sticky top-0 z-50 glass no-border-separation px-4 md:px-8 py-4 transition-all duration-300">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <div className="liquid-gradient p-2 rounded-xl light-emission transition-transform group-hover:scale-105">
+                            <Terminal className="text-primary-foreground w-5 h-5" />
                         </div>
-                    </div>
-                )}
+                        <h2 className="text-xl font-bold tracking-tighter font-mono group-hover:text-primary transition-colors">
+                            MINICODE<span className="text-primary-foreground/30 font-sans">.io</span>
+                        </h2>
+                    </Link>
 
-                <div className="flex items-center gap-4">
-                    {!loading && user ? (
-                        <>
-                            {user.role === "student" && (
-                                <>
-                                    <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-primary/20 border border-primary/30 rounded-full">
-                                        <Medal className="text-primary w-4 h-4" />
-                                        <span className="text-xs font-bold text-primary uppercase tracking-wider">Level 3: Code Ninja</span>
+                    <div className="flex items-center gap-3 md:gap-8">
+                        {user && (
+                            <div className="flex items-center gap-6">
+                                <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 level-2 rounded-full light-emission">
+                                    <Flame className="text-primary w-4 h-4" />
+                                    <span className="text-xs font-mono font-bold text-primary tabular-nums">12 STREAK</span>
+                                </div>
+                                
+                                <button className="p-2 text-foreground/60 hover:text-primary transition-all relative group">
+                                    <Bell className="w-5 h-5 group-hover:animate-pulse" />
+                                    <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full light-emission" />
+                                </button>
+
+                                <div className="flex items-center gap-3 level-2 pr-4 rounded-full light-emission group cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-primary/20 group-hover:border-primary/50 transition-all">
+                                        {user.avatar_url ? (
+                                            <img src={user.avatar_url} alt="Profile" className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="h-full w-full liquid-gradient flex items-center justify-center text-primary-foreground text-xs font-bold">
+                                                {user.username.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full">
-                                        <Flame className="text-orange-500 w-4 h-4" />
-                                        <span className="text-xs font-bold text-orange-500 uppercase tracking-wider">3 Days</span>
-                                    </div>
-                                </>
-                            )}
-                            <div className="flex items-center gap-3 ml-2">
-                                <Link href="/profile" className="h-10 w-10 rounded-full border-2 border-primary overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
-                                    {user.avatar_url ? (
-                                        <img src={user.avatar_url} alt="Profile" className="h-full w-full object-cover" />
-                                    ) : (
-                                        <div className="h-full w-full bg-slate-800 flex items-center justify-center text-white font-bold">
-                                            {user.username.charAt(0).toUpperCase()}
-                                        </div>
-                                    )}
-                                </Link>
+                                    <span className="text-sm font-medium hidden md:block">{user.username}</span>
+                                </div>
+
                                 <button 
                                     onClick={logout}
-                                    className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
-                                    title="Logout"
+                                    className="hidden md:flex items-center gap-2 text-sm text-foreground/40 hover:text-destructive transition-colors"
                                 >
-                                    <LogOut className="w-5 h-5" />
+                                    <LogOut className="w-4 h-4" />
                                 </button>
                             </div>
-                        </>
-                    ) : !loading && !user ? (
-                        <button
-                            onClick={handleLogin}
-                            className="flex items-center space-x-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm font-bold rounded-xl transition-all"
-                        >
-                            <LogIn className="w-4 h-4" />
-                            <span>Login</span>
-                        </button>
-                    ) : (
-                        <div className="w-32 h-10 bg-white/5 animate-pulse rounded-xl" />
-                    )}
+                        )}
+                        {!user && !loading && (
+                            <Link 
+                                href="/login"
+                                className="px-6 py-2.5 liquid-gradient text-primary-foreground text-sm font-bold rounded-xl light-emission hover:scale-105 active:scale-95 transition-all shadow-atmospheric"
+                            >
+                                START CODING
+                            </Link>
+                        )}
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
+
+            {/* Bottom Navbar (Mobile Only) */}
+            <nav className="fixed bottom-6 left-6 right-6 z-50 md:hidden glass no-border-separation rounded-2xl px-8 py-4 shadow-glass">
+                <div className="flex items-center justify-between max-w-md mx-auto">
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
+                        return (
+                            <Link 
+                                key={item.label}
+                                href={item.href}
+                                className={clsx(
+                                    "flex flex-col items-center gap-1 transition-all duration-300",
+                                    isActive ? "text-primary scale-110" : "text-foreground/40 hover:text-foreground"
+                                )}
+                            >
+                                <div className={clsx(
+                                    "p-2 rounded-xl transition-all",
+                                    isActive && "bg-primary/10 light-emission"
+                                )}>
+                                    <Icon className="w-6 h-6" />
+                                </div>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </nav>
+        </>
     );
 }

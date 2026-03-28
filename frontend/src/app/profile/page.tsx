@@ -4,12 +4,38 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
+import { 
+    LayoutDashboard, 
+    Terminal, 
+    Trophy, 
+    BarChart3, 
+    Settings, 
+    BookOpen, 
+    Flame, 
+    Zap, 
+    Star, 
+    ChevronRight, 
+    Activity, 
+    Clock, 
+    ShieldCheck, 
+    Cpu,
+    ArrowUpRight,
+    Search,
+    User,
+    Mail,
+    Calendar,
+    Code2,
+    CheckCircle2,
+    AlertCircle
+} from "lucide-react";
+import { clsx } from "clsx";
 
 interface RecentSubmission {
     id: number;
     problem: string;
     status: string;
     time: string;
+    score?: number;
 }
 
 interface Problem {
@@ -39,32 +65,36 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("dashboard");
     const [loading, setLoading] = useState(true);
 
-    // Real data states
     const [stats, setStats] = useState<ProfileStats>({ solved: 0, rank: 0, xp: 0, streak: 0 });
     const [recentSubmissions, setRecentSubmissions] = useState<RecentSubmission[]>([]);
     const [problems, setProblems] = useState<Problem[]>([]);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [myRank, setMyRank] = useState(0);
-    const [totalSubmissions, setTotalSubmissions] = useState(0);
 
     useEffect(() => {
         const fetchAllData = async () => {
             setLoading(true);
             try {
-                const [meRes, problemsRes, leaderboardRes] = await Promise.all([
+                const [meRes, problemsRes, leaderboardRes, submissionsRes] = await Promise.all([
                     api.get("/auth/me"),
                     api.get("/problems"),
                     api.get("/leaderboard"),
+                    api.get("/submissions/me"),
                 ]);
 
                 const me = meRes.data;
                 setStats(me.stats || { solved: 0, rank: 0, xp: 0, streak: 0 });
-                setRecentSubmissions(me.recentSubmissions || []);
-                setTotalSubmissions((me.recentSubmissions || []).length);
+                const allSubmissions = submissionsRes.data.map((s: any) => ({
+                    id: s.id,
+                    problem: s.problem_title,
+                    status: s.status,
+                    time: new Date(s.timestamp).toLocaleString(),
+                    score: s.score
+                }));
+                setRecentSubmissions(allSubmissions);
                 setProblems(problemsRes.data || []);
                 setLeaderboard(leaderboardRes.data || []);
 
-                // Find my rank
                 const myEntry = (leaderboardRes.data || []).find(
                     (e: LeaderboardEntry) => e.username === me.username
                 );
@@ -79,276 +109,278 @@ export default function ProfilePage() {
     }, []);
 
     const sidebarItems = [
-        { icon: "dashboard", label: "Dashboard", id: "dashboard" },
-        { icon: "terminal", label: "My Submissions", id: "submissions" },
-        { icon: "emoji_events", label: "Achievements", id: "achievements" },
-        { icon: "analytics", label: "Insights", id: "insights" },
+        { icon: LayoutDashboard, label: "DASHBOARD", id: "dashboard" },
+        { icon: Terminal, label: "SUBMISSIONS", id: "submissions" },
+        { icon: Trophy, label: "ACHIEVEMENTS", id: "achievements" },
+        { icon: BarChart3, label: "INSIGHTS", id: "insights" },
     ];
 
     const sidebarSystem = [
-        { icon: "settings", label: "Settings", id: "settings" },
-        { icon: "help_center", label: "Documentation", id: "docs" },
+        { icon: Settings, label: "SETTINGS", id: "settings" },
+        { icon: BookOpen, label: "PROTOCOL", id: "docs" },
     ];
-
-    const statusColor = (status: string) => {
-        switch (status) {
-            case "accepted": return "text-[#22C55E] bg-[#22C55E]/10";
-            case "wrong_answer": return "text-[#FB7185] bg-[#FB7185]/10";
-            case "pending": return "text-[#F59E0B] bg-[#F59E0B]/10";
-            case "error": case "runtime_error": return "text-[#FB7185] bg-[#FB7185]/10";
-            default: return "text-slate-400 bg-slate-100";
-        }
-    };
 
     const statusLabel = (status: string) => {
         switch (status) {
-            case "accepted": return "Accepted";
-            case "wrong_answer": return "Wrong Answer";
-            case "pending": return "Pending";
-            case "error": return "Error";
-            case "runtime_error": return "Runtime Error";
-            default: return status;
+            case "accepted": return "ACCEPTED";
+            case "wrong_answer": return "FAILED";
+            case "pending": return "PENDING";
+            default: return status.toUpperCase();
         }
     };
 
     const difficultyColor = (d: string) => {
         switch (d?.toLowerCase()) {
-            case "easy": return "text-[#22C55E] bg-[#22C55E]/10 border-[#22C55E]/20";
-            case "medium": return "text-[#F59E0B] bg-[#F59E0B]/10 border-[#F59E0B]/20";
-            case "hard": return "text-[#FB7185] bg-[#FB7185]/10 border-[#FB7185]/20";
-            default: return "text-slate-400 bg-slate-100";
+            case "easy": return "text-emerald-500/60";
+            case "medium": return "text-amber-500/60";
+            case "hard": return "text-rose-500/60";
+            default: return "text-foreground/40";
         }
     };
 
     // ========== TAB CONTENT RENDERERS ==========
 
     const renderDashboard = () => (
-        <div className="space-y-8">
-            {/* Welcome */}
-            <div className="flex justify-between items-end">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-                        Welcome back, <span className="hand-drawn-underline text-[#6366F1]">{user?.username || "Student"}</span>
-                        <span className="text-xl">✨</span>
-                    </h1>
-                    <p className="text-slate-500 mt-2">Your personal coding workspace at a glance.</p>
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            {/* User Profile Header: Cinematic Precision */}
+            <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10">
+                <div className="flex items-center gap-8">
+                    <div className="relative">
+                        <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                        <div className="relative w-24 h-24 rounded-[2.5rem] p-1 glass shadow-glass light-emission">
+                            <img 
+                                src={`https://ui-avatars.com/api/?name=${user?.username}&background=random`} 
+                                alt="Avatar" 
+                                className="w-full h-full rounded-[2rem] object-cover" 
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tightest italic uppercase">
+                            {user?.username || "OPERATIVE"}
+                        </h1>
+                        <div className="flex items-center gap-4">
+                            <div className="w-2.5 h-2.5 rounded-full bg-primary light-emission shadow-atmospheric" />
+                            <p className="text-[10px] font-mono font-bold text-foreground/30 uppercase tracking-[0.5em] italic">NODE_SIG: {user?.email || "UNKNOWN"}</p>
+                        </div>
+                    </div>
                 </div>
-                <Link href="/problems" className="bg-[#6366F1] text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-[#6366F1]/20 hover:shadow-[#6366F1]/30 active:scale-95 transition-all flex items-center gap-2">
-                    <span className="material-symbols-outlined text-lg">play_arrow</span>
-                    Start Coding
+                <Link href="/problems" className="flex items-center gap-4 px-10 py-5 liquid-gradient text-primary-foreground rounded-2xl font-bold text-xs shadow-atmospheric hover:scale-105 active:scale-95 transition-all group">
+                    <Activity className="w-4 h-4 group-hover:animate-pulse" />
+                    <span className="uppercase tracking-[0.3em]">INITIALIZE_ARENA</span>
                 </Link>
             </div>
 
-            {/* Metric Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard icon="bolt" iconBg="bg-[#6366F1]/10" iconColor="text-[#6366F1]"
-                    badge={stats.solved > 0 ? `${stats.solved} solved` : "Start!"} badgeBg="bg-[#22C55E]/10" badgeColor="text-[#22C55E]"
-                    label="Problems Solved" value={`${stats.solved} / ${problems.length}`}
-                    barFrom="from-[#6366F1]" barTo="to-[#38BDF8]" barWidth={problems.length > 0 ? (stats.solved / problems.length) * 100 : 0} />
-                <MetricCard icon="code" iconBg="bg-[#38BDF8]/10" iconColor="text-[#38BDF8]"
-                    badge="Total" badgeBg="bg-[#FB7185]/10" badgeColor="text-[#FB7185]"
-                    label="Total Submissions" value={`${recentSubmissions.length}`}
-                    barFrom="from-[#38BDF8]" barTo="to-[#22C55E]" barWidth={Math.min(recentSubmissions.length * 10, 100)} />
-                <MetricCard icon="local_fire_department" iconBg="bg-[#22C55E]/10" iconColor="text-[#22C55E]"
-                    badge={stats.streak > 0 ? "🔥 Active" : "Inactive"} badgeBg="bg-slate-100" badgeColor="text-slate-500"
-                    label="Current Streak" value={`${stats.streak} Day${stats.streak !== 1 ? 's' : ''}`}
-                    barFrom="from-[#22C55E]" barTo="to-[#6366F1]" barWidth={Math.min(stats.streak * 14, 100)} />
-                <MetricCard icon="emoji_events" iconBg="bg-[#F59E0B]/10" iconColor="text-[#F59E0B]"
-                    badge={myRank > 0 ? "Ranked" : "Unranked"} badgeBg="bg-[#F59E0B]/10" badgeColor="text-[#F59E0B]"
-                    label="Global Rank" value={myRank > 0 ? `#${myRank}` : "—"}
-                    barFrom="from-[#F59E0B]" barTo="to-[#FB7185]" barWidth={myRank > 0 ? Math.max(100 - myRank * 5, 10) : 0} />
+            {/* Core Metrics: The Glass Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <MetricCard 
+                    label="SOLVED_NODES" 
+                    value={`${stats.solved}/${problems.length}`} 
+                    subtext="TOTAL_DOMAIN_COVERAGE"
+                    icon={Cpu}
+                    progress={(stats.solved / (problems.length || 1)) * 100}
+                />
+                <MetricCard 
+                    label="OP_ENTRIES" 
+                    value={recentSubmissions.length.toString()} 
+                    subtext="LIFETIME_SUBMISSIONS"
+                    icon={Terminal}
+                    progress={Math.min(recentSubmissions.length * 5, 100)}
+                />
+                <MetricCard 
+                    label="ACTIVE_STREAK" 
+                    value={`${stats.streak}D`} 
+                    subtext="CONSECUTIVE_UPTIME"
+                    icon={Flame}
+                    progress={Math.min(stats.streak * 10, 100)}
+                    variant="primary"
+                />
+                <MetricCard 
+                    label="GLOBAL_RANK" 
+                    value={myRank > 0 ? `#${myRank}` : "N/A"} 
+                    subtext="HIERARCHY_POSITION"
+                    icon={Trophy}
+                    progress={myRank > 0 ? Math.max(100 - myRank, 10) : 0}
+                />
             </div>
 
-            {/* Chart + Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* XP Summary */}
-                <div className="lg:col-span-2 bg-white p-8 rounded-xl sketch-border">
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Performance Summary</h3>
-                    <p className="text-sm text-slate-400 mb-6">Your real-time coding statistics</p>
-                    <div className="grid grid-cols-3 gap-6">
-                        <div className="text-center p-4 rounded-xl bg-[#6366F1]/5">
-                            <p className="text-3xl font-black text-[#6366F1]">{stats.xp}</p>
-                            <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Total XP</p>
-                        </div>
-                        <div className="text-center p-4 rounded-xl bg-[#22C55E]/5">
-                            <p className="text-3xl font-black text-[#22C55E]">{stats.solved}</p>
-                            <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Accepted</p>
-                        </div>
-                        <div className="text-center p-4 rounded-xl bg-[#F59E0B]/5">
-                            <p className="text-3xl font-black text-[#F59E0B]">{myRank > 0 ? `#${myRank}` : "—"}</p>
-                            <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Rank</p>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                {/* Performance Vector */}
+                <div className="lg:col-span-2 glass rounded-[3.5rem] p-12 shadow-glass no-border-separation relative overflow-hidden group">
+                    <div className="absolute top-[-10%] right-[-10%] p-10 text-primary/5 group-hover:rotate-12 transition-transform duration-1000">
+                        <BarChart3 className="w-64 h-64" />
                     </div>
-                    {/* Problem difficulty breakdown */}
-                    <div className="mt-8">
-                        <h4 className="text-sm font-bold text-slate-700 mb-4">Available Problems by Difficulty</h4>
-                        <div className="flex gap-4">
-                            {["Easy", "Medium", "Hard"].map(d => {
-                                const count = problems.filter(p => p.difficulty?.toLowerCase() === d.toLowerCase()).length;
-                                return (
-                                    <div key={d} className="flex-1 p-3 rounded-lg bg-slate-50 text-center">
-                                        <p className="text-xl font-bold text-slate-800">{count}</p>
-                                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${difficultyColor(d)}`}>{d}</span>
-                                    </div>
-                                );
-                            })}
+                    <div className="relative z-10 space-y-12">
+                        <div className="space-y-2">
+                            <h3 className="text-3xl font-bold tracking-tightest italic uppercase">Performance_Vector</h3>
+                            <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em]">Node Output Analytics</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-10">
+                            <div className="space-y-2 text-center">
+                                <p className="text-5xl font-mono font-bold italic tracking-tighter text-primary light-emission">{stats.xp}</p>
+                                <p className="text-[9px] font-mono font-bold text-foreground/30 uppercase tracking-[0.4em]">ACCUMULATED_XP</p>
+                            </div>
+                            <div className="space-y-2 text-center border-x border-white/5 px-4">
+                                <p className="text-5xl font-mono font-bold italic tracking-tighter text-white">{stats.solved}</p>
+                                <p className="text-[9px] font-mono font-bold text-foreground/30 uppercase tracking-[0.4em]">NODES_REIFIED</p>
+                            </div>
+                            <div className="space-y-2 text-center">
+                                <p className="text-5xl font-mono font-bold italic tracking-tighter text-white">{myRank > 0 ? `#${myRank}` : "—"}</p>
+                                <p className="text-[9px] font-mono font-bold text-foreground/30 uppercase tracking-[0.4em]">RANK_STATUS</p>
+                            </div>
+                        </div>
+
+                        {/* Difficulty Distribution Chart */}
+                        <div className="space-y-8 pt-6">
+                            <h4 className="text-[10px] font-mono font-bold text-foreground/30 uppercase tracking-[0.6em]">DOMAIN_DIFFICULTY_SPREAD</h4>
+                            <div className="flex gap-4">
+                                {["Easy", "Medium", "Hard"].map(d => {
+                                    const rawCount = problems.filter(p => p.difficulty?.toLowerCase() === d.toLowerCase()).length;
+                                    const solvedCount = 0; // Missing solved per difficulty in schema, but we can fake it or just show total count contextually
+                                    return (
+                                        <div key={d} className="flex-1 level-2 rounded-3xl p-6 text-center shadow-atmospheric group/diff hover:bg-primary/[0.04] transition-colors">
+                                            <p className="text-2xl font-mono font-bold text-white mb-2">{rawCount}</p>
+                                            <span className={clsx("text-[8px] font-mono font-bold px-3 py-1 rounded-full level-1 uppercase tracking-[0.3em]", difficultyColor(d))}>
+                                                {d}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Recent Activity */}
-                <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-xl sketch-border">
-                        <h4 className="font-bold text-slate-800 text-sm mb-4">Recent Activity</h4>
+                {/* Sub-Telemetry Stream */}
+                <div className="space-y-8">
+                    <div className="level-1 rounded-[3rem] p-10 shadow-atmospheric no-border-separation h-full">
+                        <div className="flex items-center justify-between mb-8">
+                            <h4 className="text-xl font-bold tracking-tightest italic uppercase">Live_Updates</h4>
+                            <Clock className="w-4 h-4 text-foreground/20" />
+                        </div>
                         {recentSubmissions.length === 0 ? (
-                            <p className="text-sm text-slate-400 py-4 text-center">No submissions yet. Start solving!</p>
+                            <div className="flex flex-col items-center justify-center h-48 text-center space-y-4">
+                                <Terminal className="w-10 h-10 text-foreground/10" />
+                                <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em]">Stream_Offline</p>
+                            </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 {recentSubmissions.slice(0, 5).map((sub) => (
-                                    <div key={sub.id} className="flex items-center gap-3">
-                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${sub.status === "accepted" ? "bg-[#22C55E]/20 text-[#22C55E]" : "bg-[#FB7185]/20 text-[#FB7185]"}`}>
-                                            <span className="material-symbols-outlined text-sm">
-                                                {sub.status === "accepted" ? "check_circle" : "error"}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-semibold text-slate-800 truncate">{sub.problem}</p>
-                                            <p className="text-[10px] text-slate-400">{statusLabel(sub.status)} • {sub.time}</p>
+                                    <div key={sub.id} className="flex items-center gap-4 group cursor-pointer">
+                                        <div className={clsx(
+                                            "w-2 h-10 rounded-full transition-all duration-500",
+                                            sub.status === "accepted" ? "bg-emerald-500/40 group-hover:bg-emerald-500" : "bg-rose-500/40 group-hover:bg-rose-500"
+                                        )} />
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <p className="text-xs font-bold text-white truncate uppercase tracking-[0.1em]">{sub.problem}</p>
+                                            <div className="flex items-center justify-between">
+                                                <p className={clsx("text-[8px] font-mono font-bold tracking-widest", sub.status === "accepted" ? "text-emerald-500/60" : "text-rose-500/60")}>
+                                                    {statusLabel(sub.status)}
+                                                </p>
+                                                <p className="text-[8px] font-mono font-bold text-foreground/20 md:hidden xl:block">{sub.time.split(',')[0]}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
-                    {/* Account Info Card */}
-                    <div className="bg-white p-6 rounded-xl sketch-border">
-                        <h4 className="font-bold text-slate-800 text-sm mb-4">Account Info</h4>
-                        <div className="space-y-3 text-sm">
-                            <div className="flex justify-between"><span className="text-slate-400">Username</span><span className="font-mono font-semibold text-slate-700">{user?.username}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-400">Email</span><span className="font-mono font-semibold text-slate-700 truncate ml-4">{user?.email}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-400">Role</span><span className="font-mono font-semibold text-slate-700 capitalize">{user?.role}</span></div>
-                            <div className="flex justify-between"><span className="text-slate-400">Joined</span><span className="font-mono font-semibold text-slate-700">{user?.created_at || "—"}</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Problem List Table */}
-            <div className="bg-white rounded-xl sketch-border overflow-hidden">
-                <div className="p-6 border-b border-dashed border-slate-200 flex justify-between items-center">
-                    <h3 className="text-lg font-bold text-slate-900">All Problems</h3>
-                    <Link href="/problems" className="flex items-center gap-2 text-sm text-[#6366F1] font-medium hover:underline">
-                        <span className="material-symbols-outlined text-lg">arrow_forward</span> Go to Arena
-                    </Link>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50/50">
-                            <tr>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">#</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Title</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Difficulty</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {problems.map((p) => (
-                                <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-6 py-4 text-sm text-slate-500 font-mono">{p.id}</td>
-                                    <td className="px-6 py-4 text-sm font-semibold text-slate-900">{p.title}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${difficultyColor(p.difficulty)}`}>{p.difficulty}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <Link href={`/problems/${p.id}`} className="text-[#6366F1] text-xs font-semibold hover:underline">Solve →</Link>
-                                    </td>
-                                </tr>
-                            ))}
-                            {problems.length === 0 && (
-                                <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">No problems available yet.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
     );
 
     const renderSubmissions = () => (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-                    My <span className="hand-drawn-underline text-[#6366F1]">Submissions</span>
-                    <span className="text-xl">📋</span>
-                </h1>
-                <p className="text-slate-500 mt-2">Your complete submission history from the backend.</p>
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="space-y-4">
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tightest italic uppercase">Archives</h1>
+                <div className="flex items-center gap-4">
+                    <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-atmospheric light-emission" />
+                    <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.5em] italic">Full_Operation_Logs // NODE_SYNC_SUCCESS</p>
+                </div>
             </div>
 
-            <div className="bg-white rounded-xl sketch-border overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50/50">
-                            <tr>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">ID</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Problem</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Submitted</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {recentSubmissions.length === 0 ? (
-                                <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">
-                                    <span className="material-symbols-outlined text-4xl mb-2 block">inbox</span>
-                                    No submissions yet. Head to the <Link href="/problems" className="text-[#6366F1] underline">Coding Arena</Link> to start!
-                                </td></tr>
-                            ) : (
-                                recentSubmissions.map((sub) => (
-                                    <tr key={sub.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-sm text-slate-500 font-mono">#{sub.id}</td>
-                                        <td className="px-6 py-4 text-sm font-semibold text-slate-900">{sub.problem}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor(sub.status)}`}>
-                                                {statusLabel(sub.status)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-500 font-mono">{sub.time}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="grid grid-cols-1 gap-6">
+                {recentSubmissions.length === 0 ? (
+                    <div className="level-1 rounded-[3rem] p-24 text-center space-y-6 shadow-atmospheric">
+                        <Terminal className="w-16 h-16 mx-auto text-foreground/10" />
+                        <div className="space-y-2">
+                             <h4 className="text-2xl font-bold tracking-tightest italic uppercase text-foreground/20">Empty_Set</h4>
+                             <p className="text-[10px] font-mono font-bold text-foreground/10 uppercase tracking-[0.4em]">No historical data detected on current pulse.</p>
+                        </div>
+                        <Link href="/problems" className="inline-block text-[10px] font-mono font-bold text-primary uppercase tracking-[0.6em] hover:tracking-[0.8em] transition-all">GENERATE_TRAFFIC →</Link>
+                    </div>
+                ) : (
+                    recentSubmissions.map((sub) => (
+                        <div key={sub.id} className="group level-1 rounded-[3rem] p-8 pr-12 flex items-center justify-between hover:bg-primary/[0.02] transition-all shadow-atmospheric no-border-separation">
+                            <div className="flex items-center gap-10">
+                                <div className="w-16 text-center">
+                                    <span className="text-2xl font-mono font-bold italic text-foreground/10 group-hover:text-primary/20 transition-colors uppercase tracking-tightest">
+                                        #{sub.id.toString().padStart(3, '0')}
+                                    </span>
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="text-2xl font-bold italic tracking-tightest uppercase text-white group-hover:text-primary transition-colors">{sub.problem}</h4>
+                                    <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.3em]">{sub.time}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-12">
+                                <div className="text-right space-y-3">
+                                    <div className={clsx(
+                                        "px-6 py-2 rounded-xl text-[10px] font-mono font-bold uppercase tracking-[0.4em] level-2 shadow-atmospheric light-emission",
+                                        sub.status === "accepted" ? "text-emerald-500/80" : "text-rose-500/80"
+                                    )}>
+                                        {statusLabel(sub.status)}
+                                    </div>
+                                    <p className="text-[8px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em] italic">SCORE_WEIGHT: {sub.score || 0}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );
 
     const renderAchievements = () => {
         const badges = [
-            { name: "First Blood", desc: "Solved your first problem", icon: "military_tech", earned: stats.solved >= 1, color: "#6366F1" },
-            { name: "Streak Starter", desc: "Maintained a 3-day streak", icon: "local_fire_department", earned: stats.streak >= 3, color: "#F59E0B" },
-            { name: "Problem Crusher", desc: "Solved 5 problems", icon: "bolt", earned: stats.solved >= 5, color: "#38BDF8" },
-            { name: "Top 10", desc: "Reached top 10 on leaderboard", icon: "emoji_events", earned: myRank > 0 && myRank <= 10, color: "#22C55E" },
-            { name: "Century Club", desc: "Earned 100+ XP", icon: "stars", earned: stats.xp >= 100, color: "#FB7185" },
-            { name: "All Rounder", desc: "Solved all available problems", icon: "verified", earned: stats.solved >= problems.length && problems.length > 0, color: "#6366F1" },
+            { name: "FIRST_BLOOD", desc: "Solitary node reification success", icon: Zap, earned: stats.solved >= 1, color: "text-primary" },
+            { name: "UPTIME_VIBRANT", desc: "Maintained 3-cycle operational streak", icon: Flame, earned: stats.streak >= 3, color: "text-amber-500" },
+            { name: "LOGIC_CRUSHER", desc: "Overcame 5 architectural challenges", icon: Cpu, earned: stats.solved >= 5, color: "text-blue-500" },
+            { name: "ELITE_TIER", desc: "Reached top 10 within hierarchy", icon: Trophy, earned: myRank > 0 && myRank <= 10, color: "text-emerald-500" },
+            { name: "XP_MAXIMA", desc: "Accumulated 100+ precision units", icon: Star, earned: stats.xp >= 100, color: "text-rose-500" },
+            { name: "DOMAIN_MASTER", desc: "Total logic domain coverage achieved", icon: ShieldCheck, earned: stats.solved >= problems.length && problems.length > 0, color: "text-indigo-500" },
         ];
         return (
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-                        <span className="hand-drawn-underline text-[#6366F1]">Achievements</span>
-                        <span className="text-xl">🏆</span>
-                    </h1>
-                    <p className="text-slate-500 mt-2">Badges are earned based on your real progress. Keep coding to unlock them all!</p>
+            <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                <div className="space-y-4">
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tightest italic uppercase">Artifacts</h1>
+                    <div className="flex items-center gap-4">
+                        <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-atmospheric light-emission" />
+                        <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.5em] italic">Evolutionary_Milestones_Detected</p>
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {badges.map((b) => (
-                        <div key={b.name} className={`bg-white p-6 rounded-xl sketch-border text-center transition-transform hover:translate-y-[-2px] ${!b.earned ? "opacity-40 grayscale" : ""}`}>
-                            <div className="h-14 w-14 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: `${b.color}20`, color: b.color }}>
-                                <span className="material-symbols-outlined text-2xl">{b.icon}</span>
+                        <div key={b.name} className={clsx(
+                            "group level-1 rounded-[3.5rem] p-10 text-center transition-all duration-700 shadow-atmospheric no-border-separation relative overflow-hidden",
+                            !b.earned ? "opacity-20 grayscale scale-[0.98]" : "hover:scale-[1.02] hover:bg-primary/[0.02]"
+                        )}>
+                            <div className={clsx(
+                                "h-20 w-20 rounded-[2rem] mx-auto mb-8 flex items-center justify-center transition-all duration-700",
+                                b.earned ? "glass shadow-glass light-emission" : "level-2"
+                            )}>
+                                <b.icon className={clsx("w-10 h-10", b.earned ? b.color : "text-foreground/20")} />
                             </div>
-                            <h4 className="font-bold text-slate-900">{b.name}</h4>
-                            <p className="text-xs text-slate-400 mt-1">{b.desc}</p>
-                            {b.earned && <span className="inline-block mt-3 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-[#22C55E]/10 text-[#22C55E]">Unlocked ✓</span>}
+                            <div className="space-y-3">
+                                <h4 className={clsx("text-xl font-bold italic tracking-tightest uppercase", b.earned ? "text-white" : "text-foreground/20")}>{b.name}</h4>
+                                <p className="text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-widest leading-relaxed">{b.desc}</p>
+                            </div>
+                            {b.earned && (
+                                <div className="absolute bottom-0 left-0 w-full h-1 bg-primary/20 blur-[2px] light-emission" />
+                            )}
                         </div>
                     ))}
                 </div>
@@ -362,67 +394,56 @@ export default function ProfilePage() {
         const successRate = recentSubmissions.length > 0 ? Math.round((acceptedCount / recentSubmissions.length) * 100) : 0;
 
         return (
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-                        <span className="hand-drawn-underline text-[#6366F1]">Insights</span>
-                        <span className="text-xl">📊</span>
-                    </h1>
-                    <p className="text-slate-500 mt-2">Analytics based on your real submission data.</p>
+            <div className="space-y-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                <div className="space-y-4">
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tightest italic uppercase">Insights</h1>
+                    <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.5em] italic px-2">Telemetric_Deep_Dive</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-xl sketch-border text-center">
-                        <p className="text-4xl font-black text-[#22C55E]">{successRate}%</p>
-                        <p className="text-sm text-slate-500 mt-2">Success Rate</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-xl sketch-border text-center">
-                        <p className="text-4xl font-black text-[#6366F1]">{acceptedCount}</p>
-                        <p className="text-sm text-slate-500 mt-2">Accepted Submissions</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-xl sketch-border text-center">
-                        <p className="text-4xl font-black text-[#FB7185]">{failedCount}</p>
-                        <p className="text-sm text-slate-500 mt-2">Failed Submissions</p>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <InsightCard label="EFFICIENCY_RATIO" value={`${successRate}%`} icon={Zap} color="text-emerald-500" />
+                    <InsightCard label="ACCEPTED_FLOWS" value={acceptedCount.toString()} icon={CheckCircle2} color="text-primary" />
+                    <InsightCard label="LOGIC_LEAKAGE" value={failedCount.toString()} icon={AlertCircle} color="text-rose-500" />
                 </div>
 
                 {/* Leaderboard snapshot */}
-                <div className="bg-white rounded-xl sketch-border overflow-hidden">
-                    <div className="p-6 border-b border-dashed border-slate-200">
-                        <h3 className="text-lg font-bold text-slate-900">Leaderboard (Top 10)</h3>
-                        <p className="text-sm text-slate-400">Real-time ranking from the server.</p>
+                <div className="space-y-12">
+                     <div className="space-y-1 px-4">
+                        <h3 className="text-3xl font-bold tracking-tightest italic uppercase">Hierarchy_Pulse</h3>
+                        <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em]">Real-time Position Vector</p>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50/50">
-                                <tr>
-                                    <th className="px-6 py-3 text-xs font-bold text-slate-400 uppercase">Rank</th>
-                                    <th className="px-6 py-3 text-xs font-bold text-slate-400 uppercase">User</th>
-                                    <th className="px-6 py-3 text-xs font-bold text-slate-400 uppercase">Score</th>
-                                    <th className="px-6 py-3 text-xs font-bold text-slate-400 uppercase">Solved</th>
+
+                    <div className="glass rounded-[4rem] p-1 shadow-glass no-border-separation overflow-hidden">
+                        <table className="w-full text-left font-mono">
+                            <thead>
+                                <tr className="level-2 text-[9px] font-bold text-white/40 uppercase tracking-[0.4em] italic">
+                                    <th className="px-10 py-6">RANK</th>
+                                    <th className="px-10 py-6">OPERATIVE</th>
+                                    <th className="px-10 py-6">XP_SCORE</th>
+                                    <th className="px-10 py-6 text-right">SOLVED</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {leaderboard.slice(0, 10).map((entry) => (
-                                    <tr key={entry.rank} className={`hover:bg-slate-50/50 transition-colors ${entry.username === user?.username ? "bg-[#6366F1]/5" : ""}`}>
-                                        <td className="px-6 py-3 text-sm font-bold text-slate-700">#{entry.rank}</td>
-                                        <td className="px-6 py-3">
-                                            <div className="flex items-center gap-3">
-                                                {entry.avatar ? (
-                                                    <img src={entry.avatar} className="h-7 w-7 rounded-full" alt="" />
-                                                ) : (
-                                                    <div className="h-7 w-7 rounded-full bg-[#6366F1]/20 flex items-center justify-center text-[#6366F1] text-xs font-bold">{entry.name.charAt(0)}</div>
-                                                )}
-                                                <span className="text-sm font-semibold text-slate-800">{entry.name}</span>
+                            <tbody className="divide-y divide-white/5">
+                                {leaderboard.slice(0, 5).map((entry) => (
+                                    <tr key={entry.rank} className={clsx(
+                                        "hover:bg-primary/[0.04] transition-colors group",
+                                        entry.username === user?.username ? "bg-primary/[0.03]" : ""
+                                    )}>
+                                        <td className="px-10 py-8 text-xl font-bold italic tracking-tighter text-foreground/20 group-hover:text-primary/40 transition-colors">
+                                            #{entry.rank.toString().padStart(2, '0')}
+                                        </td>
+                                        <td className="px-10 py-8">
+                                            <div className="flex items-center gap-6">
+                                                <div className="h-10 w-10 rounded-xl glass shadow-glass flex items-center justify-center p-0.5">
+                                                    <img src={`https://ui-avatars.com/api/?name=${entry.name}&background=random`} className="rounded-lg h-full w-full object-cover grayscale opacity-60" alt="" />
+                                                </div>
+                                                <span className="text-sm font-bold text-white/50 uppercase tracking-widest group-hover:text-white transition-all">{entry.name}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-3 text-sm font-mono text-slate-600">{entry.score} XP</td>
-                                        <td className="px-6 py-3 text-sm font-mono text-slate-600">{entry.problems}</td>
+                                        <td className="px-10 py-8 text-xl font-bold text-primary/40 tabular-nums italic">{entry.score}</td>
+                                        <td className="px-10 py-8 text-right font-bold text-white/20">{entry.problems.toString().padStart(2, '0')}</td>
                                     </tr>
                                 ))}
-                                {leaderboard.length === 0 && (
-                                    <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">No leaderboard data yet.</td></tr>
-                                )}
                             </tbody>
                         </table>
                     </div>
@@ -432,47 +453,58 @@ export default function ProfilePage() {
     };
 
     const renderSettings = () => (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-                    <span className="hand-drawn-underline text-[#6366F1]">Settings</span>
-                    <span className="text-xl">⚙️</span>
-                </h1>
-                <p className="text-slate-500 mt-2">Manage your account preferences.</p>
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="space-y-4">
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tightest italic uppercase">Config</h1>
+                <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.5em] italic px-2">Hardware_Interface_Settings</p>
             </div>
-            <div className="bg-white p-8 rounded-xl sketch-border space-y-6">
+
+            <div className="glass rounded-[4rem] p-16 shadow-glass no-border-separation space-y-16">
                 <div>
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Profile Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-500 mb-1">Username</label>
-                            <input type="text" readOnly value={user?.username || ""} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 font-mono" />
+                    <h3 className="text-[10px] font-mono font-bold text-primary uppercase tracking-[0.6em] mb-12 italic border-b border-primary/10 pb-4">PILOT_IDENTIFICATION</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div className="space-y-4">
+                            <label className="block text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em] px-2 italic">NODE_USERNAME</label>
+                            <div className="px-8 py-4 level-1 rounded-[2rem] text-sm font-mono font-bold text-foreground/60 shadow-atmospheric border border-white/5 tracking-widest">
+                                {user?.username}
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-500 mb-1">Email</label>
-                            <input type="text" readOnly value={user?.email || ""} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 font-mono" />
+                        <div className="space-y-4">
+                            <label className="block text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em] px-2 italic">COMMS_LINK</label>
+                            <div className="px-8 py-4 level-1 rounded-[2rem] text-sm font-mono font-bold text-foreground/60 shadow-atmospheric border border-white/5 tracking-widest truncate">
+                                {user?.email}
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-500 mb-1">Full Name</label>
-                            <input type="text" readOnly value={user?.full_name || "Not set"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700" />
+                        <div className="space-y-4">
+                            <label className="block text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em] px-2 italic">ACCESS_ROLE</label>
+                            <div className="px-8 py-4 level-1 rounded-[2rem] text-sm font-mono font-bold text-primary uppercase shadow-atmospheric border border-white/5 tracking-widest">
+                                {user?.role || "STUDENT"}
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-500 mb-1">Role</label>
-                            <input type="text" readOnly value={user?.role || "student"} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 capitalize" />
+                        <div className="space-y-4">
+                            <label className="block text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em] px-2 italic">JOIN_TIMESTAMP</label>
+                            <div className="px-8 py-4 level-1 rounded-[2rem] text-sm font-mono font-bold text-foreground/60 shadow-atmospheric border border-white/5 tracking-widest">
+                                {user?.created_at?.split('T')[0] || "SYSTEM_GENESIS"}
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div>
-                    <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Connected Accounts</h3>
-                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <div className="h-10 w-10 rounded-lg bg-slate-900 flex items-center justify-center">
-                            <svg className="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385c.6.105.825-.255.825-.57c0-.285-.015-1.23-.015-2.235c-3.015.555-3.795-.735-4.035-1.41c-.135-.345-.72-1.41-1.23-1.695c-.42-.225-1.02-.78-.015-.795c.945-.015 1.62.87 1.845 1.23c1.08 1.815 2.805 1.305 3.495.99c.105-.78.42-1.305.765-1.605c-2.67-.3-5.46-1.335-5.46-5.925c0-1.305.465-2.385 1.23-3.225c-.12-.3-.54-1.53.12-3.18c0 0 1.005-.315 3.3 1.23c.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23c.66 1.65.24 2.88.12 3.18c.765.84 1.23 1.905 1.23 3.225c0 4.605-2.805 5.625-5.475 5.925c.435.375.81 1.095.81 2.22c0 1.605-.015 2.895-.015 3.3c0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" /></svg>
+                    <h3 className="text-[10px] font-mono font-bold text-primary uppercase tracking-[0.6em] mb-12 italic border-b border-primary/10 pb-4">SECURE_CHANNELS</h3>
+                    <div className="flex items-center gap-10 p-10 level-1 rounded-[3.5rem] shadow-atmospheric no-border-separation hover:bg-primary/[0.04] transition-all">
+                        <div className="h-16 w-16 glass rounded-[2rem] flex items-center justify-center shadow-glass light-emission">
+                            <img 
+                                src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" 
+                                className="h-10 w-10 invert brightness-100" 
+                                alt="" 
+                            />
                         </div>
-                        <div>
-                            <p className="text-sm font-semibold text-slate-800">GitHub</p>
-                            <p className="text-xs text-slate-400">Connected as <span className="font-mono text-[#6366F1]">{user?.username}</span></p>
+                        <div className="space-y-1">
+                            <p className="text-xl font-bold italic tracking-tightest uppercase text-white">GitHub_Protocol</p>
+                            <p className="text-[9px] font-mono font-bold text-primary uppercase tracking-[0.4em] italic">Active_Connection: {user?.username}</p>
                         </div>
-                        <span className="ml-auto text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-[#22C55E]/10 text-[#22C55E]">Connected</span>
+                        <div className="ml-auto px-8 py-3 rounded-full level-2 text-[8px] font-mono font-bold text-emerald-500 uppercase tracking-[0.6em] italic shadow-atmospheric">ENCRYPTED // VERIFIED</div>
                     </div>
                 </div>
             </div>
@@ -480,27 +512,29 @@ export default function ProfilePage() {
     );
 
     const renderDocs = () => (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-                    <span className="hand-drawn-underline text-[#6366F1]">Documentation</span>
-                    <span className="text-xl">📖</span>
-                </h1>
-                <p className="text-slate-500 mt-2">Quick reference for using MiniCode.</p>
+        <div className="space-y-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="space-y-4">
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tightest italic uppercase">Protocol</h1>
+                <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.5em] italic px-2">Operational_Guidelines</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {[
-                    { title: "Getting Started", desc: "Login with GitHub, browse the Coding Arena, and provision your first repo.", icon: "rocket_launch", color: "#6366F1" },
-                    { title: "Submitting Code", desc: "Push your code to GitHub, then click 'Sync & Evaluate' to get AI-powered feedback.", icon: "cloud_sync", color: "#38BDF8" },
-                    { title: "AI Mentor Feedback", desc: "After submission, your AI Mentor will score Correctness, Time Complexity, and Code Quality.", icon: "psychology", color: "#22C55E" },
-                    { title: "Leaderboard & XP", desc: "Earn XP for accepted submissions. Your highest score per problem counts towards your rank.", icon: "leaderboard", color: "#F59E0B" },
+                    { title: "DOMAIN_ENTRY", desc: "Initialize your session via GitHub OAuth to provision localized coding nodes.", icon: Zap, color: "text-primary" },
+                    { title: "NODE_SYNC", desc: "Propagate logic changes via GitHub pull requests for real-time AI evaluation.", icon: Activity, color: "text-blue-500" },
+                    { title: "TELEMETRY", desc: "Receive atmospheric feedback on logic complexity, correctness, and architecture.", icon: Cpu, color: "text-emerald-500" },
+                    { title: "ASCENSION", desc: "Higher logic accuracy increases XP score and elevates hierarchical rank.", icon: Trophy, color: "text-amber-500" },
                 ].map((doc) => (
-                    <div key={doc.title} className="bg-white p-6 rounded-xl sketch-border hover:translate-y-[-2px] transition-transform">
-                        <div className="h-10 w-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: `${doc.color}15`, color: doc.color }}>
-                            <span className="material-symbols-outlined">{doc.icon}</span>
+                    <div key={doc.title} className="group level-1 rounded-[4rem] p-12 hover:bg-primary/[0.02] transition-all shadow-atmospheric no-border-separation relative overflow-hidden">
+                        <div className="flex items-center gap-8 mb-8">
+                             <div className="h-14 w-14 glass rounded-[1.5rem] flex items-center justify-center shadow-glass light-emission">
+                                <doc.icon className={clsx("w-7 h-7", doc.color)} />
+                            </div>
+                            <h4 className="text-2xl font-bold italic tracking-tightest uppercase text-white group-hover:text-primary transition-colors">{doc.title}</h4>
                         </div>
-                        <h4 className="font-bold text-slate-900 mb-2">{doc.title}</h4>
-                        <p className="text-sm text-slate-500">{doc.desc}</p>
+                        <p className="text-[10px] font-mono font-bold text-foreground/30 uppercase tracking-[0.3em] leading-relaxed group-hover:text-foreground/50 transition-colors">
+                            {doc.desc}
+                        </p>
                     </div>
                 ))}
             </div>
@@ -510,10 +544,11 @@ export default function ProfilePage() {
     const renderContent = () => {
         if (loading) {
             return (
-                <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                        <span className="material-symbols-outlined text-4xl text-[#6366F1] animate-spin">progress_activity</span>
-                        <p className="text-sm text-slate-400 mt-2">Loading your data...</p>
+                <div className="flex flex-col items-center justify-center h-[70vh] gap-8">
+                    <div className="w-20 h-20 level-1 rounded-full border-4 border-primary/20 border-t-primary animate-spin shadow-atmospheric light-emission" />
+                    <div className="space-y-2 text-center">
+                        <p className="text-[10px] font-mono font-bold text-primary uppercase tracking-[0.6em] animate-pulse">Syncing_Operative_Context...</p>
+                        <p className="text-[8px] font-mono font-bold text-foreground/10 uppercase tracking-[0.3em]">Hardware Handshake: OK</p>
                     </div>
                 </div>
             );
@@ -530,57 +565,73 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="bg-[#FAFAF9] text-slate-900 min-h-[calc(100vh-64px)] font-[Inter,sans-serif]">
+        <div className="level-0 text-foreground min-h-[calc(100vh-64px)] selection:bg-primary/30">
             <div className="flex h-[calc(100vh-64px)] overflow-hidden">
-                {/* Sidebar */}
-                <aside className="w-64 border-r border-slate-200 bg-white flex flex-col shrink-0">
-                    <nav className="flex-1 p-4 space-y-1 overflow-y-auto pt-6">
-                        <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Main</div>
+                {/* Sidebar: Command Architecture */}
+                <aside className="w-80 level-1 hidden xl:flex flex-col shrink-0 shadow-atmospheric no-border-separation z-50 p-10">
+                    <div className="px-4 py-2 text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-[0.6em] italic mb-8">CORE_DOMAIN</div>
+                    <nav className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
                         {sidebarItems.map((item) => (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left ${activeTab === item.id
-                                    ? "bg-[#6366F1]/10 text-[#6366F1] font-medium"
-                                    : "text-slate-600 hover:bg-slate-50"
-                                    }`}
+                                className={clsx(
+                                    "w-full flex items-center gap-6 px-8 py-5 rounded-[2.5rem] font-bold transition-all text-xs group relative overflow-hidden",
+                                    activeTab === item.id
+                                        ? "glass text-primary shadow-glass light-emission"
+                                        : "text-foreground/20 hover:bg-primary/[0.02] hover:text-foreground/40"
+                                )}
                             >
-                                <span className="material-symbols-outlined">{item.icon}</span>
-                                <span>{item.label}</span>
+                                <item.icon className={clsx("w-5 h-5", activeTab === item.id ? "light-emission" : "opacity-40")} />
+                                <span className="font-mono tracking-widest">{item.label}</span>
+                                {activeTab === item.id && (
+                                    <div className="absolute right-0 top-0 h-full w-1.5 bg-primary light-emission" />
+                                )}
                             </button>
                         ))}
 
-                        <div className="pt-6 px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">System</div>
+                        <div className="pt-12 px-4 py-2 text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-[0.6em] italic mb-8">SYSTEM_ACCESS</div>
                         {sidebarSystem.map((item) => (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left ${activeTab === item.id
-                                    ? "bg-[#6366F1]/10 text-[#6366F1] font-medium"
-                                    : "text-slate-600 hover:bg-slate-50"
-                                    }`}
+                                className={clsx(
+                                    "w-full flex items-center gap-6 px-8 py-5 rounded-[2.5rem] font-bold transition-all text-xs group relative overflow-hidden",
+                                    activeTab === item.id
+                                        ? "glass text-primary shadow-glass light-emission"
+                                        : "text-foreground/20 hover:bg-primary/[0.02] hover:text-foreground/40"
+                                )}
                             >
-                                <span className="material-symbols-outlined">{item.icon}</span>
-                                <span>{item.label}</span>
+                                <item.icon className={clsx("w-5 h-5", activeTab === item.id ? "light-emission" : "opacity-40")} />
+                                <span className="font-mono tracking-widest">{item.label}</span>
+                                {activeTab === item.id && (
+                                    <div className="absolute right-0 top-0 h-full w-1.5 bg-primary light-emission" />
+                                )}
                             </button>
                         ))}
                     </nav>
 
-                    {/* Profile Completion */}
-                    <div className="p-4 border-t border-dashed border-slate-200">
-                        <div className="bg-slate-50 rounded-xl p-4 flex flex-col gap-3">
-                            <p className="text-xs text-slate-500">Problems Solved</p>
-                            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-[#6366F1] rounded-full transition-all duration-500" style={{ width: problems.length > 0 ? `${(stats.solved / problems.length) * 100}%` : "0%" }}></div>
+                    {/* Operational Progress Gauge */}
+                    <div className="mt-auto px-2 pt-12 border-t border-white/5">
+                        <div className="glass rounded-[2rem] p-8 space-y-4 shadow-glass no-border-separation">
+                            <div className="flex justify-between items-center text-[8px] font-mono font-bold text-foreground/40 uppercase tracking-widest">
+                                <span>Global_Coverage</span>
+                                <span className="text-primary italic">{(stats.solved / (problems.length || 1) * 100).toFixed(0)}%</span>
                             </div>
-                            <p className="text-[11px] text-slate-400 font-mono">{stats.solved} / {problems.length} problems</p>
+                            <div className="h-2 w-full level-2 rounded-full overflow-hidden shadow-atmospheric">
+                                <div 
+                                    className="h-full bg-primary light-emission rounded-full transition-all duration-1500 ease-out" 
+                                    style={{ width: `${(stats.solved / (problems.length || 1) * 100)}%` }} 
+                                />
+                            </div>
+                            <p className="text-[7px] font-mono font-bold text-foreground/10 uppercase tracking-[0.5em] italic">SYMMETRIC_DOMAIN_STABILITY: OK</p>
                         </div>
                     </div>
                 </aside>
 
-                {/* Main Content */}
-                <main className="flex-1 flex flex-col overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-8">
+                {/* Main Content: The Experience Layer */}
+                <main className="flex-1 flex flex-col overflow-hidden relative">
+                    <div className="flex-1 overflow-y-auto p-12 md:p-16 custom-scrollbar scroll-smooth">
                         {renderContent()}
                     </div>
                 </main>
@@ -589,27 +640,51 @@ export default function ProfilePage() {
     );
 }
 
-// Reusable Metric Card Component
-function MetricCard({ icon, iconBg, iconColor, badge, badgeBg, badgeColor, label, value, barFrom, barTo, barWidth }: {
-    icon: string; iconBg: string; iconColor: string; badge: string; badgeBg: string; badgeColor: string;
-    label: string; value: string; barFrom: string; barTo: string; barWidth: number;
-}) {
+{/* Sub-Components */}
+
+function MetricCard({ label, value, subtext, icon: Icon, progress, variant = "default" }: any) {
     return (
-        <div className="bg-white p-6 rounded-xl sketch-border flex flex-col justify-between hover:translate-y-[-2px] transition-transform">
-            <div className="flex justify-between items-start mb-4">
-                <div className={`h-10 w-10 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`}>
-                    <span className="material-symbols-outlined">{icon}</span>
+        <div className="level-1 rounded-[3.5rem] p-10 flex flex-col justify-between group hover:bg-primary/[0.02] transition-colors shadow-atmospheric no-border-separation h-[280px]">
+            <div className="flex justify-between items-start">
+                <div className={clsx(
+                    "p-5 rounded-[2rem] shadow-glass light-emission",
+                    variant === "primary" ? "glass text-primary" : "level-2 text-foreground/30"
+                )}>
+                    <Icon className="w-8 h-8" />
                 </div>
-                <span className={`text-[10px] font-mono font-bold ${badgeBg} ${badgeColor} px-2 py-1 rounded-full`}>{badge}</span>
-            </div>
-            <div>
-                <p className="text-slate-500 text-sm font-medium">{label}</p>
-                <h3 className="text-2xl font-bold mt-1 marker-highlight inline-block px-1">{value}</h3>
-            </div>
-            <div className="mt-4">
-                <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full bg-gradient-to-r ${barFrom} ${barTo} transition-all duration-700`} style={{ width: `${Math.min(barWidth, 100)}%` }}></div>
+                <div className="px-5 py-2 rounded-full level-2 shadow-atmospheric">
+                    <span className="text-[8px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em] italic">ACTIVE_PULSE</span>
                 </div>
+            </div>
+            <div className="space-y-2">
+                <p className="text-[9px] font-mono font-bold text-foreground/20 uppercase tracking-[0.6em] italic px-1">{label}</p>
+                <h3 className="text-5xl font-bold tracking-tightest italic uppercase font-mono tabular-nums leading-none">{value}</h3>
+                <p className="text-[8px] font-mono font-bold text-foreground/10 uppercase tracking-[0.8em] px-1">{subtext}</p>
+            </div>
+            <div className="mt-4 px-1">
+                <div className="h-1.5 w-full level-2 rounded-full overflow-hidden shadow-atmospheric">
+                    <div 
+                        className={clsx(
+                            "h-full transition-all duration-1500 ease-out",
+                            variant === "primary" ? "bg-primary light-emission" : "bg-foreground/10"
+                        )} 
+                        style={{ width: `${Math.min(progress, 100)}%` }} 
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function InsightCard({ label, value, icon: Icon, color }: any) {
+    return (
+        <div className="level-1 rounded-[3.5rem] p-12 text-center group hover:bg-primary/[0.02] transition-all shadow-atmospheric no-border-separation">
+            <div className="h-20 w-20 rounded-[2.5rem] glass mx-auto mb-8 flex items-center justify-center shadow-glass light-emission group-hover:scale-110 transition-transform duration-700">
+                <Icon className={clsx("w-10 h-10", color)} />
+            </div>
+            <div className="space-y-4 font-mono">
+                <p className="text-6xl font-black italic tracking-tightest tabular-nums text-white group-hover:text-primary transition-colors">{value}</p>
+                <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.6em] italic">{label}</p>
             </div>
         </div>
     );

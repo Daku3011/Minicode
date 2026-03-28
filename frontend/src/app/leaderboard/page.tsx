@@ -39,134 +39,140 @@ export default function LeaderboardPage() {
     const restLeaders = leaders.slice(3).filter(l => l.name.toLowerCase().includes(search.toLowerCase()) || l.username.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-12">
-            <div className="text-center mb-16">
-                <h1 className="text-4xl font-extrabold text-white mb-4">
-                    Hall of <span className="gradient-text">Fame</span>
-                </h1>
-                <p className="text-muted-foreground max-w-lg mx-auto">
-                    The top performers of MiniCode. Solve problems, earn XP, and secure your spot at the top.
-                </p>
-            </div>
-
-            {loading ? (
-                <div className="flex justify-center py-20">
-                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <main className="min-h-screen level-0 text-foreground pb-24 relative overflow-hidden">
+            {/* Ambient Infrastructure Glow */}
+            <div className="fixed top-[-10%] left-1/2 -translate-x-1/2 w-[60%] h-[40%] bg-primary/5 blur-[160px] rounded-full pointer-events-none" />
+            
+            <div className="max-w-6xl mx-auto px-4 py-20 relative z-10">
+                <div className="text-center mb-24 space-y-6 animate-in fade-in slide-in-from-top-8 duration-1000">
+                    <h1 className="text-6xl md:text-8xl font-bold tracking-tightest italic uppercase">
+                        Hall_of_<span className="text-primary italic">Precision</span>
+                    </h1>
+                    <p className="text-[10px] font-mono font-bold text-foreground/30 uppercase tracking-[0.6em] max-w-lg mx-auto leading-relaxed">
+                        Top level entities maintaining peak operational efficiency within the MiniCode domain. 
+                    </p>
                 </div>
-            ) : topThree.length === 0 ? (
-                <div className="text-center py-20 text-muted-foreground">No rankings yet.</div>
-            ) : (
-                <>
-                    {/* Podium Section */}
-                    <div className="flex flex-col md:flex-row items-end justify-center gap-4 mb-20">
-                        {/* Rank 2 */}
-                        {topThree[1] && (
-                            <div className="order-2 md:order-1 flex flex-col items-center">
-                                <div className="relative group">
-                                    <div className="w-20 h-20 rounded-full glass border-2 border-slate-400 flex items-center justify-center text-xl font-bold text-white mb-4 relative z-10 overflow-hidden">
-                                        {topThree[1].avatar ? <img src={topThree[1].avatar} alt="" className="w-full h-full object-cover" /> : topThree[1].username.slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="absolute -inset-1 bg-slate-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                                <div className="h-32 w-32 glass rounded-t-2xl flex flex-col items-center justify-center p-4 border-b-0 border-slate-400/30">
-                                    <span className="text-2xl font-black text-slate-400">2nd</span>
-                                    <span className="text-sm font-bold text-white mt-1">{topThree[1].name}</span>
-                                    <span className="text-xs text-muted-foreground">{topThree[1].score} XP</span>
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Rank 1 */}
-                        {topThree[0] && (
-                            <div className="order-1 md:order-2 flex flex-col items-center -translate-y-4">
-                                <Trophy className="w-8 h-8 text-yellow-500 mb-2 animate-bounce" />
-                                <div className="relative group">
-                                    <div className="w-24 h-24 rounded-full glass border-4 border-yellow-500 flex items-center justify-center text-2xl font-black text-white mb-4 relative z-10 overflow-hidden">
-                                        {topThree[0].avatar ? <img src={topThree[0].avatar} alt="" className="w-full h-full object-cover" /> : topThree[0].username.slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="absolute -inset-2 bg-yellow-500/20 blur-2xl opacity-100" />
-                                </div>
-                                <div className="h-44 w-40 glass rounded-t-2xl flex flex-col items-center justify-center p-4 border-b-0 border-yellow-500/30 bg-yellow-500/5">
-                                    <span className="text-4xl font-black text-yellow-500">1st</span>
-                                    <span className="text-sm font-bold text-white mt-1">{topThree[0].name}</span>
-                                    <span className="text-xs text-muted-foreground">{topThree[0].score} XP</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Rank 3 */}
-                        {topThree[2] && (
-                            <div className="order-3 flex flex-col items-center">
-                                <div className="relative group">
-                                    <div className="w-20 h-20 rounded-full glass border-2 border-orange-600 flex items-center justify-center text-xl font-bold text-white mb-4 relative z-10 overflow-hidden">
-                                        {topThree[2].avatar ? <img src={topThree[2].avatar} alt="" className="w-full h-full object-cover" /> : topThree[2].username.slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="absolute -inset-1 bg-orange-600/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                                <div className="h-24 w-32 glass rounded-t-2xl flex flex-col items-center justify-center p-4 border-b-0 border-orange-600/30">
-                                    <span className="text-2xl font-black text-orange-600">3rd</span>
-                                    <span className="text-sm font-bold text-white mt-1">{topThree[2].name}</span>
-                                    <span className="text-xs text-muted-foreground">{topThree[2].score} XP</span>
-                                </div>
-                            </div>
-                        )}
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-40 gap-6">
+                        <div className="w-16 h-16 level-1 rounded-full border-2 border-primary/20 border-t-primary animate-spin shadow-atmospheric light-emission" />
+                        <span className="text-[10px] font-mono font-bold text-primary/40 uppercase tracking-[0.4em] animate-pulse">Syncing_Nodes...</span>
                     </div>
+                ) : topThree.length === 0 ? (
+                    <div className="text-center py-40 text-foreground/20 font-mono text-[10px] uppercase tracking-[0.4em]">Zero_Entries_Detected</div>
+                ) : (
+                    <>
+                        {/* Podium Section: The Tonal Hierarchy */}
+                        <div className="flex flex-col md:flex-row items-end justify-center gap-10 mb-32 animate-in fade-in zoom-in duration-1000 delay-200">
+                            {/* Rank 2 */}
+                            {topThree[1] && (
+                                <div className="order-2 md:order-1 flex flex-col items-center group">
+                                    <div className="relative mb-8">
+                                        <div className="absolute -inset-6 bg-slate-400/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                        <div className="w-24 h-24 rounded-[2rem] glass border border-slate-400/20 flex items-center justify-center text-2xl font-bold text-white relative z-10 overflow-hidden shadow-glass transition-transform duration-700 group-hover:scale-105">
+                                            {topThree[1].avatar ? <img src={topThree[1].avatar} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" /> : <span className="font-mono">{topThree[1].username.slice(0, 2).toUpperCase()}</span>}
+                                        </div>
+                                    </div>
+                                    <div className="h-44 w-44 glass rounded-[3rem] flex flex-col items-center justify-center p-8 shadow-glass no-border-separation group-hover:bg-slate-400/[0.02] transition-colors">
+                                        <span className="text-4xl font-bold italic tracking-tightest text-slate-400/40">02</span>
+                                        <span className="text-sm font-bold text-white mt-4 uppercase tracking-widest">{topThree[1].name}</span>
+                                        <span className="text-[10px] font-mono font-bold text-slate-400/60 mt-2 uppercase tracking-widest">{topThree[1].score}_XP</span>
+                                    </div>
+                                </div>
+                            )}
 
-                    {/* Search & Filter */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-                        <h2 className="text-xl font-bold text-white">Full Rankings</h2>
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Search student..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            />
+                            {/* Rank 1 */}
+                            {topThree[0] && (
+                                <div className="order-1 md:order-2 flex flex-col items-center -translate-y-8 group">
+                                    <div className="relative mb-8">
+                                        <div className="absolute -inset-10 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+                                        <div className="w-32 h-32 rounded-[2.5rem] glass border-2 border-primary flex items-center justify-center text-4xl font-bold text-white relative z-10 overflow-hidden shadow-glass light-emission transform transition-all duration-1000 group-hover:scale-110">
+                                            {topThree[0].avatar ? <img src={topThree[0].avatar} alt="" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" /> : <span className="font-mono tracking-widest">{topThree[0].username.slice(0, 2).toUpperCase()}</span>}
+                                        </div>
+                                        <Trophy className="absolute -top-6 -right-6 w-12 h-12 text-primary light-emission animate-bounce" />
+                                    </div>
+                                    <div className="h-64 w-56 glass rounded-[4rem] flex flex-col items-center justify-center p-10 shadow-glass no-border-separation bg-primary/5 light-emission group-hover:bg-primary/10 transition-all">
+                                        <span className="text-7xl font-bold italic tracking-tightest text-primary light-emission">01</span>
+                                        <span className="text-lg font-bold text-white mt-6 uppercase tracking-[0.2em]">{topThree[0].name}</span>
+                                        <span className="text-[10px] font-mono font-bold text-primary mt-3 uppercase tracking-[0.4em] italic">{topThree[0].score}_XP</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Rank 3 */}
+                            {topThree[2] && (
+                                <div className="order-3 flex flex-col items-center group">
+                                    <div className="relative mb-8">
+                                        <div className="absolute -inset-6 bg-orange-600/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                        <div className="w-24 h-24 rounded-[2rem] glass border border-orange-600/20 flex items-center justify-center text-2xl font-bold text-white relative z-10 overflow-hidden shadow-glass transition-transform duration-700 group-hover:scale-105">
+                                            {topThree[2].avatar ? <img src={topThree[2].avatar} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" /> : <span className="font-mono">{topThree[2].username.slice(0, 2).toUpperCase()}</span>}
+                                        </div>
+                                    </div>
+                                    <div className="h-36 w-44 glass rounded-[3rem] flex flex-col items-center justify-center p-8 shadow-glass no-border-separation group-hover:bg-orange-600/[0.02] transition-colors">
+                                        <span className="text-4xl font-bold italic tracking-tightest text-orange-600/40">03</span>
+                                        <span className="text-sm font-bold text-white mt-4 uppercase tracking-widest">{topThree[2].name}</span>
+                                        <span className="text-[10px] font-mono font-bold text-orange-600/60 mt-2 uppercase tracking-widest">{topThree[2].score}_XP</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
 
-                    {/* Leaderboard Table */}
-                    <div className="glass rounded-2xl overflow-hidden border-white/10">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-white/10 bg-white/5">
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Rank</th>
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Student</th>
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Problems</th>
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Score</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
+                        {/* Search & List Section */}
+                        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-8 px-4">
+                                <div className="space-y-1">
+                                    <h3 className="text-3xl font-bold tracking-tightest italic uppercase">Operative_Directory</h3>
+                                    <p className="text-[10px] font-mono font-bold text-foreground/20 uppercase tracking-[0.4em]">Global Node Distribution</p>
+                                </div>
+                                <div className="relative w-full sm:w-80 group">
+                                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/30 group-focus-within:text-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="SEARCH_NODE..."
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        className="w-full level-1 rounded-2xl py-4 pl-14 pr-6 text-xs font-mono font-bold tracking-widest focus:outline-none focus:bg-primary/[0.02] focus:ring-1 focus:ring-primary/20 transition-all shadow-atmospheric"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4">
                                 {restLeaders.map((leader) => (
-                                    <tr key={leader.id} className="hover:bg-white/5 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-bold text-white">#{leader.rank}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary overflow-hidden">
-                                                    {leader.avatar ? <img src={leader.avatar} alt="" className="w-full h-full object-cover" /> : leader.username.slice(0, 2).toUpperCase()}
-                                                </div>
-                                                <span className="text-sm font-medium text-white group-hover:text-primary transition-colors">
-                                                    {leader.name}
+                                    <div key={leader.id} className="group level-1 rounded-[2.5rem] p-8 pr-12 flex items-center justify-between hover:bg-primary/[0.02] transition-all shadow-atmospheric no-border-separation hover:scale-[1.01]">
+                                        <div className="flex items-center gap-10">
+                                            <div className="w-16 text-center">
+                                                <span className="text-2xl font-mono font-bold italic text-foreground/20 group-hover:text-primary/40 transition-colors uppercase tracking-tightest">
+                                                    #{leader.rank.toString().padStart(2, '0')}
                                                 </span>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-muted-foreground">
-                                            {leader.problems} Solved
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-bold text-white">{leader.score} XP</span>
-                                        </td>
-                                    </tr>
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-14 h-14 rounded-2xl glass border border-foreground/10 flex items-center justify-center text-[10px] font-mono font-bold text-primary overflow-hidden shadow-glass group-hover:border-primary/30 transition-colors">
+                                                    {leader.avatar ? <img src={leader.avatar} alt="" className="w-full h-full object-cover" /> : leader.username.slice(0, 2).toUpperCase()}
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <span className="text-xl font-bold italic text-white group-hover:text-primary transition-colors uppercase tracking-tightest">
+                                                        {leader.name}
+                                                    </span>
+                                                    <p className="text-[8px] font-mono font-bold text-foreground/20 uppercase tracking-[0.3em]">NODE_ID: {leader.username}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-16">
+                                            <div className="hidden md:flex flex-col items-end gap-1">
+                                                <span className="text-[10px] font-mono font-bold text-foreground/40 uppercase tracking-widest">{leader.problems}_SOLVED</span>
+                                            </div>
+                                            <div className="text-right min-w-[100px]">
+                                                <span className="text-2xl font-mono font-bold italic text-white group-hover:text-primary transition-colors tabular-nums">{leader.score}</span>
+                                                <span className="text-[10px] font-mono font-bold text-foreground/30 ml-2 uppercase tracking-widest">XP</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
-        </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        </main>
     );
 }

@@ -25,7 +25,8 @@ function GithubCallbackContent() {
 
         const authenticate = async () => {
             try {
-                const response = await api.get(`/auth/github/callback?code=${code}`);
+                const redirectUri = process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URI || `${window.location.origin}/auth/github/callback`;
+                const response = await api.get(`/auth/github/callback?code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}`);
                 const { access_token } = response.data;
 
                 if (access_token) {

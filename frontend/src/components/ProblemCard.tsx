@@ -1,7 +1,6 @@
-"use client";
-
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ChevronRight, CloudIcon, CloudLightning } from "lucide-react";
+import { ChevronRight, CloudIcon, Zap, Target, Star } from "lucide-react";
 
 interface Problem {
     id: number;
@@ -11,43 +10,64 @@ interface Problem {
     points?: number;
 }
 
-const difficultyStyles = {
-    Easy: "bg-green-500/10 text-green-500 border border-green-500/20",
-    Medium: "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20",
-    Hard: "bg-rose-500/10 text-rose-500 border border-rose-500/20",
-};
+const difficultyVariants = {
+    Easy: "success",
+    Medium: "warning",
+    Hard: "destructive",
+} as const;
 
 export default function ProblemCard({ problem }: { problem: Problem }) {
     const points = problem.points || (problem.difficulty === "Easy" ? 150 : problem.difficulty === "Medium" ? 300 : 500);
 
     return (
-        <div className="glass-card rounded-2xl p-6 hover:border-primary/50 transition-colors group mb-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest ${difficultyStyles[problem.difficulty as keyof typeof difficultyStyles]}`}>
+        <div className="group relative glass rounded-[2.5rem] p-8 md:p-10 transition-all hover:scale-[1.01] hover:shadow-atmospheric no-border-separation">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="flex-1 space-y-6">
+                    <div className="flex items-center gap-4">
+                        <Badge 
+                            variant="secondary"
+                            className="bg-primary/10 text-primary border-none font-mono text-[10px] uppercase tracking-widest px-3 py-1"
+                        >
                             {problem.difficulty}
-                        </span>
-                        <span className="text-slate-500 text-xs">• {points} Points</span>
+                        </Badge>
+                        <div className="flex items-center gap-2 text-foreground/40 text-[10px] font-mono font-bold uppercase tracking-[0.2em]">
+                            <Target className="w-3.5 h-3.5 text-primary" />
+                            <span className="tabular-nums">{points} XP</span>
+                        </div>
                     </div>
-                    <Link href={`/problems/${problem.id}`}>
-                        <h4 className="text-xl font-bold text-white mb-2 group-hover:text-primary transition-colors cursor-pointer">
-                            {problem.title}
-                        </h4>
-                    </Link>
-                    <p className="text-slate-400 text-sm line-clamp-2">
-                        {problem.description || `Build a highly optimized solution for ${problem.title}. Connect your GitHub repo to get real-time AI mentoring and validation.`}
-                    </p>
+
+                    <div className="space-y-3">
+                        <Link href={`/problems/${problem.id}`}>
+                            <h4 className="text-2xl md:text-3xl font-bold text-foreground group-hover:text-primary transition-colors cursor-pointer tracking-tightest leading-tight">
+                                {problem.title}
+                            </h4>
+                        </Link>
+                        <p className="text-foreground/50 text-base leading-relaxed max-w-2xl font-medium">
+                            {problem.description || `Engage with advanced engineering systems. Implement complex logic and receive high-fidelity AI mentoring in real-time.`}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-6 pt-2">
+                        <div className="flex items-center gap-2 text-foreground/30 text-[10px] font-mono font-bold uppercase tracking-widest">
+                            <CloudIcon className="w-4 h-4" />
+                            <span>V4 ENGINE PROVISIONED</span>
+                        </div>
+                        <div className="w-1.5 h-1.5 bg-white/5 rounded-full" />
+                        <div className="flex items-center gap-2 text-foreground/30 text-[10px] font-mono font-bold uppercase tracking-widest">
+                            <Star className="w-4 h-4 text-primary/40" />
+                            <span className="tabular-nums">4.9 RATIO</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <div className="flex items-center gap-3 mt-4 md:mt-0">
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold border border-white/5 transition-colors">
-                        <CloudLightning className="w-4 h-4" />
-                        Provision Repo
+                <div className="flex items-center gap-4 md:self-center">
+                    <button className="level-2 flex items-center gap-3 px-8 py-5 text-foreground/80 rounded-2xl text-sm font-bold transition-all hover:bg-primary/5 hover:text-primary hover:scale-105 active:scale-95 group/btn">
+                        <Zap className="w-4 h-4 text-primary group-hover:animate-pulse" />
+                        <span className="uppercase tracking-widest">Provision</span>
                     </button>
                     <Link href={`/problems/${problem.id}`}>
-                        <button className="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all">
-                            <ChevronRight className="w-5 h-5" />
+                        <button className="flex items-center justify-center w-16 h-16 liquid-gradient text-primary-foreground rounded-2xl hover:scale-110 transition-all shadow-atmospheric light-emission">
+                            <ChevronRight className="w-8 h-8" />
                         </button>
                     </Link>
                 </div>

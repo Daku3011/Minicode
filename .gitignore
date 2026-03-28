@@ -8,7 +8,8 @@ coverage
 *.log
 *.cache
 *.tmp
-
+*.png
+*.jpg
 
 backend/venv
 backend/__pycache__

@@ -253,6 +253,62 @@ async def submit_problem(
         "repo_url": submission.repo_url,
     }
 
+@app.get("/submissions/me")
+def get_my_submissions(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Return all submissions for the logged-in user."""
+    statement = select(Submission).where(Submission.user_id == user.id).order_by(Submission.timestamp.desc())
+    submissions = session.exec(statement).all()
+    
+    results = []
+    for sub in submissions:
+        prob = session.get(Problem, sub.problem_id)
+        results.append({
+            "id": sub.id,
+            "problem_id": sub.problem_id,
+            "problem_title": prob.title if prob else f"Problem {sub.problem_id}",
+            "status": sub.status,
+            "score": sub.score,
+            "language": sub.language,
+            "timestamp": sub.timestamp.isoformat() if sub.timestamp else None
+        })
+    return results
+
+@app.get("/submissions/faculty/{problem_id}")
+def get_problem_submissions(
+    problem_id: int,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session)
+):
+    """Return all submissions for a specific problem (Faculty only)."""
+    problem = session.get(Problem, problem_id)
+    if not problem:
+        raise HTTPException(status_code=404, detail="Problem not found")
+    
+    # Check authorization (author or admin)
+    if user.role != "admin" and problem.author_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to view submissions for this problem")
+    
+    statement = select(Submission).where(Submission.problem_id == problem_id).order_by(Submission.timestamp.desc())
+    submissions = session.exec(statement).all()
+    
+    results = []
+    for sub in submissions:
+        student = session.get(User, sub.user_id)
+        results.append({
+            "id": sub.id,
+            "student_id": sub.user_id,
+            "student_name": student.full_name or student.username if student else "Unknown",
+            "student_username": student.username if student else "unknown",
+            "status": sub.status,
+            "score": sub.score,
+            "timestamp": sub.timestamp.isoformat() if sub.timestamp else None,
+            "repo_url": sub.repo_url
+        })
+    return results
+
 # Leaderboard Endpoint
 @app.get("/leaderboard")
 def get_leaderboard(session: Session = Depends(get_session)):
