@@ -20,9 +20,9 @@ import resource
 import time
 from typing import Optional, Dict, Any, List, Tuple
 from urllib.parse import urlparse
-from google import genai # type: ignore
+from google import genai 
 from github import Github
-from models import Submission, TestCase, User, Problem # type: ignore
+from models import Submission, TestCase, User, Problem 
 
 # ---------------------------------------------------------------------------
 # Logging
