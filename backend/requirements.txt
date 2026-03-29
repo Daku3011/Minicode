@@ -12,3 +12,10 @@ gunicorn
 passlib[bcrypt]
 bcrypt==4.0.1
 python-multipart
+slowapi
+fastapi-cache2[redis]
+bleach
+pytest
+pytest-asyncio
+httpx
+pytest-mock

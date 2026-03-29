@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Session, create_engine, select
 from typing import List, Optional
@@ -8,10 +8,26 @@ from dotenv import load_dotenv
 import httpx
 from fastapi.security import OAuth2PasswordRequestForm
 from auth import verify_password
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 import uvicorn
+import logging
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from fastapi_cache.decorator import cache
+from redis import asyncio as aioredis
+import bleach
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
+limiter = Limiter(key_func=get_remote_address)
 
 
 from models import User, Problem, Submission, TestCase
@@ -54,10 +70,38 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup logic: Database tables are created via preDeployCommand (Render)
     # or manually to avoid race conditions between Gunicorn workers.
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:
+            redis = aioredis.from_url(redis_url)
+            await redis.ping()
+            FastAPICache.init(RedisBackend(redis), prefix="minicode-cache")
+            logger.info("Redis cache initialized")
+        except Exception as e:
+            logger.warning(f"Failed to connect to Redis: {e}. Falling back to InMemoryBackend")
+            from fastapi_cache.backends.inmemory import InMemoryBackend
+            FastAPICache.init(InMemoryBackend(), prefix="minicode-cache")
+    else:
+        from fastapi_cache.backends.inmemory import InMemoryBackend
+        FastAPICache.init(InMemoryBackend(), prefix="minicode-cache")
+        logger.info("InMemory cache initialized (No REDIS_URL provided)")
     yield
     # Shutdown logic (if any)
 
 app = FastAPI(title="MiniCode API", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 # CORS: Read allowed origins from env (comma-separated), default "*" for dev
 cors_origins_str = os.getenv("CORS_ORIGINS", "*")
@@ -82,10 +126,12 @@ def health_check():
 
 # Problem Endpoints
 @app.get("/problems", response_model=List[Problem])
+@cache(expire=300)
 def get_problems(session: Session = Depends(get_session)):
     return session.exec(select(Problem)).all()
 
 @app.get("/problems/{problem_id}")
+@cache(expire=300)
 def get_problem(problem_id: int, session: Session = Depends(get_session)):
     problem = session.get(Problem, problem_id)
     if not problem:
@@ -109,6 +155,11 @@ def create_problem(
     user: User = Depends(require_faculty), 
     session: Session = Depends(get_session)
 ):
+    # Input validation / sanitization
+    problem.title = bleach.clean(problem.title)
+    allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + ['p', 'h1', 'h2', 'h3', 'strong', 'em', 'code', 'pre', 'ul', 'li', 'ol']
+    problem.description = bleach.clean(problem.description, tags=allowed_tags)
+    
     problem.author_id = user.id
     session.add(problem)
     session.commit()
@@ -117,7 +168,8 @@ def create_problem(
 
 # Auth Endpoints
 @app.get("/auth/github/callback")
-async def github_callback(code: str, redirect_uri: Optional[str] = None, session: Session = Depends(get_session)):
+@limiter.limit("10/minute")
+async def github_callback(request: Request, code: str, redirect_uri: Optional[str] = None, session: Session = Depends(get_session)):
     # Exchange code for token
     params = {
         "client_id": os.getenv("GITHUB_CLIENT_ID"),
@@ -138,7 +190,7 @@ async def github_callback(code: str, redirect_uri: Optional[str] = None, session
     
     if not access_token:
         error_desc = token_data.get("error_description", token_data.get("error", "Unknown error"))
-        print(f"GitHub OAuth error: {token_data}")
+        logger.error(f"GitHub OAuth error: {token_data}")
         raise HTTPException(status_code=400, detail=f"GitHub OAuth failed: {error_desc}")
     
     # Get user info
@@ -170,7 +222,9 @@ async def github_callback(code: str, redirect_uri: Optional[str] = None, session
 
 
 @app.post("/auth/login")
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(get_session)
 ):
@@ -190,6 +244,14 @@ async def login(
 class SubmissionRequest(BaseModel):
     language: str
 
+    @field_validator('language')
+    @classmethod
+    def validate_language(cls, v: str) -> str:
+        allowed_languages = ['py', 'javascript', 'js', 'java', 'cpp', 'c', 'go', 'rs']
+        if v.lower() not in allowed_languages:
+            raise ValueError(f"Language must be one of {allowed_languages}")
+        return v.lower()
+
 # Problem Interaction
 @app.post("/problems/{problem_id}/start")
 async def start_problem(
@@ -205,9 +267,11 @@ async def start_problem(
     return {"repo_url": repo_url}
 
 @app.post("/problems/{problem_id}/submit")
+@limiter.limit("5/minute")
 async def submit_problem(
+    request: Request,
     problem_id: int,
-    request: SubmissionRequest,
+    submission_req: SubmissionRequest,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
@@ -222,7 +286,7 @@ async def submit_problem(
         user_id=user.id,
         problem_id=problem.id,
         repo_url=repo_url,
-        language=request.language,
+        language=submission_req.language,
         status="pending"
     )
     session.add(submission)
@@ -234,7 +298,7 @@ async def submit_problem(
     try:
         await judge_submission(submission, user, problem, test_cases, session)
     except Exception as e:
-        print(f"Judge error: {e}")
+        logger.error(f"Judge error: {e}", exc_info=True)
         submission.status = "error"
         submission.ai_feedback = f"Judge failed: {str(e)}"
         session.add(submission)
@@ -255,6 +319,7 @@ async def submit_problem(
 
 # Leaderboard Endpoint
 @app.get("/leaderboard")
+@cache(expire=300)
 def get_leaderboard(session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     leaderboard = []
