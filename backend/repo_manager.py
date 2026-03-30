@@ -26,14 +26,15 @@ def create_student_repo(user: User, problem: Problem, session: Session):
         )
         
         # Update the auto-generated README with problem description
+        default_branch = repo.default_branch
         try:
-            readme = repo.get_contents("README.md", ref="main")
+            readme = repo.get_contents("README.md", ref=default_branch)
             repo.update_file(
                 "README.md",
                 "Initialize with problem description",
                 f"# {problem.title}\n\n{problem.description}",
                 readme.sha,
-                branch="main"
+                branch=default_branch
             )
         except Exception:
             pass
@@ -43,7 +44,7 @@ def create_student_repo(user: User, problem: Problem, session: Session):
             "solution.py",
             "Add starter code",
             "# Write your solution here\n\ndef solve():\n    pass\n",
-            branch="main"
+            branch=default_branch
         )
         
         return repo.html_url
@@ -62,11 +63,12 @@ def commit_code_to_repo(user: User, repo_name: str, file_path: str, content: str
     """
     g = Github(user.github_access_token)
     repo = g.get_user().get_repo(repo_name)
+    default_branch = repo.default_branch
     
     try:
-        contents = repo.get_contents(file_path, ref="main")
-        repo.update_file(contents.path, commit_message, content, contents.sha, branch="main")
+        contents = repo.get_contents(file_path, ref=default_branch)
+        repo.update_file(contents.path, commit_message, content, contents.sha, branch=default_branch)
     except:
-        repo.create_file(file_path, commit_message, content, branch="main")
+        repo.create_file(file_path, commit_message, content, branch=default_branch)
     
-    return repo.get_branch("main").commit.sha
+    return repo.get_branch(default_branch).commit.sha

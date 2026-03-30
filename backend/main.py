@@ -247,7 +247,7 @@ class SubmissionRequest(BaseModel):
     @field_validator('language')
     @classmethod
     def validate_language(cls, v: str) -> str:
-        allowed_languages = ['py', 'javascript', 'js', 'java', 'cpp', 'c', 'go', 'rs']
+        allowed_languages = ['py', 'python', 'javascript', 'js', 'java', 'cpp', 'c', 'go', 'rs']
         if v.lower() not in allowed_languages:
             raise ValueError(f"Language must be one of {allowed_languages}")
         return v.lower()

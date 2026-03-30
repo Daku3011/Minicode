@@ -320,7 +320,7 @@ export default function ProblemDetailPage() {
                             </div>
 
                             {/* Score Matrix Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
                                 <div className={clsx("rounded-xl p-6 flex flex-col gap-4 border bg-[#2e2348]/40 backdrop-blur-md", result.status === "Accepted" ? "shadow-[0_0_20px_rgba(16,185,129,0.15)] border-[#10b981]/20" : "border-rose-500/20")}>
                                     <div className="flex items-center justify-between">
                                         <div className={clsx("p-2 rounded-lg", result.status === "Accepted" ? "bg-[#10b981]/20" : "bg-rose-500/20")}>
@@ -345,7 +345,7 @@ export default function ProblemDetailPage() {
                                         <p className="text-slate-100 text-2xl font-bold">{result.score}/100</p>
                                     </div>
                                 </div>
-                                <div className="bg-[#2e2348]/40 backdrop-blur-md border border-primary/20 rounded-xl p-6 flex flex-col gap-4">
+                                {/* <div className="bg-[#2e2348]/40 backdrop-blur-md border border-primary/20 rounded-xl p-6 flex flex-col gap-4">
                                     <div className="flex items-center justify-between">
                                         <div className="bg-amber-500/20 p-2 rounded-lg">
                                             <Code className="text-amber-500 w-5 h-5" />
@@ -356,7 +356,7 @@ export default function ProblemDetailPage() {
                                         <h3 className="text-slate-400 text-sm font-medium">Code Quality</h3>
                                         <p className="text-slate-100 text-2xl font-bold">Analyzed</p>
                                     </div>
-                                </div>
+                                </div> */}
                             </div>
 
                             {/* Mentor's Notes Section */}
@@ -390,7 +390,7 @@ export default function ProblemDetailPage() {
             )}
 
             {/* Status Bar */}
-            <footer className="bg-[#1b1429] border-t border-primary/10 px-6 py-2 flex items-center justify-between text-[11px] font-mono text-slate-500 z-20 shrink-0">
+            {/* <footer className="bg-[#1b1429] border-t border-primary/10 px-6 py-2 flex items-center justify-between text-[11px] font-mono text-slate-500 z-20 shrink-0">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1.5">
                         <span className="size-2 rounded-full bg-[#06b6d4] shadow-[0_0_5px_#06b6d4]"></span>
@@ -400,7 +400,7 @@ export default function ProblemDetailPage() {
                 <div className="flex items-center gap-4">
                     <span className="text-primary font-bold px-2 py-0.5 bg-primary/10 rounded">PREMIUM ACCESS</span>
                 </div>
-            </footer>
+            </footer> */}
         </div>
     );
 }

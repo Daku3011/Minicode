@@ -4,7 +4,7 @@ from google import genai
 from models import Submission, TestCase, User, Problem
 from github import Github
 
-async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, persona: str = "standard"):
+async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, commit_history_info: str = "", persona: str = "standard"):
     """
     Uses Gemini to analyze the code, act as judge, and provide feedback + score.
     """
@@ -26,13 +26,16 @@ async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, 
     prompt = f"""
     ROLE: {role}
     
-    TASK: You are an AI Hackathon Judge. Analyze this student's code submission for the given problem.
+    TASK: You are an AI Hackathon Judge. Analyze this student's code submission for the given problem. You are also performing a STRICT AI-plagiarism detection check.
     
     PROBLEM STATEMENT:
     {problem_desc}
     
     TEST CASES:
     {test_cases_info}
+    
+    COMMIT HISTORY:
+    {commit_history_info}
     
     STUDENT CODE:
     ```
@@ -44,36 +47,63 @@ async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, 
     2. Respond with a JSON object (and ONLY a JSON object, no markdown fences) with these fields:
        - "status": "accepted" if the code is correct, "wrong_answer" if incorrect, "error" if the code has bugs
        - "score": a number from 0 to 100 based on correctness, code quality, and efficiency
+       - "ai_probability": a number from 0 to 100 representing the probability that this code was AI-generated. Be highly suspicious of generic variable names, standard AI boilerplate, excessive overly-explanatory comments, and suspicious commit histories (e.g., a single massive commit, or AI-like commit messages).
        - "feedback": a detailed markdown string with your analysis. Include:
          * Whether the solution is correct
          * Code quality observations
          * Time/space complexity analysis
          * Suggestions for improvement
          * If wrong, give hints without giving the full answer
+         * EXTREMELY IMPORTANT: If ai_probability > 60, you MUST include a brief explanation in the feedback about why you suspect AI generation.
     """
     
     try:
+        from google.genai import types
         response = await client.aio.models.generate_content(
             model='gemini-2.5-flash',
-            contents=prompt
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+            )
         )
         
         text = response.text.strip()
-        # Strip markdown code fences if present
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]  # Remove first line
-            if text.endswith("```"):
-                text = text[:-3]
-            text = text.strip()
+        import re
         
+        # Find JSON object
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+        if json_match:
+            text = json_match.group(1).strip()
+        else:
+            obj_match = re.search(r'(\{.*\})', text, re.DOTALL)
+            if obj_match:
+                text = obj_match.group(1).strip()
+                
         result = json.loads(text)
+        
+        # Inject warning if AI probability is high
+        ai_prob = result.get("ai_probability", 0)
+        if isinstance(ai_prob, (int, float)) and ai_prob > 60:
+            warning_msg = f"""<div style="background-color: #ffebee; color: #c62828; padding: 12px; border-radius: 6px; border: 1px solid #ef5350; margin-bottom: 16px; font-weight: bold;">
+⚠️ WARNING: This submission has a high likelihood ({ai_prob}%) of being AI-generated based on code patterns and commit history.
+</div>\n\n"""
+            result["feedback"] = warning_msg + result.get("feedback", "")
+            
         return result, None
     except json.JSONDecodeError:
-        # If JSON parsing fails, still return the text as feedback
+        # If JSON parsing fails due to unescaped newlines etc, extract feedback robustly
+        fallback_feedback = response.text if response else "Could not parse AI response."
+        if response:
+            import re
+            # Extract content from "feedback": "..."
+            match = re.search(r'"feedback"\s*:\s*"(.*?)"\s*\}?$', response.text, re.DOTALL)
+            if match:
+                fallback_feedback = match.group(1).replace('\\n', '\n').replace('\\"', '"')
+                
         return {
             "status": "accepted",
             "score": 75,
-            "feedback": response.text if response else "Could not parse AI response."
+            "feedback": fallback_feedback
         }, None
     except Exception as e:
         return None, f"Gemini Error: {str(e)}"
@@ -84,6 +114,8 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
     """
     # 1. Get code from GitHub
     user_code = "# Code not found"
+    commit_history_info = "No commit history available."
+
     
     if user.github_access_token and submission.repo_url:
         try:
@@ -91,12 +123,46 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
             repo_name = submission.repo_url.rstrip("/").split("/")[-1]
             repo = g.get_user().get_repo(repo_name)
             
-            # Get solution.py from main branch (no commit_sha needed)
-            content_file = repo.get_contents("solution.py", ref="main")
-            user_code = content_file.decoded_content.decode("utf-8")
+            # Helper to try multiple branches and extensions
+            content_file = None
+            branches_to_try = [repo.default_branch, "main", "master"]
+            
+            for branch in branches_to_try:
+                try:
+                    root_files = repo.get_contents("", ref=branch)
+                    if not isinstance(root_files, list):
+                        root_files = [root_files]
+                        
+                    for f in root_files:
+                        if f.name.lower().startswith("solution."):
+                            # It's better to fetch explicitly if the file is large, but root_files objects have content if small.
+                            # We'll just fetch by name to be safe
+                            content_file = repo.get_contents(f.name, ref=branch)
+                            break
+                            
+                    if content_file:
+                        break
+                except Exception:
+                    continue
+                    
+            if content_file:
+                user_code = content_file.decoded_content.decode("utf-8")
+            else:
+                user_code = f"# Error fetching code: A file named 'solution.*' was not found in repository {repo_name}."
+                
+            # Fetch recent commits
+            commit_history_info = "Recent Commits:\n"
+            try:
+                commits = repo.get_commits()
+                for i, c in enumerate(commits[:5]):
+                    commit_history_info += f"- [{c.commit.author.date}] {c.commit.author.name}: {c.commit.message}\n"
+            except Exception as e:
+                commit_history_info += f"Could not fetch commits: {str(e)}\n"
+
         except Exception as e:
             print(f"Error fetching code from GitHub: {e}")
             user_code = f"# Error fetching code: {str(e)}"
+            commit_history_info = "No commit history available due to error."
     
     # 2. Build test case info string for AI
     test_cases_info = ""
@@ -107,7 +173,7 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
         test_cases_info = "No test cases provided. Judge based on problem description."
     
     # 3. Run AI Judge
-    ai_result_data = await run_ai_judge(user_code, problem.description, test_cases_info)
+    ai_result_data = await run_ai_judge(user_code, problem.description, test_cases_info, commit_history_info)
     ai_result, error = ai_result_data
     
     if ai_result:

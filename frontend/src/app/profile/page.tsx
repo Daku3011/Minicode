@@ -160,7 +160,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Chart + Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* XP Summary */}
                 <div className="lg:col-span-2 bg-white p-8 rounded-xl sketch-border">
                     <h3 className="text-lg font-bold text-slate-900 mb-2">Performance Summary</h3>
@@ -168,7 +168,7 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-3 gap-6">
                         <div className="text-center p-4 rounded-xl bg-[#6366F1]/5">
                             <p className="text-3xl font-black text-[#6366F1]">{stats.xp}</p>
-                            <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Total XP</p>
+                            {/* <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Total XP</p> */}
                         </div>
                         <div className="text-center p-4 rounded-xl bg-[#22C55E]/5">
                             <p className="text-3xl font-black text-[#22C55E]">{stats.solved}</p>
@@ -366,12 +366,12 @@ export default function ProfilePage() {
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
                         <span className="hand-drawn-underline text-[#6366F1]">Insights</span>
-                        <span className="text-xl">📊</span>
+                        {/* <span className="text-xl">📊</span> */}
                     </h1>
                     <p className="text-slate-500 mt-2">Analytics based on your real submission data.</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="bg-white p-6 rounded-xl sketch-border text-center">
                         <p className="text-4xl font-black text-[#22C55E]">{successRate}%</p>
                         <p className="text-sm text-slate-500 mt-2">Success Rate</p>
