@@ -17,6 +17,10 @@ fastapi-cache2[redis]
 bleach
 pytest
 pytest-asyncio
-httpx
 pytest-mock
 jinja2
+celery
+cryptography
+tenacity
+pypdf
+python-docx

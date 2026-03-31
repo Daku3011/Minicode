@@ -21,8 +21,10 @@ import {
     ChevronLeft,
     ChevronRight,
     CloudSync,
-    Layers
+    Layers,
+    AlertCircle
 } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
 import { clsx } from "clsx";
 import api from "@/lib/api";
@@ -44,6 +46,7 @@ export default function ProblemDetailPage() {
     const [isStarting, setIsStarting] = useState(false);
     const [activeTab, setActiveTab] = useState("description"); // "description" or "result"
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [repoError, setRepoError] = useState<string | null>(null);
     const [result, setResult] = useState<{ status: string; ai_feedback: string; score?: number; code_evaluated?: string } | null>(null);
 
     useEffect(() => {
@@ -64,42 +67,79 @@ export default function ProblemDetailPage() {
 
     const handleStart = async () => {
         setIsStarting(true);
+        setRepoError(null);
         try {
             const response = await api.post(`/problems/${id}/start`);
             setRepoUrl(response.data.repo_url);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to provision repo", error);
-            alert("Failed to provision repository. Did you grant GitHub access during login?");
+            const detail = error.response?.data?.detail || "Failed to provision repository. Did you grant GitHub access during login?";
+            setRepoError(detail);
         } finally {
             setIsStarting(false);
         }
     };
 
+    const pollSubmissionStatus = async (id: number) => {
+        const interval = setInterval(async () => {
+            try {
+                const response = await api.get(`/submissions/${id}`);
+                const submission = response.data;
+                
+                if (submission.status !== "pending") {
+                    clearInterval(interval);
+                    setIsSubmitting(false);
+                    setResult({
+                        status: submission.status === "accepted" ? "Accepted" :
+                                submission.status === "wrong_answer" ? "Wrong Answer" : "Error",
+                        ai_feedback: submission.ai_feedback || "No feedback generated yet.",
+                        score: submission.score,
+                        code_evaluated: submission.code_content
+                    });
+                }
+            } catch (error) {
+                console.error("Polling error:", error);
+                clearInterval(interval);
+                setIsSubmitting(false);
+            }
+        }, 2500); // Poll every 2.5 seconds
+        
+        // Safety timeout: stop polling after 60 seconds
+        setTimeout(() => clearInterval(interval), 60000);
+    };
+
     const handleSubmit = async () => {
         setIsSubmitting(true);
+        setResult(null); // Clear previous result
+        setActiveTab("result");
+        
         try {
             const response = await api.post(`/problems/${id}/submit`, {
                 language: "python"
             });
 
             const submission = response.data;
-
-            setResult({
-                status: submission.status === "accepted" ? "Accepted" :
-                    submission.status === "wrong_answer" ? "Wrong Answer" : "Error",
-                ai_feedback: submission.ai_feedback || "No feedback generated yet.",
-                score: submission.score || (submission.status === "accepted" ? 100 : 40),
-                code_evaluated: submission.code_content
-            });
-            setActiveTab("result");
+            
+            if (submission.status === "pending") {
+                // If it's pending, start polling the new endpoint
+                pollSubmissionStatus(submission.id);
+            } else {
+                // Should not happen with Celery, but handle just in case
+                setResult({
+                    status: submission.status === "accepted" ? "Accepted" :
+                        submission.status === "wrong_answer" ? "Wrong Answer" : "Error",
+                    ai_feedback: submission.ai_feedback || "No feedback generated yet.",
+                    score: submission.score || (submission.status === "accepted" ? 100 : 40),
+                    code_evaluated: submission.code_content
+                });
+                setIsSubmitting(false);
+            }
         } catch (error: any) {
             console.error("Failed to submit:", error);
             setResult({
                 status: "Error",
                 ai_feedback: error.response?.data?.detail || "Submission processing failed. Please check your repository."
             });
-            setActiveTab("result");
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -110,8 +150,8 @@ export default function ProblemDetailPage() {
 
     if (!problem) {
         return (
-            <div className="flex items-center justify-center h-[calc(100vh-64px)] bg-[#0d0a16]">
-                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] bg-[#0d0a16] p-8">
+                <LoadingSpinner size="lg" label="Decrypting problem data..." />
             </div>
         );
     }
@@ -137,13 +177,13 @@ export default function ProblemDetailPage() {
                         <button onClick={() => setActiveTab("result")} className={clsx("text-sm font-bold uppercase tracking-wider transition-colors pb-1 border-b-2", activeTab === "result" ? "text-primary border-primary" : "text-slate-400 border-transparent hover:text-white")}>AI Feedback</button>
                     </nav>
                 </div>
-                <div className="flex items-center gap-4">
+                {/* <div className="flex items-center gap-4">
                     <div className="flex gap-2">
                         <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all">
                             <Settings className="w-4 h-4" />
                         </button>
                     </div>
-                </div>
+                </div> */}
             </header>
 
             {activeTab === "description" ? (
@@ -214,9 +254,19 @@ export default function ProblemDetailPage() {
                                     disabled={isStarting}
                                     className="w-full max-w-sm flex items-center justify-center gap-3 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)] disabled:opacity-50 relative z-10"
                                 >
-                                    {isStarting ? <Loader2 className="w-5 h-5 animate-spin" /> : <CloudSync className="w-5 h-5" />}
-                                    <span>{isStarting ? "Provisioning Repository..." : "Provision Repository"}</span>
+                                    {isStarting ? <LoadingSpinner size="sm" /> : <CloudSync className="w-5 h-5" />}
+                                    <span>{isStarting ? "Provisioning..." : "Provision Repository"}</span>
                                 </button>
+                                
+                                {repoError && (
+                                    <div className="mt-6 p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 flex gap-3 text-left max-w-md relative z-10 animate-in fade-in zoom-in duration-300">
+                                        <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+                                        <div>
+                                            <p className="text-rose-500 font-bold text-sm">Provisioning Failed</p>
+                                            <p className="text-slate-400 text-xs leading-relaxed mt-1">{repoError}</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <div className="flex flex-col h-full">
@@ -293,9 +343,29 @@ export default function ProblemDetailPage() {
                 /* Main Workspace: Full Screen AI Feedback */
                 <main className="flex-1 flex flex-col items-center py-8 px-6 md:px-20 lg:px-40 overflow-y-auto relative" style={confettiStyle}>
                     {!result ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50 relative z-10">
-                            <Brain className="w-16 h-16 text-slate-500" />
-                            <p className="text-slate-400 text-lg">No submission results yet. Submit your code to see AI feedback.</p>
+                        <div className="flex flex-col items-center justify-center h-full text-center space-y-6 relative z-10">
+                            {isSubmitting ? (
+                                <>
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                                        <Brain className="w-20 h-20 text-primary animate-bounce" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-2xl font-black text-white tracking-tight">AI Judge is analyzing your repository...</h3>
+                                        <p className="text-slate-400 font-mono text-sm">Syncing latest commits and evaluating problem logic.</p>
+                                        <div className="flex justify-center gap-1 mt-4">
+                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
+                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
+                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <Brain className="w-16 h-16 text-slate-500 opacity-50" />
+                                    <p className="text-slate-400 text-lg opacity-50">No submission results yet. Submit your code to see AI feedback.</p>
+                                </>
+                            )}
                         </div>
                     ) : (
                         <div className="max-w-4xl w-full relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">

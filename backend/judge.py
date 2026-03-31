@@ -1,9 +1,17 @@
 import os
+import logging
 import json
 from google import genai
 from models import Submission, TestCase, User, Problem
 from github import Github
+from auth import decrypt_token
+from tenacity import retry, stop_after_attempt, wait_exponential
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    reraise=True
+)
 async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, commit_history_info: str = "", persona: str = "standard"):
     """
     Uses Gemini to analyze the code, act as judge, and provide feedback + score.
@@ -119,9 +127,14 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
     
     if user.github_access_token and submission.repo_url:
         try:
-            g = Github(user.github_access_token)
+            decrypted_token = decrypt_token(user.github_access_token)
+            if not decrypted_token:
+                raise Exception("Invalid GitHub token")
+            
+            g = Github(decrypted_token)
             repo_name = submission.repo_url.rstrip("/").split("/")[-1]
-            repo = g.get_user().get_repo(repo_name)
+            # GitHub Optimization: Fetch repo by full name instead of hitting /user endpoint first
+            repo = g.get_repo(f"{user.username}/{repo_name}")
             
             # Helper to try multiple branches and extensions
             content_file = None
@@ -160,7 +173,7 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
                 commit_history_info += f"Could not fetch commits: {str(e)}\n"
 
         except Exception as e:
-            print(f"Error fetching code from GitHub: {e}")
+            logger.error(f"Error fetching code from GitHub: {e}")
             user_code = f"# Error fetching code: {str(e)}"
             commit_history_info = "No commit history available due to error."
     

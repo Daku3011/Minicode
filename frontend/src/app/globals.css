@@ -44,6 +44,11 @@
     color: var(--color-foreground);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  select option {
+    background-color: #151022;
+    color: white;
+  }
 }
 
 .glass-card {

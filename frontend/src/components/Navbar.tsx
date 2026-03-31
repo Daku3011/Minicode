@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Terminal, Search, Flame, LogIn, LogOut, Medal } from "lucide-react";
+import { Terminal, Search, Flame, LogIn, LogOut, Medal, Code2, Calendar, Trophy } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -30,16 +30,44 @@ export default function Navbar() {
                 </Link>
 
                 {user && (
-                    <div className="hidden md:flex flex-1 max-w-md mx-8">
-                        <div className="relative w-full">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input 
-                                type="text"
-                                className="w-full bg-slate-900/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:ring-primary focus:border-primary placeholder-slate-500 focus:outline-none" 
-                                placeholder="Search challenges, docs..." 
-                            />
-                        </div>
-                    </div>
+                    <nav className="hidden md:flex items-center gap-1 ml-8">
+                        <Link 
+                            href="/problems" 
+                            className={clsx(
+                                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                                pathname.startsWith("/problems") 
+                                    ? "bg-primary/20 text-primary" 
+                                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                            )}
+                        >
+                            <Code2 className="w-4 h-4" />
+                            <span>Problems</span>
+                        </Link>
+                        <Link 
+                            href="/events" 
+                            className={clsx(
+                                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                                pathname.startsWith("/events") 
+                                    ? "bg-primary/20 text-primary" 
+                                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                            )}
+                        >
+                            <Calendar className="w-4 h-4" />
+                            <span>Events</span>
+                        </Link>
+                        <Link 
+                            href="/leaderboard" 
+                            className={clsx(
+                                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                                pathname === "/leaderboard" 
+                                    ? "bg-primary/20 text-primary" 
+                                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                            )}
+                        >
+                            <Trophy className="w-4 h-4" />
+                            <span>Leaderboard</span>
+                        </Link>
+                    </nav>
                 )}
 
                 <div className="flex items-center gap-4">
@@ -58,7 +86,10 @@ export default function Navbar() {
                                 </>
                             )}
                             <div className="flex items-center gap-3 ml-2">
-                                <Link href="/profile" className="h-10 w-10 rounded-full border-2 border-primary overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer">
+                                <Link 
+                                    href={user.role === "faculty" || user.role === "admin" ? "/faculty/profile" : "/profile"} 
+                                    className="h-10 w-10 rounded-full border-2 border-primary overflow-hidden flex-shrink-0 hover:ring-2 hover:ring-primary/50 transition-all cursor-pointer"
+                                >
                                     {user.avatar_url ? (
                                         <img src={user.avatar_url} alt="Profile" className="h-full w-full object-cover" />
                                     ) : (

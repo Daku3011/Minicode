@@ -330,9 +330,10 @@ This is the **brain** of the grading system. It does NOT execute code — it use
 3. main.py calls judge_submission()
        │
        ▼
-4. judge.py fetches code from GitHub:
+4. judge.py fetches code and commit history from GitHub:
    - Uses student's github_access_token
-   - Looks for "solution.py" in "main" branch
+   - Looks for "solution.py" in "main" branch (or default branch)
+   - Fetches the last 5 commits to analyze realistic development (AI code usually has 1 bulk commit)
    - The repo name is: minicode-{username}-{problem-title-slugified}
        │
        ▼
@@ -349,11 +350,12 @@ This is the **brain** of the grading system. It does NOT execute code — it use
    {
      "status": "accepted" | "wrong_answer" | "error",
      "score": 0-100,
+     "ai_probability": 0-100,
      "feedback": "markdown string with analysis"
    }
        │
        ▼
-8. Updates Submission in DB with status, score, feedback
+8. Updates Submission in DB with status, score, feedback (injects red HTML Warning if ai_probability > 60)
 ```
 
 ### AI Personas (Fun Feature)
@@ -376,6 +378,7 @@ The judge supports different "personalities":
 > - It can be wrong (AI hallucination)
 > - It can't catch runtime errors like infinite loops
 > - Scores are subjective AI opinions, not deterministic
+> - **[NEW Feature]** It conducts Strict AI-plagiarism checks. By reading the commit history and looking for typical AI boilerplate, it outputs an `ai_probability` and prominently flags potential cheating to the faculty.
 
 ---
 
@@ -490,11 +493,11 @@ Frontend                    Backend                     GitHub         Gemini AI
    │ POST /problems/1/submit   │                          │               │
    ├──────────────────────────▶│                          │               │
    │                           │ Create Submission record  │               │
-   │                           │ Fetch solution.py          │               │
+   │                           │ Fetch solution.py & commits│               │
    │                           ├────────────────────────▶ │               │
-   │                           │◀── code content ──────── │               │
+   │                           │◀── code & history ────── │               │
    │                           │                          │               │
-   │                           │ Send code + problem + tests│              │
+   │                           │ Send code+history+problem│              │
    │                           ├──────────────────────────┼─────────────▶│
    │                           │                          │               │
    │                           │◀── { status, score, feedback } ─────────│

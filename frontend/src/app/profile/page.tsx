@@ -168,7 +168,7 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-3 gap-6">
                         <div className="text-center p-4 rounded-xl bg-[#6366F1]/5">
                             <p className="text-3xl font-black text-[#6366F1]">{stats.xp}</p>
-                            {/* <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Total XP</p> */}
+                            <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider font-semibold">Total XP</p>
                         </div>
                         <div className="text-center p-4 rounded-xl bg-[#22C55E]/5">
                             <p className="text-3xl font-black text-[#22C55E]">{stats.solved}</p>

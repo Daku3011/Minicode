@@ -219,7 +219,7 @@ export default function AdminDashboard() {
                                                             value={user.role}
                                                             onChange={(e) => handleRoleUpdate(user.id, e.target.value)}
                                                             className={clsx(
-                                                                "bg-slate-900 border border-primary/20 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-sm",
+                                                                "bg-[#1b1429] border border-primary/20 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-primary cursor-pointer shadow-sm hover:bg-primary/5 transition-all text-center",
                                                                 user.role === 'admin' ? "text-rose-400" : user.role === 'faculty' ? "text-primary" : "text-emerald-400"
                                                             )}
                                                         >
@@ -230,7 +230,7 @@ export default function AdminDashboard() {
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.8)]"></span> एक्टिव
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.8)]"></span> Active
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 text-slate-400">{new Date(user.joined).toLocaleDateString()}</td>

@@ -1,16 +1,19 @@
 import os
+import logging
 from github import Github
 from sqlmodel import Session
 from models import User, Problem
+from auth import decrypt_token
 
 def create_student_repo(user: User, problem: Problem, session: Session):
     """
     Creates a dedicated repository for a student to solve a specific problem.
     """
-    if not user.github_access_token:
-        raise Exception("User has no GitHub access token")
+    decrypted_token = decrypt_token(user.github_access_token)
+    if not decrypted_token:
+        raise Exception("User has no valid GitHub access token")
     
-    g = Github(user.github_access_token)
+    g = Github(decrypted_token)
     repo_name = f"minicode-{user.username}-{problem.title.lower().replace(' ', '-')}"
     
     try:
@@ -49,10 +52,10 @@ def create_student_repo(user: User, problem: Problem, session: Session):
         
         return repo.html_url
     except Exception as e:
-        print(f"Error creating repo: {e}")
+        logger.error(f"Error creating repo: {e}")
         # If repo already exists, just return its URL or handle accordingly
         try:
-            repo = g.get_user().get_repo(repo_name)
+            repo = g.get_repo(f"{user.username}/{repo_name}")
             return repo.html_url
         except:
             raise e
@@ -61,8 +64,12 @@ def commit_code_to_repo(user: User, repo_name: str, file_path: str, content: str
     """
     Commits code from the in-browser editor to the student's repository.
     """
-    g = Github(user.github_access_token)
-    repo = g.get_user().get_repo(repo_name)
+    decrypted_token = decrypt_token(user.github_access_token)
+    if not decrypted_token:
+        raise Exception("User has no valid GitHub access token")
+    
+    g = Github(decrypted_token)
+    repo = g.get_repo(f"{user.username}/{repo_name}")
     default_branch = repo.default_branch
     
     try:
