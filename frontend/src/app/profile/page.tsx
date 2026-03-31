@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
@@ -46,6 +46,8 @@ export default function ProfilePage() {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [myRank, setMyRank] = useState(0);
     const [totalSubmissions, setTotalSubmissions] = useState(0);
+    const [contributionDataRaw, setContributionDataRaw] = useState<Record<string, number>>({});
+    const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -61,6 +63,7 @@ export default function ProfilePage() {
                 setStats(me.stats || { solved: 0, rank: 0, xp: 0, streak: 0 });
                 setRecentSubmissions(me.recentSubmissions || []);
                 setTotalSubmissions((me.recentSubmissions || []).length);
+                setContributionDataRaw(me.contribution_data || {});
                 setProblems(problemsRes.data || []);
                 setLeaderboard(leaderboardRes.data || []);
 
@@ -118,6 +121,177 @@ export default function ProfilePage() {
             case "hard": return "text-[#FB7185] bg-[#FB7185]/10 border-[#FB7185]/20";
             default: return "text-slate-400 bg-slate-100";
         }
+    };
+
+    // ========== CONTRIBUTION GRAPH ==========
+
+    const contributionData = useMemo(() => {
+        const data: { date: string; count: number; level: number }[] = [];
+        const today = new Date();
+        
+        // Use 365 days leading up to today
+        for (let i = 364; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split("T")[0];
+            
+            // Get count from raw backend data
+            const count = contributionDataRaw[dateStr] || 0;
+            
+            // Simple level mapping
+            let level = 0;
+            if (count > 0) {
+                if (count === 1) level = 1;
+                else if (count <= 3) level = 2;
+                else if (count <= 5) level = 3;
+                else level = 4;
+            }
+
+            data.push({
+                date: dateStr,
+                count: count,
+                level: level,
+            });
+        }
+        return data;
+    }, [contributionDataRaw]);
+
+    const renderContributionGraph = () => {
+        const weeks: { date: string; count: number; level: number }[][] = [];
+        let currentWeek: { date: string; count: number; level: number }[] = [];
+        
+        // Find the first day to align weeks (e.g., start on a Sunday)
+        // For simplicity, we just chunk the 365 days into 7s
+        contributionData.forEach((day, i) => {
+            currentWeek.push(day);
+            if (currentWeek.length === 7 || i === contributionData.length - 1) {
+                weeks.push(currentWeek);
+                currentWeek = [];
+            }
+        });
+
+        const monthLabels: { month: string; weekIndex: number }[] = [];
+        let lastMonth = -1;
+        weeks.forEach((week, wi) => {
+            const firstDay = week[0];
+            if (firstDay) {
+                const d = new Date(firstDay.date);
+                const month = d.getMonth();
+                if (month !== lastMonth) {
+                    monthLabels.push({ 
+                        month: d.toLocaleString("default", { month: "short" }), 
+                        weekIndex: wi 
+                    });
+                    lastMonth = month;
+                }
+            }
+        });
+
+        const levelColors = [
+            "bg-slate-100", // Level 0
+            "bg-indigo-100", // Level 1
+            "bg-indigo-300", // Level 2
+            "bg-indigo-500", // Level 3
+            "bg-indigo-700", // Level 4
+        ];
+
+        const totalContributions = Object.values(contributionDataRaw).reduce((sum, c) => sum + (c || 0), 0);
+
+        return (
+            <div className="bg-white p-6 rounded-xl sketch-border relative">
+                <div className="flex items-center justify-between mb-2">
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-700">Activity Graph</h3>
+                        <p className="text-[10px] text-slate-400">Past year submission frequency</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xs font-bold text-slate-700">{totalContributions}</p>
+                        <p className="text-[10px] text-slate-400">Total Contributions</p>
+                    </div>
+                </div>
+
+                {/* Hover Preview Area */}
+                <div className="h-10 mb-4 flex items-center justify-center border-b border-dashed border-slate-100">
+                    {hoveredDay ? (
+                        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                            <span className="text-xs font-semibold text-slate-700">
+                                {new Date(hoveredDay.date).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' })}:
+                            </span>
+                            <span className="text-xs font-bold text-[#6366F1]">
+                                {hoveredDay.count} contribution{hoveredDay.count !== 1 ? 's' : ''}
+                            </span>
+                        </div>
+                    ) : (
+                        <p className="text-xs text-slate-300 italic">Hover over the grid to see daily details</p>
+                    )}
+                </div>
+
+                <div className="flex flex-col min-w-0">
+                    {/* Month Labels */}
+                    <div className="relative h-4 mb-1 ml-8">
+                        {monthLabels.map((m, i) => (
+                            <span 
+                                key={i} 
+                                className="absolute text-[9px] font-bold text-slate-400 uppercase tracking-tighter"
+                                style={{ left: `${m.weekIndex * (14 + 4)}px` }}
+                            >
+                                {m.month}
+                            </span>
+                        ))}
+                    </div>
+
+                    <div className="flex">
+                        {/* Weekday Labels */}
+                        <div className="flex flex-col justify-between mr-2 text-[9px] font-bold text-slate-300 uppercase py-0.5">
+                            <div className="h-3.5 flex items-center mb-[2px]">Sun</div>
+                            <div className="h-3.5 flex items-center mb-[2px] opacity-0">Mon</div>
+                            <div className="h-3.5 flex items-center mb-[2px]">Tue</div>
+                            <div className="h-3.5 flex items-center mb-[2px] opacity-0">Wed</div>
+                            <div className="h-3.5 flex items-center mb-[2px]">Thu</div>
+                            <div className="h-3.5 flex items-center mb-[2px] opacity-0">Fri</div>
+                            <div className="h-3.5 flex items-center">Sat</div>
+                        </div>
+
+                        {/* Grid */}
+                        <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+                            {weeks.map((week, wi) => (
+                                <div key={wi} className="flex flex-col gap-1 shrink-0">
+                                    {week.map((day, di) => (
+                                        <div 
+                                            key={di} 
+                                            onMouseEnter={() => setHoveredDay({ date: day.date, count: day.count })}
+                                            onMouseLeave={() => setHoveredDay(null)}
+                                            className={`w-3.5 h-3.5 rounded-[2px] ${levelColors[day.level]} hover:ring-2 hover:ring-indigo-400 hover:scale-110 transition-all cursor-crosshair`}
+                                        />
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer Legend & Stats */}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span>Less</span>
+                        <div className="flex gap-1">
+                            {levelColors.map((color, i) => (<div key={i} className={`w-2.5 h-2.5 rounded-[1px] ${color}`} />))}
+                        </div>
+                        <span>More</span>
+                    </div>
+                    <div className="flex gap-5">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-bold text-slate-600">Streak: {stats.streak} Days</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                            <span className="text-[10px] font-bold text-slate-600">Total: {totalSubmissions}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     // ========== TAB CONTENT RENDERERS ==========
@@ -232,6 +406,9 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </div>
+
+            {/* Contribution Graph */}
+            {renderContributionGraph()}
 
             {/* Problem List Table */}
             <div className="bg-white rounded-xl sketch-border overflow-hidden">

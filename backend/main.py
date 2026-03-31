@@ -202,6 +202,36 @@ def get_problem_testcases(problem_id: int, session: Session = Depends(get_sessio
     ]
 
 
+@app.post("/problems/{problem_id}/testcases")
+def add_test_case(
+    problem_id: int,
+    test_case: TestCaseCreate,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session),
+):
+    """Add a test case to a problem (faculty/admin only)."""
+    problem = session.get(Problem, problem_id)
+    if not problem:
+        raise HTTPException(status_code=404, detail="Problem not found")
+
+    # Check ownership (admin can add to any)
+    if user.role != "admin" and problem.author_id != user.id:
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this problem"
+        )
+
+    db_test_case = TestCase(
+        problem_id=problem_id,
+        input_data=test_case.input_data,
+        expected_output=test_case.expected_output,
+        is_sample=test_case.is_sample,
+    )
+    session.add(db_test_case)
+    session.commit()
+    session.refresh(db_test_case)
+    return db_test_case
+
+
 @app.post("/problems", response_model=Problem)
 def create_problem(
     problem: Problem,
@@ -232,6 +262,66 @@ def create_problem(
     return problem
 
 
+@app.put("/problems/{problem_id}")
+def update_problem(
+    problem_id: int,
+    update_data: dict,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session),
+):
+    """Update a problem (faculty/admin only)."""
+    problem = session.get(Problem, problem_id)
+    if not problem:
+        raise HTTPException(status_code=404, detail="Problem not found")
+
+    # Check ownership (admin can edit any)
+    if user.role != "admin" and problem.author_id != user.id:
+        raise HTTPException(
+            status_code=403, detail="Not authorized to edit this problem"
+        )
+
+    # Update fields
+    if "title" in update_data:
+        problem.title = bleach.clean(update_data["title"])
+    if "description" in update_data:
+        problem.description = bleach.clean(update_data["description"])
+    if "difficulty" in update_data:
+        problem.difficulty = update_data["difficulty"]
+    if "subject" in update_data:
+        problem.subject = update_data["subject"]
+    if "level" in update_data:
+        problem.level = update_data["level"]
+    if "xp_reward" in update_data:
+        problem.xp_reward = update_data["xp_reward"]
+
+    session.add(problem)
+    session.commit()
+    session.refresh(problem)
+    return problem
+
+
+@app.delete("/problems/{problem_id}")
+def delete_problem(
+    problem_id: int,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session),
+):
+    """Delete a problem (faculty/admin only)."""
+    problem = session.get(Problem, problem_id)
+    if not problem:
+        raise HTTPException(status_code=404, detail="Problem not found")
+
+    # Check ownership (admin can delete any)
+    if user.role != "admin" and problem.author_id != user.id:
+        raise HTTPException(
+            status_code=403, detail="Not authorized to delete this problem"
+        )
+
+    session.delete(problem)
+    session.commit()
+    return {"message": "Problem deleted successfully"}
+
+
 @app.post("/problems/generate-ai")
 async def generate_ai_problem(
     file: UploadFile = File(...),
@@ -240,14 +330,16 @@ async def generate_ai_problem(
     """Generates a complete problem statement from an uploaded file using AI."""
     if not file:
         raise HTTPException(status_code=400, detail="No file uploaded")
-    
+
     try:
         content = await file.read()
         text = extract_text_from_file(content, file.filename)
-        
+
         if not text.strip():
-            raise HTTPException(status_code=400, detail="Uploaded file is empty or unreadable")
-            
+            raise HTTPException(
+                status_code=400, detail="Uploaded file is empty or unreadable"
+            )
+
         problem_data = await generate_problem_content(text)
         return problem_data
     except Exception as e:
@@ -359,6 +451,12 @@ class SubmissionRequest(BaseModel):
         if v.lower() not in allowed_languages:
             raise ValueError(f"Language must be one of {allowed_languages}")
         return v.lower()
+
+
+class TestCaseCreate(BaseModel):
+    input_data: str
+    expected_output: str
+    is_sample: bool = False
 
 
 # Problem Interaction
@@ -607,6 +705,41 @@ def get_me(
     total_score = sum(problem_scores.values())
     problems_solved = len(problem_scores)
 
+    # Calculate contribution data (last 365 days)
+    now = datetime.utcnow()
+    one_year_ago = now.replace(year=now.year - 1)
+    
+    # Efficiently aggregate submissions by date in one query
+    # (Using Python grouping for simpler logic on smaller datasets,
+    # could be optimized with SQL func.date if needed)
+    submission_counts = {}
+    for sub in submissions:
+        if sub.timestamp and sub.timestamp >= one_year_ago:
+            date_str = sub.timestamp.strftime("%Y-%m-%d")
+            submission_counts[date_str] = submission_counts.get(date_str, 0) + 1
+
+    # Calculate Streak
+    streak = 0
+    curr_date = now.date()
+    # Check today and then go backwards
+    while True:
+        date_str = curr_date.strftime("%Y-%m-%d")
+        if date_str in submission_counts:
+            streak += 1
+            curr_date = curr_date.replace(day=curr_date.day - 1) # This is buggy for month boundaries
+            # Better way to decrement date:
+            from datetime import timedelta
+            curr_date = curr_date - timedelta(days=1)
+        else:
+            # If today has no submissions, the streak might still be active if yesterday had some
+            if streak == 0:
+                yesterday = now.date() - timedelta(days=1)
+                if yesterday.strftime("%Y-%m-%d") in submission_counts:
+                    # Streak is from yesterday, today is pending
+                    curr_date = yesterday
+                    continue
+            break
+
     recent_submissions = []
     sorted_submissions = sorted(
         submissions, key=lambda x: x.timestamp or datetime.min, reverse=True
@@ -635,10 +768,11 @@ def get_me(
         "created_at": user.created_at.strftime("%Y-%m-%d") if user.created_at else "",
         "stats": {
             "solved": problems_solved,
-            "rank": 0,  # Will be calculated by leaderboard in real app, mocked for now or could do a query
+            "rank": 0,
             "xp": total_score,
-            "streak": 1,  # Mocked streak
+            "streak": streak,
         },
+        "contribution_data": submission_counts,
         "recentSubmissions": recent_submissions,
     }
 

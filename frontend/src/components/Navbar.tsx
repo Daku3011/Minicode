@@ -22,7 +22,7 @@ export default function Navbar() {
     return (
         <header className="sticky top-0 z-50 glass-card border-b border-white/10 px-4 md:px-8 py-3 bg-background-dark/80 backdrop-blur-xl">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
-                <Link href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/dashboard' : '/problems') : "/"} className="flex items-center gap-3">
+                <Link href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/profile' : '/problems') : "/"} className="flex items-center gap-3">
                     <div className="bg-primary p-2 rounded-lg">
                         <Terminal className="text-white w-6 h-6" />
                     </div>
@@ -73,7 +73,7 @@ export default function Navbar() {
                 <div className="flex items-center gap-4">
                     {!loading && user ? (
                         <>
-                            {user.role === "student" && (
+                            {/* {user.role === "student" && (
                                 <>
                                     <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-primary/20 border border-primary/30 rounded-full">
                                         <Medal className="text-primary w-4 h-4" />
@@ -84,7 +84,7 @@ export default function Navbar() {
                                         <span className="text-xs font-bold text-orange-500 uppercase tracking-wider">3 Days</span>
                                     </div>
                                 </>
-                            )}
+                            )} */}
                             <div className="flex items-center gap-3 ml-2">
                                 <Link 
                                     href={user.role === "faculty" || user.role === "admin" ? "/faculty/profile" : "/profile"} 

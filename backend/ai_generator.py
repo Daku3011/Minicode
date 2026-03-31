@@ -2,6 +2,7 @@ import os
 import json
 import logging
 from typing import Optional, Dict, Any
+import anyio
 from google import genai
 from google.genai import types
 from pypdf import PdfReader
@@ -69,6 +70,7 @@ async def generate_problem_content(text_content: str) -> Dict[str, Any]:
        - 'input_format': Describe the parameters/data input.
        - 'output_format': Describe the return values/results.
        - 'constraints': List time/memory limits and tech-specific rules.
+       - 'hint': A small, helpful clue for the student.
 
     PREDEFINED SUBJECTS: Use 'blockchain' for smart contracts, Web3, or crypto-specific challenges.
 
@@ -81,11 +83,15 @@ async def generate_problem_content(text_content: str) -> Dict[str, Any]:
     """
     
     try:
-        response = await client.aio.models.generate_content(
-            model='gemini-2.0-flash', # Using flash for speed/cost in creation
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
+        # Using the synchronous client wrapped in a thread to avoid aiohttp version conflicts
+        # while keeping the FastAPI event loop responsive.
+        response = await anyio.to_thread.run_sync(
+            lambda: client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                )
             )
         )
         

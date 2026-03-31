@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ChevronLeft, Save, Send, Plus, Trash2, Sparkles, BookOpen, Tag, Lock, Loader2, FileText, Code2 } from "lucide-react";
+import { ChevronLeft, Save, Send, Plus, Trash2, Sparkles, BookOpen, Tag, Lock, Loader2, FileText, Code2, Eye, PenLine } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import api from "@/lib/api";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const subjects = [
     { id: "data-structures", name: "Data Structures", icon: "🌳" },
@@ -23,14 +25,18 @@ const subjects = [
 
 const levels = [
     { level: 1, name: "Beginner", minXP: 0 },
-    { level: 2, name: "Intermediate", minXP: 100 },
-    { level: 3, name: "Advanced", minXP: 300 },
+    { level: 2, name: "Explorer", minXP: 100 },
+    { level: 3, name: "Ninja", minXP: 300 },
+    { level: 4, name: "Warrior", minXP: 600 },
+    { level: 5, name: "Master", minXP: 1000 },
+    { level: 6, name: "Legend", minXP: 1500 },
 ];
 
 export default function CreateProblemPage() {
     const router = useRouter();
     const [isPublishing, setIsPublishing] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -99,7 +105,14 @@ export default function CreateProblemPage() {
                 title: formData.title,
                 description: formData.description,
                 difficulty: formData.difficulty,
+                subject: formData.subject,
+                level: formData.level,
+                input_format: formData.input_format,
+                output_format: formData.output_format,
+                constraints: formData.constraints,
+                hints: formData.hints,
             });
+
 
             const problemId = problemResponse.data.id;
 
@@ -262,14 +275,45 @@ export default function CreateProblemPage() {
                         </div>
 
                         <div className="space-y-3">
-                            <label className="text-sm font-medium text-slate-400">Problem Description * (Markdown supported)</label>
-                            <textarea
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                rows={10}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono text-sm"
-                                placeholder="Describe the problem in detail. Use Markdown for formatting.&#10;&#10;**Example:**&#10;Given an array of integers `nums` and an integer `target`..."
-                            />
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-slate-400">Problem Description * (Markdown supported)</label>
+                                <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
+                                    <button 
+                                        onClick={() => setActiveTab("write")}
+                                        className={clsx("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all", activeTab === "write" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white")}
+                                    >
+                                        <PenLine className="w-3 h-3" />
+                                        Write
+                                    </button>
+                                    <button 
+                                        onClick={() => setActiveTab("preview")}
+                                        className={clsx("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all", activeTab === "preview" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white")}
+                                    >
+                                        <Eye className="w-3 h-3" />
+                                        Preview
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {activeTab === "write" ? (
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    rows={10}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono text-sm min-h-[300px]"
+                                    placeholder="Describe the problem in detail. Use Markdown for formatting.&#10;&#10;**Example:**&#10;Given an array of integers `nums` and an integer `target`..."
+                                />
+                            ) : (
+                                <div className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-6 text-white min-h-[300px] overflow-y-auto prose prose-invert prose-slate prose-p:leading-relaxed prose-pre:bg-black/20 prose-pre:border prose-pre:border-white/5 prose-code:text-blue-400 prose-code:bg-blue-400/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none max-w-none prose-headings:text-white prose-headings:font-bold prose-strong:text-blue-500">
+                                    {formData.description ? (
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {formData.description}
+                                        </ReactMarkdown>
+                                    ) : (
+                                        <p className="text-slate-500 italic">No description to preview</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

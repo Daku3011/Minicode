@@ -179,9 +179,14 @@ export default function FacultyProfilePage() {
                         <h2 className="text-xl font-bold text-white">My Problems</h2>
                         <p className="text-sm text-slate-400">Coding challenges you've created</p>
                     </div>
-                    <Link href="/problems/create" className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
-                        <Plus className="w-4 h-4" /> Add New
-                    </Link>
+                    <div className="flex gap-5">
+                        <Link href="/faculty/problems" className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
+                            Manage All
+                        </Link>
+                        <Link href="/problems/create" className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
+                            <Plus className="w-4 h-4" /> Add New
+                        </Link>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">

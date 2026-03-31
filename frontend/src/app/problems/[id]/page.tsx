@@ -22,7 +22,8 @@ import {
     ChevronRight,
     CloudSync,
     Layers,
-    AlertCircle
+    AlertCircle,
+    Sparkles
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
@@ -206,11 +207,60 @@ export default function ProblemDetailPage() {
                             
                             <h1 className="text-4xl font-extrabold text-white mb-6 pr-4">{problem.id}. {problem.title}</h1>
                             
-                            <div className="prose prose-invert prose-slate mb-8 max-w-none">
-                                <div className="text-slate-300 leading-relaxed text-base whitespace-pre-wrap">
+                            <div className="prose prose-invert prose-slate mb-8 max-w-none prose-p:leading-relaxed prose-pre:bg-slate-900/50 prose-pre:border prose-pre:border-white/5 prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none max-w-none prose-headings:text-white prose-headings:font-bold prose-strong:text-primary prose-a:text-[#06b6d4]">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {problem.description}
-                                </div>
+                                </ReactMarkdown>
                             </div>
+
+                            {/* Technical Specs */}
+                            <div className="grid grid-cols-1 gap-4 mb-8">
+                                {problem.input_format && (
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <FileCode className="w-4 h-4 text-primary" />
+                                            Input Format
+                                        </h3>
+                                        <div className="text-sm text-slate-300 font-mono bg-black/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
+                                            {problem.input_format}
+                                        </div>
+                                    </div>
+                                )}
+                                {problem.output_format && (
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <FileCode className="w-4 h-4 text-[#06b6d4]" />
+                                            Output Format
+                                        </h3>
+                                        <div className="text-sm text-slate-300 font-mono bg-black/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
+                                            {problem.output_format}
+                                        </div>
+                                    </div>
+                                )}
+                                {problem.constraints && (
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <Settings className="w-4 h-4 text-amber-400" />
+                                            Constraints
+                                        </h3>
+                                        <div className="text-sm text-slate-300 font-mono bg-black/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
+                                            {problem.constraints}
+                                        </div>
+                                    </div>
+                                )}
+                                {problem.hints && (
+                                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
+                                        <h3 className="text-xs font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <Sparkles className="w-4 h-4" />
+                                            Mentor's Hint
+                                        </h3>
+                                        <div className="text-sm text-slate-300 italic">
+                                            {problem.hints}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
 
                             {/* Examples */}
                             {testCases.map((tc, idx) => (
