@@ -155,10 +155,10 @@ export default function CreateProblemPage() {
                         <p className="text-slate-400">Design a coding challenge with test cases and constraints</p>
                     </div>
                     <div className="flex gap-3">
-                        <button className="px-5 py-2.5 rounded-xl font-bold bg-white/5 text-white hover:bg-white/10 transition-all border border-white/10">
+                        {/* <button className="px-5 py-2.5 rounded-xl font-bold bg-white/5 text-white hover:bg-white/10 transition-all border border-white/10">
                             <Save className="w-4 h-4 inline mr-2" />
                             Save Draft
-                        </button>
+                        </button> */}
                         <button
                             onClick={handlePublish}
                             disabled={isPublishing || !formData.title || !formData.description}

@@ -5,29 +5,39 @@ from sqlmodel import Session
 from models import User, Problem
 from auth import decrypt_token
 
+logger = logging.getLogger(__name__)
+
+
 def create_student_repo(user: User, problem: Problem, session: Session):
     """
     Creates a dedicated repository for a student to solve a specific problem.
     """
-    decrypted_token = decrypt_token(user.github_access_token)
+    # Try decrypting the token first
+    decrypted_token = None
+    if user.github_access_token:
+        decrypted_token = decrypt_token(user.github_access_token)
+
+    # If decryption failed, try using the token directly (for backward compatibility)
     if not decrypted_token:
-        raise Exception("User has no valid GitHub access token")
-    
+        decrypted_token = user.github_access_token
+
+    if not decrypted_token:
+        raise Exception(
+            "User has no valid GitHub access token. Please re-authenticate with GitHub."
+        )
+
     g = Github(decrypted_token)
     repo_name = f"minicode-{user.username}-{problem.title.lower().replace(' ', '-')}"
-    
+
     try:
         # Create the repository
-        # In a real scenario, you might want to use a template repo
-        # repo = g.get_user().create_repo_from_template(repo_name, template_repo)
-        
         repo = g.get_user().create_repo(
             repo_name,
             description=f"Solution for {problem.title} on MiniCode",
             private=True,
-            auto_init=True
+            auto_init=True,
         )
-        
+
         # Update the auto-generated README with problem description
         default_branch = repo.default_branch
         try:
@@ -37,19 +47,19 @@ def create_student_repo(user: User, problem: Problem, session: Session):
                 "Initialize with problem description",
                 f"# {problem.title}\n\n{problem.description}",
                 readme.sha,
-                branch=default_branch
+                branch=default_branch,
             )
         except Exception:
             pass
-        
+
         # Create a starter code file
         repo.create_file(
             "solution.py",
             "Add starter code",
             "# Write your solution here\n\ndef solve():\n    pass\n",
-            branch=default_branch
+            branch=default_branch,
         )
-        
+
         return repo.html_url
     except Exception as e:
         logger.error(f"Error creating repo: {e}")
@@ -60,22 +70,27 @@ def create_student_repo(user: User, problem: Problem, session: Session):
         except:
             raise e
 
-def commit_code_to_repo(user: User, repo_name: str, file_path: str, content: str, commit_message: str):
+
+def commit_code_to_repo(
+    user: User, repo_name: str, file_path: str, content: str, commit_message: str
+):
     """
     Commits code from the in-browser editor to the student's repository.
     """
     decrypted_token = decrypt_token(user.github_access_token)
     if not decrypted_token:
         raise Exception("User has no valid GitHub access token")
-    
+
     g = Github(decrypted_token)
     repo = g.get_repo(f"{user.username}/{repo_name}")
     default_branch = repo.default_branch
-    
+
     try:
         contents = repo.get_contents(file_path, ref=default_branch)
-        repo.update_file(contents.path, commit_message, content, contents.sha, branch=default_branch)
+        repo.update_file(
+            contents.path, commit_message, content, contents.sha, branch=default_branch
+        )
     except:
         repo.create_file(file_path, commit_message, content, branch=default_branch)
-    
+
     return repo.get_branch(default_branch).commit.sha

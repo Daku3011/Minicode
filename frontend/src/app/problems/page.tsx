@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PlayCircle, BarChart3, Trophy, Search, Filter, X, Lock, Zap } from "lucide-react";
+import { PlayCircle, BarChart3, Trophy, Search, Filter, X, Plus } from "lucide-react";
 import { clsx } from "clsx";
+import Link from "next/link";
 import ProblemCard from "@/components/ProblemCard";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,15 +18,6 @@ interface Problem {
     created_at: string;
     author_id: number | null;
 }
-
-const LEVELS = [
-    { level: 1, name: "Code Beginner", minXP: 0, color: "text-green-400 bg-green-500/10 border-green-500/20" },
-    { level: 2, name: "Code Explorer", minXP: 100, color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
-    { level: 3, name: "Code Ninja", minXP: 300, color: "text-purple-400 bg-purple-500/10 border-purple-500/20" },
-    { level: 4, name: "Code Warrior", minXP: 600, color: "text-orange-400 bg-orange-500/10 border-orange-500/20" },
-    { level: 5, name: "Code Master", minXP: 1000, color: "text-red-400 bg-red-500/10 border-red-500/20" },
-    { level: 6, name: "Code Legend", minXP: 1500, color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
-];
 
 const SUBJECTS = [
     { id: "data-structures", name: "Data Structures", icon: "🌳" },
@@ -56,6 +48,8 @@ export default function ProblemsPage() {
     const [selectedDifficulty, setSelectedDifficulty] = useState("");
     const [showFilters, setShowFilters] = useState(false);
 
+    const isFaculty = user?.role === "faculty" || user?.role === "admin";
+
     useEffect(() => {
         const fetchProblems = async () => {
             try {
@@ -71,27 +65,12 @@ export default function ProblemsPage() {
         fetchProblems();
     }, []);
 
-    const getUserLevel = () => {
-        if (!user) return 1;
-        const xp = (user as any).stats?.xp || 0;
-        let level = 1;
-        for (const l of LEVELS) {
-            if (xp >= l.minXP) level = l.level;
-        }
-        return level;
-    };
-
-    const userLevel = getUserLevel();
-
     const filteredProblems = problems.filter((problem) => {
         const matchesSearch = problem.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesSubject = !selectedSubject || problem.subject === selectedSubject;
         const matchesDifficulty = !selectedDifficulty || problem.difficulty === selectedDifficulty;
-        const matchesLevel = problem.level <= userLevel;
-        return matchesSearch && matchesSubject && matchesDifficulty && matchesLevel;
+        return matchesSearch && matchesSubject && matchesDifficulty;
     });
-
-    const lockedProblems = problems.filter((problem) => problem.level > userLevel);
 
     const activeFiltersCount = [selectedSubject, selectedDifficulty].filter(Boolean).length;
 
@@ -103,24 +82,36 @@ export default function ProblemsPage() {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 relative z-10">
                 <div>
                     <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
-                        Coding Arena
+                        {isFaculty ? "Problem Management" : "Coding Arena"}
                     </h1>
                     <p className="text-slate-400 text-lg max-w-2xl">
-                        Solve challenges, earn XP, and unlock harder problems.
+                        {isFaculty
+                            ? "Create, manage, and monitor coding challenges for your students."
+                            : "Solve challenges, earn XP, and unlock harder problems."}
                     </p>
                 </div>
-                {user && (
-                    <div className="flex items-center gap-3">
-                        <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-                            <p className="text-xs text-slate-400">Your Level</p>
-                            <p className="text-lg font-black text-white">{userLevel}</p>
-                        </div>
-                        <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-                            <p className="text-xs text-slate-400">XP</p>
-                            <p className="text-lg font-black text-primary">{(user as any).stats?.xp || 0}</p>
-                        </div>
-                    </div>
-                )}
+                <div className="flex items-center gap-3">
+                    {isFaculty ? (
+                        <Link
+                            href="/problems/create"
+                            className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
+                        >
+                            <Plus className="w-4 h-4" />
+                            New Problem
+                        </Link>
+                    ) : user && (
+                        <>
+                            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                                <p className="text-xs text-slate-400">Your Level</p>
+                                <p className="text-lg font-black text-white">{(user as any).stats?.level || 1}</p>
+                            </div>
+                            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                                <p className="text-xs text-slate-400">XP</p>
+                                <p className="text-lg font-black text-primary">{(user as any).stats?.xp || 0}</p>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Search & Filters */}
@@ -224,18 +215,18 @@ export default function ProblemsPage() {
                 </div>
             )}
 
-            {/* Available Problems */}
+            {/* Problems List */}
             <div className="relative z-10 w-full space-y-6">
                 <div className="flex items-center justify-between">
                     <h3 className="text-2xl font-bold text-white">
-                        Available Challenges
+                        All Problems
                         <span className="text-sm font-normal text-slate-500 ml-2">
                             ({filteredProblems.length})
                         </span>
                     </h3>
                 </div>
 
-                <div className="space-y-4 max-w-8xl">
+                <div className="space-y-4 max-w-4xl">
                     {loading ? (
                         [1, 2, 3].map((i) => (
                             <div key={i} className="h-32 w-full bg-white/5 animate-pulse rounded-2xl border border-white/5" />
@@ -250,52 +241,6 @@ export default function ProblemsPage() {
                         </div>
                     )}
                 </div>
-
-                {/* Locked Problems */}
-                {lockedProblems.length > 0 && (
-                    <div className="mt-12">
-                        <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                            <Lock className="w-5 h-5 text-amber-400" />
-                            Locked Challenges
-                            <span className="text-sm font-normal text-slate-500">({lockedProblems.length})</span>
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {lockedProblems.map((problem) => {
-                                const reqLevel = LEVELS.find((l) => l.level === problem.level);
-                                return (
-                                    <div
-                                        key={problem.id}
-                                        className="p-4 rounded-xl bg-white/5 border border-white/10 opacity-60"
-                                    >
-                                        <div className="flex items-start justify-between mb-3">
-                                            <h4 className="text-white font-bold truncate">{problem.title}</h4>
-                                            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className={clsx(
-                                                "px-2 py-0.5 rounded text-[10px] font-bold uppercase border",
-                                                problem.difficulty === "Easy" ? "bg-green-500/10 text-green-400 border-green-500/20" :
-                                                problem.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                                                "bg-red-500/10 text-red-400 border-red-500/20"
-                                            )}>
-                                                {problem.difficulty}
-                                            </span>
-                                            {reqLevel && (
-                                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase border bg-amber-500/10 text-amber-400 border-amber-500/20">
-                                                    Lvl {problem.level}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-amber-400/80 mt-3 flex items-center gap-1">
-                                            <Zap className="w-3 h-3" />
-                                            Requires {reqLevel?.name} ({reqLevel?.minXP} XP)
-                                        </p>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
             </div>
         </main>
     );

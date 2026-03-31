@@ -109,7 +109,7 @@ export default function EventsPage() {
                     </div>
                     {user?.role === "faculty" || user?.role === "admin" ? (
                         <Link 
-                            href="/problems/create" 
+                            href="/events/create" 
                             className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-purple-500/20"
                         >
                             <Target className="w-4 h-4" /> Create Event

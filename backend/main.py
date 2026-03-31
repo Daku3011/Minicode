@@ -202,6 +202,12 @@ def get_problem_testcases(problem_id: int, session: Session = Depends(get_sessio
     ]
 
 
+class TestCaseCreate(BaseModel):
+    input_data: str
+    expected_output: str
+    is_sample: bool = False
+
+
 @app.post("/problems/{problem_id}/testcases")
 def add_test_case(
     problem_id: int,
@@ -451,12 +457,6 @@ class SubmissionRequest(BaseModel):
         if v.lower() not in allowed_languages:
             raise ValueError(f"Language must be one of {allowed_languages}")
         return v.lower()
-
-
-class TestCaseCreate(BaseModel):
-    input_data: str
-    expected_output: str
-    is_sample: bool = False
 
 
 # Problem Interaction
@@ -719,6 +719,7 @@ def get_me(
             submission_counts[date_str] = submission_counts.get(date_str, 0) + 1
 
     # Calculate Streak
+    from datetime import timedelta
     streak = 0
     curr_date = now.date()
     # Check today and then go backwards
@@ -726,9 +727,6 @@ def get_me(
         date_str = curr_date.strftime("%Y-%m-%d")
         if date_str in submission_counts:
             streak += 1
-            curr_date = curr_date.replace(day=curr_date.day - 1) # This is buggy for month boundaries
-            # Better way to decrement date:
-            from datetime import timedelta
             curr_date = curr_date - timedelta(days=1)
         else:
             # If today has no submissions, the streak might still be active if yesterday had some
