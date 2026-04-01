@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Celery-Distributed_Workers-37814A?style=flat-square&logo=celery" alt="Celery" />
   <img src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql" alt="PostgreSQL" />
@@ -21,49 +21,47 @@
 
 ## 🎯 What is MiniCode?
 
-MiniCode is a **full-stack competitive programming platform** designed to elevate modern educational institutions. Unlike traditional online judges that rely on isolated, built-in code editors, MiniCode bridges the gap between academic coding exercises and **real-world software engineering**.
+**MiniCode** is a **full-stack competitive programming platform** designed to elevate modern educational institutions and university clubs by bringing them out of outdated, isolated coding judges and into real-world software engineering environments. 
 
-We require students to navigate **actual GitHub workflows**. Faculty upload problem statements, and students provision private automated GitHub repositories, code completely in their local environments, push their solutions, and submit their real-world workflows for evaluation by our advanced **Gemini AI Judge**. 
+Rather than restricting students to a tiny browser code editor, **MiniCode demands real-world GitHub workflows**. Faculty publish challenges, students auto-provision private GitHub repositories directly to their accounts, and push their solutions via local IDEs (VSCode, JetBrains). When a student requests evaluation, our massive **Celery Worker Fleet** fetches their raw commits, runs logic testing, and evaluates the code for style, complexity, and plagiarism utilizing a distributed **Gemini AI Engine**.
 
 ---
 
-## ✨ Key Features
+## ✨ System Features
 
-### 🚀 Massive Scale: Celery, Redis, & Postgres (NEW)
-We have overhauled the backend infrastructure to handle high-traffic concurrency required during active hackathons:
-- **Asynchronous Judging:** Evaluating code with AI is now fully offloaded to a detached **Celery Worker Group**, backed by a **Redis Broker**. This prevents the main API thread from blocking.
-- **Enterprise DB:** The platform has been fully upgraded from local SQLite to a robust **PostgreSQL 15** deployment capable of handling massive transactional volumes.
-- **Intensive Performance Caching:** GitHub repos, analytical queries, and problem data are violently cached using `FastAPICache2` linked directly into a **Redis Cache Instance**, radically speeding up endpoint loading times.
-- **Battle-Tested:** The `load_test.js` K6 suite validates stable throughput for >200 concurrent active users.
+### 🚀 Massive Scale: Enterprise Grade Architecture
+We have completely overhauled the legacy backend infrastructure to effortlessly sustain high-traffic concurrency, such as during heavily active, 48-hour global hackathons.
+* **Elastic Asynchronous Judging:** AI code evaluations are strictly handled by a detached **Celery Worker Group**, scaled horizontally through a **Redis Broker**. The core API logic remains non-blocking.
+* **Enterprise DB Backend:** Complete transition to a production-ready **PostgreSQL 15** database, guaranteeing atomic multi-student transactions.
+* **Aggressive Redis Caching:** Heavy analytical queries (Leaderboards, Profiles, Repositories) are actively cached utilizing `FastAPICache2` linked directly to Redis.
 
-### 🕵️‍♂️ Strict AI Plagiarism & Generation Detection
-We've integrated a powerful anti-cheating mechanism directly into the AI Judge:
-- **Commit History Analysis:** The platform fetches the latest commits from the student's repository. Plagiarized or purely AI-generated submissions typically lack iterative, human-like commit histories.
-- **Pattern Matching:** The AI aggressively scans for generic variable names, hallmark AI boilerplate code, and excessively explanatory comments.
-- **Red Flag Warnings:** If the judge determines the code has an AI-generation probability of > 60%, it injects a highly visible **Red HTML Warning Block** directly into the feedback interface, immediately alerting reviewing faculty.
+### 🕵️‍♂️ Anti-Plagiarism & AI Generation Protection
+We integrated powerful anti-cheating heuristic metrics directly into the core AI Judge evaluation pipeline:
+* **Iterative Commit Telemetry:** The AI Judge actively inspects the commit history and git timestamps of the connected repository. A massive code drop in a single commit immediately triggers a manual review alert.
+* **Direct Prompt Injection Protection:** The AI scrutinizes code for hallmark generative AI boilerplate formatting, suspiciously over-explanatory comments, and generic variable nomenclature indicating ChatGPT/Claude output.
+* **Red Flag Dashboard:** Faculty receives blatant visual red flags via a unique `AI Confidence Score`, enabling robust academic integrity validation.
 
-### 🧠 Advanced AI-Powered Judging (Gemini 2.5 Flash)
-- **Direct GitHub Integration:** Fetches student code seamlessly from their synced GitHub repository.
-- **Structured Evaluation:** Evaluates logical correctness against faculty-defined test cases.
-- **Comprehensive Feedback:** Returns structured scoring (0–100) alongside detailed markdown feedback covering:
-  - ✅ Correctness analysis
-  - 📊 Time & space complexity evaluation
-  - 💡 Code quality and stylistic suggestions
-  - 🔍 Adaptive hints for incorrect solutions (without revealing the full answer)
+### 🧠 Gemini 2.5 Flash Evaluation Engine
+* **Structured Multi-Phase Evaluation:** Real-world execution testing against dynamic input/output edge cases combined with an abstract semantic logic review.
+* **Markdown-Rich Analysis:**
+  - ✅ **Correctness**: Real-time pass/fail validation.
+  - 📊 **Big O Complexity**: Granular Time (`O(N)`) and Space (`O(1)`) memory usage footprint validation.
+  - 💡 **Clean Code Practices**: Meaningful structural architecture feedback.
 
 ### 🐙 True GitHub-Native Workflow
+
 ```text
-Student clicks "Provision Repository"
+Student Selects "Provision Repository"
        ↓
-Private repo auto-created and linked on student's GitHub account
+Private GitHub repo created dynamically via GitHub Graph APIs
        ↓
-Student clones → writes code locally → pushes iterative commits to `main`
+Student git clones code locally → Commits logic natively → Pushes to `main` branch
        ↓
-Clicks "Sync & Evaluate" → Submits job to Celery Worker Queue
+Student executes "Sync & Evaluate" → Submits evaluation job to Celery Worker Hash
        ↓
-AI Judge analyzes code AND commit history heavily using Redis caching
+Gemini AI Judge processes logic and commit history from GitHub cache
        ↓
-Score + detailed AI feedback + Plagiarism checks displayed instantly via polling/refresh
+Score + 10x Engineer Feedback displayed instantly on Frontend
 ```
 
 ---
@@ -73,115 +71,56 @@ Score + detailed AI feedback + Plagiarism checks displayed instantly via polling
 ```text
 ┌──────────────────────────────────────────────────┐
 │                   Frontend                       │
-│           Next.js 16 + TailwindCSS 4             │
-│     React 19 · Framer Motion · Lucide Icons      │
+│           Next.js 15 + TailwindCSS 4             │
+│        Framer Motion UI · React Server           │
 └────────────────────┬─────────────────────────────┘
-                     │ HTTP / JWT
+                     │ HTTPS / JWT
                      ▼
 ┌─────────────────────────────────────────────────┐
 │                   Backend                       │
-│              FastAPI + Uvicorn                  │
+│           FastAPI + Uvicorn + SQLAlchemy        │
 │                                                 │
 │  Auth     ── GitHub OAuth + Password (bcrypt)   │
 │  Cache    ── FastAPICache + Redis Server        │
-│  Repos    ── PyGithub Native Integration        │
-│  DB       ── PostgreSQL (Scaleable Prod DB)     │
+│  Repos    ── PyGithub Native Repository Engine  │
+│  DB       ── Supabase PostgreSQL Pooler         │
 └────────────────────┬─────────────────────────────┘
-                     │ Message Broker / Jobs
+                     │ Message Broker (AMQP/Redis)
                      ▼
 ┌─────────────────────────────────────────────────┐
 │           Celery Async AI Workers               │
 │                                                 │
-│  Judge    ── Gemini AI Analysis + Commit Checks │
-│  Queue    ── Background job dispatcher          │
+│  Engine   ── Google Gemini 2.5 Logic Assessment │
+│  Queue    ── Distributed Job Dispatcher         │
 └─────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Deployment & Installation
 
-### Prerequisites
-- **Python 3.10+**
-- **Node.js 18+**
-- **Docker Compose** (Required for scaling stack)
-- A [GitHub OAuth App](https://github.com/settings/developers)
-- A [Google Gemini API Key](https://aistudio.google.com/apikey)
+Want to deploy MiniCode globally for your institution? View the [DEPLOYMENT.md](DEPLOYMENT.md) guide for a transparent cost analysis spanning **$0/month Free Tier** deployment using Supabase, Vercel, and Render, scaling up to high-traffic paid tiers.
 
-### 1. Clone the Repository
+### Setting Up Locally via Docker
+
+A complete `docker-compose.yml` environment is included for instant, zero-friction spinning up.
+
 ```bash
-git clone https://github.com/your-username/LeetCodeCodingClub.git
-cd LeetCodeCodingClub
-```
-
-### 2. Full Up Scale (Docker Recommended)
-The infrastructure requires Postgres, Redis, Celery, and the Backend API. Docker compose automatically links them all:
-```bash
+# 1. Clone & Env Setup
+git clone https://github.com/your-username/MiniCode.git
+cd MiniCode
 cp .env.example .env
-# Edit .env with your acquired GitHub OAuth and Gemini API keys!
-docker compose up --build
+
+# 2. Add your GitHub OAuth IDs and Gemini API Keys in .env
+
+# 3. Pull Images & Launch
+docker-compose up -d --build
 ```
+> **Backend**: [http://localhost:8000/docs](http://localhost:8000/docs) (OpenAPI UI)
+> **Frontend**: [http://localhost:3000](http://localhost:3000)
 
-**Wait for the database container to stand up, then run the DB initialization & seeder on the backend container:**
-```bash
-docker compose exec backend python seed.py
-```
-
-Visit **[http://localhost:3000](http://localhost:3000)** and start coding! 🎉
+## 🎨 UI/UX Design Philosophies
+The UI/UX is built to break away from traditional "intimidating" dark-mode coding arenas. We utilize an aesthetic of approachability, incorporating fluid micro-animations, glassmorphism components, and neon-purple highlights. Take a closer look at the [DESIGN_VISION.md](DESIGN_VISION.md) for UX philosophies.
 
 ---
-
-## 🧪 K6 Load Testing
-
-MiniCode ships with a high-concurrency stress testing script to validate the caching layers and Database connection pooling limits. 
-
-Ensure the backend stack is fully running via Docker, then run k6 locally against the load endpoints.
-```bash
-k6 run load_test.js
-```
-The test suite validates 95th-percentile response limits under staged loading targeting 50, then 100, then 200 concurrent virtual users.
-
----
-
-## 🔑 Default Sandbox Accounts
-
-After running `seed.py`, use these accounts to test the platform:
-
-| Username | Password | Role |
-|----------|----------|------|
-| `admin` | `admin` | **Admin** — full system access |
-| `facultyname` | `password` | **Faculty** — problem management |
-| *GitHub Login* | *OAuth* | **Student** — solve & submit |
-
----
-
-## 🛠️ Tech Stack Matrix
-
-| Layer | Core Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend Framework** | Next.js 16, React 19 | Fast SSR, modern routing, UI framework |
-| **Styling & UX** | TailwindCSS 4, Framer Motion | Fluid design system, slick animations |
-| **Backend API** | FastAPI, Uvicorn | Lightning-fast REST API, full async support |
-| **Background Jobs** | Celery + Redis Broker | Dedicated AI grading workers unblocking Node threads |
-| **Caching Layer** | Redis 7 + FastAPICache | Ultra-fast endpoint memory acceleration |
-| **ORM & Database** | SQLModel / PostgreSQL 15 | Robust scaleable dataset query processing |
-| **Security & Auth** | JWT, bcrypt, slowapi, GitHub OAuth | Zero-trust multi-role authentication & rate tracking |
-| **AI Processing** | Google Gemini 2.5 Flash | Real-time code evaluation & plagiarism detection |
-
----
-
-## 📈 Roadmap
-
-- [x] Code plagiarism & AI generation detection
-- [x] Fully distributed load-scale architecture (Celery, Postgres, Redis)
-- [ ] Traditional test-case-based judge (Docker sandboxed isolated execution via OpenEnv)
-- [ ] Multiple modular AI Judge personas (CTO, Professor, Roast mode)
-- [ ] Real-time leaderboard push updates via WebSockets
-- [ ] Submission history with visual diff comparisons
-- [ ] Multi-team based competitive tournaments
-
----
-
-## 👥 Authors
-
-Built by **Daku3011**
+*Elevate competitive programming to the modern enterprise level.* 🚀

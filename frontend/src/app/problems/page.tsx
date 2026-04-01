@@ -226,7 +226,7 @@ export default function ProblemsPage() {
                     </h3>
                 </div>
 
-                <div className="space-y-4 max-w-4xl">
+                <div className="space-y-4 max-w-8xl">
                     {loading ? (
                         [1, 2, 3].map((i) => (
                             <div key={i} className="h-32 w-full bg-white/5 animate-pulse rounded-2xl border border-white/5" />

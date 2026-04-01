@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Users, Trophy, Clock, ArrowLeft, ExternalLink, CheckCircle, UserPlus, LogOut, Send, Loader2 } from "lucide-react";
+import { Calendar, Users, Trophy, Clock, ArrowLeft, ExternalLink, UserPlus, LogOut, Send, Loader2, Plus, X, Check, User, Mail, Bell } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +25,9 @@ interface EventDetail {
     author_name: string;
     created_at: string;
     is_joined: boolean;
+    user_submission_status: string | null; // null, "submitted", "rewarded", "disqualified", "withdrawn", "completed"
+    user_xp_awarded: number;
+    user_feedback: string | null;
     participants: {
         id: number;
         user_id: number;
@@ -46,6 +49,16 @@ interface LeaderboardEntry {
     submitted_at: string;
 }
 
+interface Invitation {
+    id: number;
+    event_id: number;
+    event_title: string;
+    from_username: string;
+    from_avatar: string | null;
+    team_name: string;
+    created_at: string;
+}
+
 export default function EventDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -59,11 +72,21 @@ export default function EventDetailPage() {
     const [repoUrl, setRepoUrl] = useState("");
     const [submissionNotes, setSubmissionNotes] = useState("");
     const [showSubmitForm, setShowSubmitForm] = useState(false);
+    
+    // Team system
+    const [showTeamModal, setShowTeamModal] = useState(false);
+    const [teamName, setTeamName] = useState("");
+    const [inviteUsername, setInviteUsername] = useState("");
+    const [sendingInvite, setSendingInvite] = useState(false);
+    const [invitedMembers, setInvitedMembers] = useState<string[]>([]);
+    const [invitations, setInvitations] = useState<Invitation[]>([]);
+    const [showInvitations, setShowInvitations] = useState(false);
 
     useEffect(() => {
         if (params.id) {
             fetchEvent();
             fetchLeaderboard();
+            fetchInvitations();
         }
     }, [params.id]);
 
@@ -88,11 +111,27 @@ export default function EventDetailPage() {
         }
     };
 
-    const handleJoin = async () => {
+    const fetchInvitations = async () => {
+        try {
+            const response = await api.get("/events/invitations");
+            setInvitations(response.data);
+        } catch (error) {
+            // Silently fail - user might not be logged in
+        }
+    };
+
+    const handleJoin = async (asTeam: boolean = false) => {
         if (!event) return;
         setJoining(true);
         try {
-            await api.post(`/events/${event.id}/join`);
+            if (asTeam && teamName) {
+                await api.post(`/events/${event.id}/join`, { team_name: teamName });
+            } else {
+                await api.post(`/events/${event.id}/join`);
+            }
+            setShowTeamModal(false);
+            setTeamName("");
+            setInvitedMembers([]);
             fetchEvent();
         } catch (error: any) {
             alert(error.response?.data?.detail || "Failed to join event");
@@ -131,18 +170,44 @@ export default function EventDetailPage() {
         }
     };
 
+    const sendInvite = async () => {
+        if (!inviteUsername || !event) return;
+        setSendingInvite(true);
+        try {
+            await api.post(`/events/${event.id}/invite`, {
+                to_username: inviteUsername,
+                team_name: teamName || `${user?.username}'s Team`,
+            });
+            setInvitedMembers([...invitedMembers, inviteUsername]);
+            setInviteUsername("");
+        } catch (error: any) {
+            alert(error.response?.data?.detail || "Failed to send invitation");
+        } finally {
+            setSendingInvite(false);
+        }
+    };
+
+    const respondToInvitation = async (invitationId: number, action: "accept" | "reject") => {
+        try {
+            await api.post(`/events/invitations/${invitationId}/respond`, { action });
+            setInvitations(prev => prev.filter(i => i.id !== invitationId));
+            if (action === "accept") {
+                fetchEvent();
+            }
+        } catch (error: any) {
+            alert(error.response?.data?.detail || "Failed to respond");
+        }
+    };
+
     const getTimeRemaining = (endDate: string | null) => {
         if (!endDate) return "No deadline";
         const end = new Date(endDate);
         const now = new Date();
         const diff = end.getTime() - now.getTime();
-        
         if (diff <= 0) return "Ended";
-        
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        
         if (days > 0) return `${days}d ${hours}h ${minutes}m`;
         if (hours > 0) return `${hours}h ${minutes}m`;
         return `${minutes}m`;
@@ -189,10 +254,7 @@ export default function EventDetailPage() {
             
             <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Back Button */}
-                <Link 
-                    href="/events" 
-                    className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
-                >
+                <Link href="/events" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6">
                     <ArrowLeft className="w-4 h-4" />
                     Back to Events
                 </Link>
@@ -247,12 +309,43 @@ export default function EventDetailPage() {
                                 <>
                                     {event.is_joined ? (
                                         <>
-                                            <button
-                                                onClick={() => setShowSubmitForm(!showSubmitForm)}
-                                                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-                                            >
-                                                <Send className="w-4 h-4" /> Submit Work
-                                            </button>
+                                            {/* Show status badge if submitted/rewarded/etc */}
+                                            {event.user_submission_status && (
+                                                <div className={clsx(
+                                                    "px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2",
+                                                    event.user_submission_status === "rewarded" ? "bg-green-500/20 text-green-400 border border-green-500/30" :
+                                                    event.user_submission_status === "disqualified" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                                    event.user_submission_status === "withdrawn" ? "bg-slate-500/20 text-slate-400 border border-slate-500/30" :
+                                                    event.user_submission_status === "completed" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                                                    "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                                )}>
+                                                    {event.user_submission_status === "rewarded" && <><Trophy className="w-4 h-4" /> +{event.user_xp_awarded} XP Awarded</>}
+                                                    {event.user_submission_status === "disqualified" && <><X className="w-4 h-4" /> Disqualified</>}
+                                                    {event.user_submission_status === "withdrawn" && <><LogOut className="w-4 h-4" /> Withdrawn</>}
+                                                    {event.user_submission_status === "completed" && <><Check className="w-4 h-4" /> Event Completed</>}
+                                                    {event.user_submission_status === "submitted" && <><Send className="w-4 h-4" /> Submitted - Awaiting Review</>}
+                                                </div>
+                                            )}
+                                            {event.user_feedback && (
+                                                <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-slate-300">
+                                                    <span className="text-slate-500 text-xs">Faculty Feedback:</span> {event.user_feedback}
+                                                </div>
+                                            )}
+                                            {/* Only show submit button if submitted but not yet reviewed */}
+                                            {(!event.user_submission_status || event.user_submission_status === "submitted") && (
+                                                <button
+                                                    onClick={() => setShowSubmitForm(!showSubmitForm)}
+                                                    className={clsx(
+                                                        "px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all",
+                                                        event.user_submission_status === "submitted"
+                                                            ? "bg-amber-600 hover:bg-amber-700 text-white"
+                                                            : "bg-purple-600 hover:bg-purple-700 text-white"
+                                                    )}
+                                                >
+                                                    <Send className="w-4 h-4" />
+                                                    {event.user_submission_status === "submitted" ? "Update Submission" : "Submit Work"}
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={handleLeave}
                                                 className="bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border border-white/10"
@@ -261,16 +354,33 @@ export default function EventDetailPage() {
                                             </button>
                                         </>
                                     ) : (
-                                        <button
-                                            onClick={handleJoin}
-                                            disabled={joining}
-                                            className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
-                                        >
-                                            {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                                            {joining ? "Joining..." : "Join Event"}
-                                        </button>
+                                        <>
+                                            <button
+                                                onClick={() => setShowTeamModal(true)}
+                                                disabled={joining}
+                                                className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
+                                            >
+                                                {joining ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                                                {joining ? "Joining..." : "Join Event"}
+                                            </button>
+                                            {event.event_type === "team_project" && (
+                                                <p className="text-xs text-slate-500 text-center">
+                                                    You can join solo or create a team
+                                                </p>
+                                            )}
+                                        </>
                                     )}
                                 </>
+                            )}
+                            {/* Event not active */}
+                            {event.status !== "active" && event.is_joined && (
+                                <div className={clsx(
+                                    "px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2",
+                                    event.status === "completed" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                                    "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                )}>
+                                    {event.status === "completed" ? <><Check className="w-4 h-4" /> Event Completed</> : <><X className="w-4 h-4" /> Event {event.status}</>}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -319,6 +429,53 @@ export default function EventDetailPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Invitation Banner */}
+                {invitations.length > 0 && (
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-sm font-bold text-blue-400 flex items-center gap-2">
+                                <Bell className="w-4 h-4" />
+                                Team Invitations ({invitations.length})
+                            </h3>
+                        </div>
+                        <div className="space-y-3">
+                            {invitations.map((inv) => (
+                                <div key={inv.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold overflow-hidden">
+                                            {inv.from_avatar ? (
+                                                <img src={inv.from_avatar} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                inv.from_username.slice(0, 2).toUpperCase()
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-white font-medium">
+                                                <span className="text-blue-400">@{inv.from_username}</span> invited you to join <span className="text-purple-400">{inv.team_name}</span>
+                                            </p>
+                                            <p className="text-xs text-slate-500">for {inv.event_title}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => respondToInvitation(inv.id, "accept")}
+                                            className="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-all"
+                                        >
+                                            <Check className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => respondToInvitation(inv.id, "reject")}
+                                            className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-6">
@@ -458,6 +615,116 @@ export default function EventDetailPage() {
                     </div>
                 )}
             </div>
+
+            {/* Join/Team Modal */}
+            {showTeamModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-[#1a142e] border border-white/10 rounded-2xl p-6 w-full max-w-lg">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-white">Join Event</h3>
+                            <button onClick={() => { setShowTeamModal(false); setTeamName(""); setInvitedMembers([]); }} className="text-slate-400 hover:text-white">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {event.event_type === "team_project" ? (
+                            <div className="space-y-4">
+                                <div className="flex gap-3 mb-4">
+                                    <button
+                                        onClick={() => handleJoin(false)}
+                                        disabled={joining}
+                                        className="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all border border-white/10"
+                                    >
+                                        <User className="w-4 h-4 inline mr-2" />
+                                        Join Solo
+                                    </button>
+                                    <button
+                                        onClick={() => setTeamName(teamName || `${user?.username}'s Team`)}
+                                        className={clsx(
+                                            "flex-1 px-4 py-3 rounded-xl font-medium transition-all",
+                                            teamName
+                                                ? "bg-purple-600 text-white"
+                                                : "bg-white/5 hover:bg-white/10 text-white border border-white/10"
+                                        )}
+                                    >
+                                        <Users className="w-4 h-4 inline mr-2" />
+                                        Create Team
+                                    </button>
+                                </div>
+
+                                {teamName && (
+                                    <>
+                                        <div>
+                                            <label className="text-sm font-medium text-slate-400 mb-1 block">Team Name</label>
+                                            <input
+                                                type="text"
+                                                value={teamName}
+                                                onChange={(e) => setTeamName(e.target.value)}
+                                                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                                placeholder="Enter team name"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium text-slate-400 mb-1 block">Invite Members by Username</label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={inviteUsername}
+                                                    onChange={(e) => setInviteUsername(e.target.value)}
+                                                    onKeyDown={(e) => e.key === "Enter" && sendInvite()}
+                                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                                    placeholder="Enter username"
+                                                />
+                                                <button
+                                                    onClick={sendInvite}
+                                                    disabled={sendingInvite || !inviteUsername}
+                                                    className="px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white transition-all"
+                                                >
+                                                    {sendingInvite ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {invitedMembers.length > 0 && (
+                                            <div className="p-3 bg-white/5 rounded-xl">
+                                                <p className="text-xs text-slate-400 mb-2">Invited members:</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {invitedMembers.map((m, i) => (
+                                                        <span key={i} className="px-2 py-1 rounded-lg bg-purple-500/20 text-purple-400 text-xs flex items-center gap-1">
+                                                            <User className="w-3 h-3" />
+                                                            @{m}
+                                                            <button onClick={() => setInvitedMembers(invitedMembers.filter((_, idx) => idx !== i))} className="hover:text-red-400">
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <button
+                                            onClick={() => handleJoin(true)}
+                                            disabled={joining || !teamName}
+                                            className="w-full px-4 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold transition-all"
+                                        >
+                                            {joining ? "Joining..." : `Join as ${teamName}`}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => handleJoin(false)}
+                                disabled={joining}
+                                className="w-full px-4 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold transition-all"
+                            >
+                                {joining ? "Joining..." : "Join Event"}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

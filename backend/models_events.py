@@ -49,11 +49,35 @@ class EventParticipant(SQLModel, table=True):
     team_name: Optional[str] = None
     team_members: Optional[str] = None  # JSON string of user IDs for team projects
     status: str = Field(default="active")  # "active", "withdrawn", "disqualified"
+    xp_awarded: int = Field(default=0)  # XP actually awarded by faculty
+    feedback: Optional[str] = None  # Faculty feedback for participant
     joined_at: datetime = Field(default_factory=datetime.utcnow)
 
     # Relationships
     event: Event = Relationship(back_populates="participants")
     user: User = Relationship()
+
+
+class TeamInvitation(SQLModel, table=True):
+    """Invitations to join a team for an event."""
+
+    __tablename__ = "team_invitations"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    event_id: int = Field(foreign_key="events.id", index=True)
+    from_user_id: int = Field(foreign_key="users.id")  # Who sent the invite
+    to_user_id: int = Field(foreign_key="users.id")  # Who receives the invite
+    team_name: str
+    status: str = Field(
+        default="pending"
+    )  # "pending", "accepted", "rejected", "cancelled"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    responded_at: Optional[datetime] = None
+
+    # Relationships
+    event: Event = Relationship()
+    from_user: User = Relationship(sa_relationship_kwargs={"foreign_keys": "TeamInvitation.from_user_id"})
+    to_user: User = Relationship(sa_relationship_kwargs={"foreign_keys": "TeamInvitation.to_user_id"})
 
 
 class EventSubmission(SQLModel, table=True):

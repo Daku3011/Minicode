@@ -1,113 +1,92 @@
 # 🎨 MiniCode Design & UX Vision
 
-This document outlines the ideal User Experience (UX) and Design System for **MiniCode**, specifically tailored from the perspective of a **newbie student** who might be intimidated by traditional, harsh competitive programming platforms.
+This document details the precise UI/UX design philosophy guiding **MiniCode**. Our mission is simple: break down the overwhelming, dense interfaces of legacy competitive programming platforms (like Codeforces) and deliver an ultra-premium, **Stitch-grade** SaaS application that welcomes junior developers rather than intimidating them.
 
-The goal is to use this document as a blueprint for generating stunning, intuitive interfaces using **Stitch** or other design tools.
-
----
-
-## 1. 🌟 Design Philosophy: The "Newbie" Perspective
-As a beginner, traditional coding judges (like Codeforces or raw LeetCode) look scary. They have too much text, confusing terminology, and harsh red "Wrong Answer" text. 
-
-**For MiniCode, we want:**
-- **Zero Friction:** I need to know exactly what to click when I log in.
-- **Encouragement over Punishment:** Failing a test case shouldn't feel bad. It should feel like a learning opportunity guided by my AI mentor.
-- **Gamified Progress:** I want to see my XP bar go up, earn badges, and see a "streak" flame.
-- **Premium Feel:** The platform should look like a modern, expensive SaaS tool. It should have real-time animations, smooth transitions, and a gorgeous color palette.
+We approach this design from the viewpoint of a **Gen-Z developer** or computer science student who expects rich, interactive interfaces, zero cognitive load, and engaging micro-interactions.
 
 ---
 
-## 2. 🎨 Core Aesthetics & Theme
-To achieve the "Wow" factor and feel highly premium:
-- **Theme:** "Sleek Dark Mode" with vibrant neon accents (Glassmorphism elements). 
-- **Colors:**
-  - **Background:** Deep space slate (`#0F172A` or `#09090b`)
-  - **Cards/Surfaces:** Slightly lighter translucent panels with soft blur (backdrop-blur).
-  - **Primary Accents:** Electric Purple (`#8B5CF6`) for primary actions, Neon Cyan (`#06b6d4`) for secondary.
-  - **Success/Feedback:** Emerald Green (`#10b981`) for correct answers. Hot Pink/Coral (`#f43f5e`) for errors (softened, not a harsh red).
-- **Typography:** Modern, clean sans-serif like **Inter**, **Outfit**, or **Plus Jakarta Sans**. Code snippets should use **JetBrains Mono** or **Fira Code**.
-- **Micro-animations:** Buttons should gently scale on hover. The XP bar should animate smoothly when filling up. Confetti or subtle glowing effects when a problem is solved correctly.
+## 1. 🌟 Design Philosophy: The "Modern Hacker" Perspective
+
+Traditional judges look like 1990s terminal emulation screens packed with raw table inputs and abrasive red "Wrong Answer" boxes. They rely on fear of failure. 
+
+**For MiniCode, we operate differently:**
+- **Zero Friction Navigation:** Upon login, visual hierarchy naturally pulls the user to their next unresolved problem.
+- **Empowerment over Punishment:** Failing a unit test isn't branded with raw red ASCII. It is branded as an "Opportunity," accompanied by the Gemini AI Mentor delivering gentle, precise guidance.
+- **Gamified Progress:** Real-time XP accumulation bars, "Daily Streak" flame graphs, and SVG badge rewards make progress heavily addicting.
+- **Enterprise SaaS Feel:** The platform utilizes Next.js App Router and Framer Motion to instantly transition states. Deep backdrop blurring, glowing borders, and neon shadows establish a "Cyberpunk-lite" luxury aesthetic.
 
 ---
 
-## 3. 🖥️ Key Screens & Ideal Features (Stitch Blueprints)
+## 2. 🎨 Core Aesthetics & Theme System
 
-When generating these screens in Stitch, use the following feature sets and layouts:
+We achieve our "Wow" factor through meticulously crafted CSS variables and Tailwind preset architecture.
 
-### A. The Student Dashboard / Profile (`/profile`)
-**Vibe:** Clean whiteboard aesthetic—light, sketchy, hand-drawn feel. A breath of fresh air compared to the dark coding arena.
-**Access:** Students reach this by clicking their profile photo in the navbar from any page.
-**Theme:** Light mode (`#FAFAF9`), sketch-borders, marker-highlight accents, sticky-note task lists, hand-drawn underlines.
-**Features to include:**
-- **Sidebar:** Navigation for Dashboard, My Submissions, Achievements, Insights, Settings, and Docs. Includes a "Profile Completion" progress bar at the bottom.
-- **Welcome Hero:** Personalized greeting with the user's name and a hand-drawn underline. A "Start Coding" button links back to `/problems`.
-- **Metric Cards (4-column grid):** Problems Solved, Total Submissions, Current Streak, Global Rank. Each card has a gradient progress bar and a status badge.
-- **Activity Chart:** An SVG line chart showing submission activity over the past 7 days with a whiteboard-style gradient fill.
-- **Sticky-Note To-Do:** A rotated, yellow sticky note with checkboxes for the student's personal task list.
-- **Recent Activity Feed:** Shows recent submissions and syncs with avatars and timestamps.
-- **Topic Progress Table:** A data table showing mastery for each topic (Arrays, Strings, Loops) with progress bars, status badges, and action links.
-- **MiniCode Logo:** In the navbar, the logo links to `/problems` (the Coding Arena), not the dashboard.
-
-### B. The Problem Solving Arena
-**Vibe:** Focused, professional, but not overwhelming.
-**Features to include:**
-- **Layout:** Split pane.
-  - **Left Pane (The Lore):** Problem description written engagingly. Clear examples with visual breakdowns (not just raw text input/output, but maybe small diagrams or highlighted code).
-  - **Right Pane (The Action):** Since they code locally and push to GitHub, this pane should show the connected repository status (e.g., "🐙 Connected to `username/minicode-two-sum`").
-- **The Magic Button:** A big, beautiful, glowing button saying **"Sync & Evaluate Code"**.
-- **Status Tracker:** A timeline showing the evaluation state: "Fetching repo..." -> "Running tests..." -> "Gemini AI is analyzing...".
-
-### C. The AI Mentor Feedback Screen (Post-Submission)
-**Vibe:** Helpful, instructive, like a friendly teacher.
-**Features to include:**
-- **The Score Matrix:** Instead of just "Pass/Fail", show a beautiful grid:
-  - ✅ Correctness (100/100)
-  - ⚡ Time Complexity (O(n) - Great!)
-  - 🧠 Code Quality (85/100)
-- **The "Mentor's Notes":** A chat-bubble style section where the Gemini AI gives a personalized breakdown: *"Awesome job using a HashMap! Next time, try to handle the edge case where the array is empty to make it perfectly robust."*
-- **Hints (If Failed):** If the user fails, don't show the exact answer. Have a blurred box that says "Click to reveal a hint from your AI Mentor".
-
-### D. The Leaderboard & Profile
-**Vibe:** Competitive but friendly.
-**Features to include:**
-- **Leaderboard:** A podium aesthetic for the top 3 users. Rows for other users with their avatars, XP, and badges. 
-- **Profile Page:** A GitHub-style contribution graph (green squares) to show activity. A "Trophy Case" showcasing badges like "Bug Squasher" or "First Blood" (for solving a problem first).
-
-### E. The Login / Welcome Screen
-**Vibe:** Exciting, modern, a gateway to greatness.
-**Features to include:**
-- **Split Screen or Floating Card Layout:** A visually stunning background (maybe an abstract dark mesh or gentle animated gradient) with a sleek glass card in the center.
-- **Clear User Paths:** 
-  - A gigantic, inviting **"Continue with GitHub"** button prominent for students. (Includes the GitHub logo).
-  - A smaller, secondary tab or link for **"Faculty / Admin Login"** to keep the student path perfectly clear.
-- **Value Proposition:** Short punchy text on the side: "Master your skills. Real repos. AI Feedback." 
-
-### F. The Faculty Portal
-**Vibe:** Analytical, organized, empowering.
-**Features to include:**
-- **Dashboard Overview:** High-level metrics showing class engagement: "Total Submissions Today", "Average Pass Rate", "Most Struggled Problem". 
-- **Problem Manager:** A sleek data table listing their created problems. Status dots (Active/Draft). 
-- **Problem Creation Wizard:** A step-by-step form (not a huge intimidating wall of inputs).
-  - Step 1: Description & Lore.
-  - Step 2: Test Cases (with a clean UI to add input/output pairs).
-  - Step 3: Deployment.
-- **Student Insights:** A view to seeing how a specific student is doing, looking at their GitHub commit timeline directly from the portal.
-
-### G. The Admin Portal
-**Vibe:** Command Center, secure, powerful.
-**Features to include:**
-- **System Health:** Quick widgets showing API usage (Gemini limits, GitHub API limits), active users, and database health.
-- **User Management Grid:** A powerful, filterable table. Ability to quickly revoke access, reset roles, or ban abusive users.
-- **Global Settings:** Toggles for system-wide features (e.g., "Maintenance Mode", "Disable New Registrations"). 
+- **Theme Base:** Sleek Dark Mode (Glassmorphism + Neon).
+- **Base Canvas Colors:**
+  - **Background Matrix:** Deep Space Obsidian (`#09090b` or `#0F172A`).
+  - **Elevated Surfaces:** Frost-glass translucent panels (`rgba(15, 23, 42, 0.6)`) heavily utilizing `backdrop-blur-md`.
+- **Primary Brand Accents:**
+  - **Primary Call-to-Action:** Electric Indigo (`#8B5CF6`).
+  - **Secondary Accents:** Neon Cyan (`#06b6d4`).
+- **Semantic Feedback Metrics:**
+  - **Success / 100% Correct:** Glowing Emerald (`#10b981`).
+  - **Errors / Output Mismatch:** Softened Coral/Rose (`#f43f5e`) – distinct from aggressive "Alarm Red."
+- **Typography:**
+  - **Headings / Action Items:** Google Fonts `Outfit` or `Plus Jakarta Sans`.
+  - **Code Strings / Logs:** Modern ligatures via `JetBrains Mono`.
+- **Micro-Animations:** Buttons scale up exactly `1.02x` on hover. Filling an XP bar emits a fast, fluid ease-out animation. Submitting a correct algorithm flashes the screen edge emerald and renders CSS confetti.
 
 ---
 
-## 4. 📝 Summary of Stitch Prompts 
-If using the Stitch UI generator, here are condensed prompts to build the UI:
+## 3. 🖥️ Key Screen Blueprints
 
-1. **Dashboard:** *"A dark-mode dashboard for a beginner coding student. Top nav with user level and streak (🔥). A beautiful hero section welcoming them. A grid of problem cards with 'Easy/Medium/Hard' tags and a prominent 'Start in GitHub' button. Glassmorphism styling, deep blue/slate backgrounds with vibrant purple accents."*
-2. **Problem View:** *"A coding problem page with a split layout. Left side has beautifully formatted problem instructions. Right side has a sleek widget showing GitHub repo connection status, and a large glowing 'Evaluate with AI' button. Dark mode, modern typography, extremely polished."*
-3. **AI Feedback:** *"A success screen for a coding submission. Shows a beautiful score breakdown (Correctness, Speed, Quality). Features a friendly card outlining personalized AI mentor feedback. Uses emerald greens and sleek dark slate colors. Confetti-like subtle background effects."*
-4. **Login Screen:** *"A dark mode login screen for a coding platform. A sleek glassmorphism card in the center. A large, prominent 'Log in with GitHub' button. A subtle toggle for 'Faculty Login'. Background should have a gorgeous, abstract deep purple and cyan glowing mesh."*
-5. **Faculty Dashboard:** *"A clean, analytical dashboard for a computer science professor. Dark mode. Shows cards for 'Total Submissions' and 'Pass Rate'. A data table listing active coding assignments. A prominent 'Create New Problem' button. Professional yet modern."*
-6. **Admin Command Center:** *"A highly technical admin dashboard. Dark mode. System health widgets showing API usage and active connections. A compact data grid for managing user roles. Accent colors should emphasize system status (green for healthy, yellow for warnings)."*
+For developers converting this vision to actual frontend code (or utilizing generative AI UI tools like Stitch), adhere closely to these interface layouts.
+
+### A. The Student Headquarters (`/profile`)
+**Vibe:** A tech entrepreneur's command center. Clean, organized, highly analytical.
+**Elements:**
+- **Navbar / Header:** Miniature glowing avatar linking to settings. MiniCode logo prominent on the left.
+- **Data Metric HUD (4x Grid):** 
+  - Problems Solved (Circular Ring Chart)
+  - Total AI-Evaluated Submissions 
+  - Login Streak (Flame Icon)
+  - XP / Global Rank Status.
+- **Activity Heatmap:** A visual identical to the famous GitHub contribution graph, showing activity across 365 days. Hovering over a square reveals precision analytics ("3 Submissions, 50 XP").
+- **Recent Feed:** A timeline on the right side indicating recent platform actions: "Synced *Two-Sum*", "Leveled Up to Novice Hacker!".
+
+### B. The Coding Arena
+**Vibe:** Focused, deep work, zero distractions.
+**Elements:**
+- **Split Pane Interface:**
+  - **Left Pane (Lore & Requirements):** The problem is not raw math. It's written like a story. Features rich markdown highlighting, elegant "Example 1 / Example 2" colored code boxes, and edge case breakdowns.
+  - **Right Pane (Automated Pipeline):** Since coding happens locally via VS Code and GitHub, this pane confirms the GitHub sync status ("🐙 Connected to `username/minicode-array-hash`").
+- **The Core Action Button:** A massive, pulsing gradient button spanning the bottom right pane: **"Sync & Evaluate Code."** Clicking it triggers a multi-stage loading skeleton: "Fetching git logs..." -> "Running logic matrices..." -> "Gemini AI processing...".
+
+### C. The Gemini AI Mentor Feedback Matrix
+**Vibe:** A private tutoring session wrapped in gorgeous typography.
+**Elements:**
+- **The Evaluation Grid:** Pass/fail data converted into aesthetic UI.
+  - Correctness Metric (0-100 Pass Rate).
+  - Time Complexity Analysis Card (`O(N)` verification).
+  - Clean Code Style Output.
+- **The Mentor's Bubble:** A distinct frosted-glass chat bubble where the AI speaks conversationally: *"Excellent use of the Two-Pointer paradigm here. A slight optimization: what if the array is already sorted? You could exit the while loop early."*
+
+### D. The Application Gateway (Login Screen)
+**Vibe:** Entrance to the Matrix.
+**Elements:**
+- **Background Layer:** A slow-moving, dark-indigo abstract mesh or particle system.
+- **The Authorization Card:** A heavily blurred semi-transparent box centered on the screen.
+- A single, prominent SVG-rich button: **"Authenticate via GitHub Workspace."**
+- A subtle, hyperlinked footer option for Faculty / Administrative access.
+
+### E. The Faculty Command Portal
+**Vibe:** High-level analytics, god-mode, total control.
+**Elements:**
+- **Macro-Analytics Deck:** "Total Class Submissions Today", "Plagiarism Red Flags Alert", "Median Pass Rate".
+- **Real-Time Student Activity Stream:** Live updating list of students pushing to repositories.
+- **Event Creator Wizard:** A fluid, non-intrusive modal for spinning up new hackathons or classroom environments.
+
+---
+
+By unifying under this design vision, MiniCode breaks away from the sterile reality of online judges and builds an immersive, engaging platform for the next generation of engineers.

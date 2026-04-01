@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { Terminal, Github, ArrowRight, Loader2, Code2, Zap } from "lucide-react";
 import api from "@/lib/api";
@@ -55,8 +56,8 @@ export default function LoginPage() {
             {/* Left Side: Visual/Branding */}
             <div className="relative hidden lg:flex w-1/2 flex-col justify-between p-12 mesh-gradient overflow-hidden">
                 {/* Abstract Mesh Visual (Decorative) */}
-                <div 
-                    className="absolute inset-0 opacity-30" 
+                <div
+                    className="absolute inset-0 opacity-30"
                     style={{
                         backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBsVUwlEMkNKH5AFqHy3-hQsdxt0vQgawSc44X1zb4yxWyL-8Amz-i6qbVGnPF2HaslNrWvPpvlmAFCtXxbVi-1uZtvRd32wdFLNFrXCd1F4xfoT1-nw2UekKcWrBrTzsHBqoPVrlecP6bv-uZv8KFYGzfrxck3hnBPDIOe3kYcpZiZvqpWbDGAeXd59K3jqQreXIylldg8TtQGgaB5mMAlnU_azawKg61LyRtRSFJbhingmHoJpZmrxYuhk6XWCPWw7i7z5klk5knd')",
                         backgroundSize: 'cover',
@@ -64,7 +65,7 @@ export default function LoginPage() {
                     }}
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
-                
+
                 <div className="relative z-10 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
                         <Terminal className="text-white w-6 h-6" />
@@ -74,11 +75,11 @@ export default function LoginPage() {
 
                 <div className="relative z-10 space-y-6">
                     <h1 className="text-6xl font-black leading-tight tracking-tighter text-white">
-                        Master your skills.<br />
-                        <span className="text-primary">Real repos.</span><br />
-                        AI Feedback.
+                        Code like a pro.<br />
+                        <span className="text-primary">Real-world tasks.</span><br />
+                        AI-driven growth.
                     </h1>
-                    <p className="max-w-md text-lg text-slate-400">
+                    <p className="max-w-md text-lg text-slate-200">
                         Step into a production-ready environment. Solve real engineering challenges with the guidance of advanced AI.
                     </p>
 
@@ -99,7 +100,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="relative z-10 text-sm text-slate-500">
-                    © 2026 MiniCode Labs. All rights reserved.
+                    © 2026 <a href="https://github.com/Daku3011" className="underline hover:text-purple-400 transition-colors" target="_blank">Daku3011</a> <a href="https://scet.ac.in" className="underline hover:text-purple-400 transition-colors" target="_blank">SCET</a>. All rights reserved.
                 </div>
             </div>
 
@@ -113,7 +114,7 @@ export default function LoginPage() {
                         </div>
                         <div className="text-center">
                             <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">MiniCode</h1>
-                            <p className="text-slate-500 dark:text-slate-400 mt-2">Master your skills. Real repos. AI Feedback.</p>
+                            <p className="text-slate-500 dark:text-slate-400 mt-2">Code like a pro. Real-world tasks. AI-driven growth.</p>
                         </div>
                     </div>
 
@@ -129,7 +130,7 @@ export default function LoginPage() {
                         <div className="space-y-4">
                             {!isStaffMode ? (
                                 <>
-                                    <button 
+                                    <button
                                         onClick={handleGithubLogin}
                                         className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-slate-900 dark:bg-white px-5 py-4 text-white dark:text-slate-900 transition-transform active:scale-95"
                                     >
@@ -146,7 +147,7 @@ export default function LoginPage() {
                                         </div>
                                     </div>
 
-                                    <button 
+                                    <button
                                         onClick={() => setIsStaffMode(true)}
                                         className="flex w-full cursor-pointer items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 px-5 py-4 text-slate-900 dark:text-white transition-all hover:bg-slate-100 dark:hover:bg-slate-800/50"
                                     >
@@ -211,7 +212,7 @@ export default function LoginPage() {
                         {!isStaffMode && (
                             <div className="mt-10 flex flex-col gap-3">
                                 <p className="text-center text-xs text-slate-500 px-6 leading-relaxed">
-                                    By continuing, you agree to our <a className="underline" href="#">Terms of Service</a> and <a className="underline" href="#">Privacy Policy</a>.
+                                    By continuing, you agree to our <Link className="underline hover:text-purple-400 transition-colors" href="/terms">Terms of Service</Link> and <Link className="underline hover:text-purple-400 transition-colors" href="/privacy">Privacy Policy</Link>.
                                 </p>
                             </div>
                         )}

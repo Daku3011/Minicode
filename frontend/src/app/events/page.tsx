@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Calendar, Users, Trophy, Clock, Filter, Search, Zap, Target, Star, ChevronRight } from "lucide-react";
+import { Calendar, Users, Trophy, Clock, Filter, Search, Zap, Target, Star, ChevronRight, Plus } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,8 +41,10 @@ export default function EventsPage() {
     const { user } = useAuth();
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<string>("all");
+    const [activeTab, setActiveTab] = useState<string>("upcoming");
     const [searchQuery, setSearchQuery] = useState("");
+
+    const isFaculty = user?.role === "faculty" || user?.role === "admin";
 
     useEffect(() => {
         fetchEvents();
@@ -59,12 +61,29 @@ export default function EventsPage() {
         }
     };
 
+    const isUpcoming = (event: Event) => {
+        const now = new Date();
+        const start = new Date(event.start_date);
+        return start > now || event.status === "active";
+    };
+
+    const isPast = (event: Event) => {
+        const now = new Date();
+        const end = event.end_date ? new Date(event.end_date) : new Date(event.start_date);
+        return end < now && event.status !== "active";
+    };
+
     const filteredEvents = events.filter((event) => {
-        const matchesTab = activeTab === "all" || event.event_type === activeTab;
+        const matchesTab = activeTab === "all" || 
+            (activeTab === "upcoming" && isUpcoming(event)) ||
+            (activeTab === "past" && isPast(event));
         const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             event.description.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesTab && matchesSearch;
     });
+
+    const upcomingEvents = events.filter(isUpcoming);
+    const pastEvents = events.filter(isPast);
 
     const getTimeRemaining = (endDate: string | null) => {
         if (!endDate) return "No deadline";
@@ -81,13 +100,8 @@ export default function EventsPage() {
         return `${hours}h remaining`;
     };
 
-    const getDifficultyColor = (difficulty: string | null) => {
-        switch (difficulty?.toLowerCase()) {
-            case "easy": return "text-green-400 bg-green-500/10 border-green-500/20";
-            case "medium": return "text-amber-400 bg-amber-500/10 border-amber-500/20";
-            case "hard": return "text-red-400 bg-red-500/10 border-red-500/20";
-            default: return "text-slate-400 bg-slate-500/10 border-slate-500/20";
-        }
+    const formatDate = (dateStr: string) => {
+        return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     };
 
     return (
@@ -107,13 +121,21 @@ export default function EventsPage() {
                             Compete, collaborate, and climb the leaderboard!
                         </p>
                     </div>
-                    {user?.role === "faculty" || user?.role === "admin" ? (
-                        <Link 
-                            href="/events/create" 
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-purple-500/20"
-                        >
-                            <Target className="w-4 h-4" /> Create Event
-                        </Link>
+                    {isFaculty ? (
+                        <div className="flex gap-3">
+                            <Link 
+                                href="/faculty/events" 
+                                className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all border border-white/10"
+                            >
+                                <Calendar className="w-4 h-4" /> Manage Events
+                            </Link>
+                            <Link 
+                                href="/events/create" 
+                                className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-purple-500/20"
+                            >
+                                <Plus className="w-4 h-4" /> Create Event
+                            </Link>
+                        </div>
                     ) : null}
                 </div>
 
@@ -125,8 +147,8 @@ export default function EventsPage() {
                                 <Calendar className="w-5 h-5 text-purple-400" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-white">{events.filter(e => e.status === "active").length}</p>
-                                <p className="text-xs text-slate-400">Active Events</p>
+                                <p className="text-2xl font-bold text-white">{upcomingEvents.length}</p>
+                                <p className="text-xs text-slate-400">Upcoming</p>
                             </div>
                         </div>
                     </div>
@@ -165,39 +187,44 @@ export default function EventsPage() {
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-                        {[
-                            { id: "all", label: "All Events" },
-                            { id: "weekly_challenge", label: "Challenges" },
-                            { id: "team_project", label: "Team Projects" },
-                            { id: "announcement", label: "Announcements" },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={clsx(
-                                    "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
-                                    activeTab === tab.id
-                                        ? "bg-purple-600 text-white"
-                                        : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
-                                )}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                    <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                        <input
-                            type="text"
-                            placeholder="Search events..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                        />
-                    </div>
+                {/* Tabs */}
+                <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+                    {[
+                        { id: "upcoming", label: "Upcoming", count: upcomingEvents.length },
+                        { id: "past", label: "Past", count: pastEvents.length },
+                        { id: "all", label: "All", count: events.length },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={clsx(
+                                "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2",
+                                activeTab === tab.id
+                                    ? "bg-purple-600 text-white"
+                                    : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white"
+                            )}
+                        >
+                            {tab.label}
+                            <span className={clsx(
+                                "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
+                                activeTab === tab.id ? "bg-white/20 text-white" : "bg-white/10 text-slate-500"
+                            )}>
+                                {tab.count}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Search */}
+                <div className="relative mb-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                        type="text"
+                        placeholder="Search events..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                    />
                 </div>
 
                 {/* Events Grid */}
@@ -247,15 +274,6 @@ export default function EventsPage() {
                                         <p className="text-sm text-slate-400 line-clamp-2 mb-4">
                                             {event.description}
                                         </p>
-                                        
-                                        {event.difficulty && (
-                                            <span className={clsx(
-                                                "inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase border",
-                                                getDifficultyColor(event.difficulty)
-                                            )}>
-                                                {event.difficulty}
-                                            </span>
-                                        )}
                                     </div>
                                     
                                     {/* Card Footer */}
@@ -276,12 +294,15 @@ export default function EventsPage() {
                                             )}
                                         </div>
                                         
-                                        {event.prize_description && (
-                                            <div className="mt-3 pt-3 border-t border-white/10 flex items-center gap-2">
-                                                <Trophy className="w-4 h-4 text-amber-400" />
-                                                <span className="text-xs text-amber-400/80 truncate">{event.prize_description}</span>
-                                            </div>
-                                        )}
+                                        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-500">
+                                            <span>{formatDate(event.start_date)}</span>
+                                            {event.prize_description && (
+                                                <span className="flex items-center gap-1 text-amber-400/80">
+                                                    <Trophy className="w-3 h-3" />
+                                                    {event.prize_description}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </Link>
                             );

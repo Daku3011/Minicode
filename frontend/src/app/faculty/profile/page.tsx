@@ -130,7 +130,7 @@ export default function FacultyProfilePage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
                 <Link href="/problems/create" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white p-5 rounded-xl flex items-center gap-4 transition-all group">
                     <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Plus className="w-5 h-5" />
@@ -141,13 +141,13 @@ export default function FacultyProfilePage() {
                     </div>
                 </Link>
                 
-                <Link href="/events/create" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-5 rounded-xl flex items-center gap-4 transition-all group">
+                <Link href="/faculty/events" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-5 rounded-xl flex items-center gap-4 transition-all group">
                     <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Calendar className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="font-bold">Create Event</p>
-                        <p className="text-xs text-blue-200">Challenge/project</p>
+                        <p className="font-bold">Manage Events</p>
+                        <p className="text-xs text-blue-200">Edit & organize</p>
                     </div>
                 </Link>
                 
@@ -161,13 +161,13 @@ export default function FacultyProfilePage() {
                     </div>
                 </Link>
                 
-                {/* <Link href="/faculty/profile" className="bg-[#1a142e]/60 hover:bg-[#1a142e]/80 border border-white/10 p-5 rounded-xl flex items-center gap-4 transition-all group text-left">
+                {/* <Link href="/faculty/problems" className="bg-[#1a142e]/60 hover:bg-[#1a142e]/80 border border-white/10 p-5 rounded-xl flex items-center gap-4 transition-all group text-left">
                     <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <BookMarked className="w-5 h-5 text-amber-400" />
                     </div>
                     <div>
-                        <p className="font-bold text-white">Study Materials</p>
-                        <p className="text-xs text-slate-400">Upload & manage</p>
+                        <p className="font-bold text-white">Problem Manager</p>
+                        <p className="text-xs text-slate-400">Edit & organize</p>
                     </div>
                 </Link> */}
             </div>
@@ -194,7 +194,7 @@ export default function FacultyProfilePage() {
                             <tr className="border-b border-white/10 bg-white/5">
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Problem</th>
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Difficulty</th>
-                                <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                                {/* <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th> */}
                                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Created</th>
                                 <th className="px-6 py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Action</th>
                             </tr>
@@ -215,12 +215,12 @@ export default function FacultyProfilePage() {
                                             {problem.difficulty}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    {/* <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                                             <span className="text-green-400 text-sm">Active</span>
                                         </div>
-                                    </td>
+                                    </td> */}
                                     <td className="px-6 py-4 text-slate-400 text-sm">
                                         {new Date(problem.created_at).toLocaleDateString()}
                                     </td>
@@ -253,12 +253,12 @@ export default function FacultyProfilePage() {
                         <h2 className="text-xl font-bold text-white">Recent Events</h2>
                         <p className="text-sm text-slate-400">Events you've created</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-5">
+                        <Link href="/faculty/events" className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
+                            Manage All
+                        </Link>
                         <Link href="/events/create" className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
                             <Plus className="w-4 h-4" /> New Event
-                        </Link>
-                        <Link href="/events" className="text-purple-400 hover:text-purple-300 text-sm font-medium flex items-center gap-1">
-                            View All <ChevronRight className="w-4 h-4" />
                         </Link>
                     </div>
                 </div>

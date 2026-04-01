@@ -1,348 +1,153 @@
-# 🚀 MiniCode Deployment Guide
+# 🚀 MiniCode Global Deployment & Costing Guide
 
-Deploy MiniCode with **Supabase** (database), **Render** or **Railway** (backend + frontend), and **Docker** containers optimized for high traffic.
+Welcome to the definitive deployment manual for **MiniCode**. This guide covers everything you need to know to take MiniCode from a local development environment to a globally distributed production environment. 
 
-> [!TIP]
-> **New!** Looking for Railway instructions? See [RAILWAY_DEPLOYMENT.md](file:///home/dwarkeshramani/Projects/Minicode/RAILWAY_DEPLOYMENT.md) for a dedicated guide.
-
----
-
-## Architecture Overview
-
-```
-┌──────────────┐       ┌──────────────────┐       ┌─────────────────┐
-│              │       │                  │       │                 │
-│   Frontend   │──────▶│   Backend API    │──────▶│    Supabase     │
-│   (Next.js)  │       │ (FastAPI+Gunicorn│       │  (PostgreSQL)   │
-│   on Render  │       │   on Render)     │       │   Cloud DB      │
-│              │       │                  │       │                 │
-└──────────────┘       └──────────────────┘       └─────────────────┘
-                              │
-                              ▼
-                    ┌──────────────────┐
-                    │  External APIs   │
-                    │  • GitHub OAuth  │
-                    │  • Gemini AI     │
-                    └──────────────────┘
-```
+We have designed MiniCode to be deployable for **absolutely $0/month** for small-scale usage (hackathons, small classes) while being horizontally scalable for enterprise/university levels.
 
 ---
 
-## Prerequisites
+## 🏗️ Architecture Overview
 
-- [GitHub account](https://github.com)
-- [Supabase account](https://supabase.com) (free tier works)
-- [Render account](https://render.com) (free tier works, Starter recommended)
-- [Google AI Studio account](https://aistudio.google.com) for Gemini API key
-- [Docker](https://docker.com) installed locally (optional, for local testing)
+MiniCode's architecture is built on modern, scalable cloud primitives:
 
----
-
-## Step 1: Set Up Supabase (Database)
-
-### 1.1 Create a Supabase Project
-
-1. Go to [supabase.com/dashboard](https://supabase.com/dashboard)
-2. Click **"New Project"**
-3. Fill in:
-   - **Name:** `minicode`
-   - **Database Password:** Generate a strong password (save it!)
-   - **Region:** Choose closest to your users
-4. Click **"Create new project"** and wait for it to provision
-
-### 1.2 Get Your Connection String
-
-1. Go to **Project Settings → Database**
-2. Scroll to **"Connection string"** section
-3. Select **"URI"** tab
-4. Copy the connection string. It looks like:
-   ```
-   postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
-   ```
-5. Replace `[PASSWORD]` with your actual database password
-
-> **⚠️ Important:** Use the **"Connection Pooling"** URI (port `6543`), NOT the direct connection (port `5432`). Pooling handles many concurrent connections efficiently.
-
-### 1.3 Configure Connection Pooling
-
-1. Go to **Project Settings → Database → Connection Pooling**
-2. Ensure **"Pool Mode"** is set to **Transaction** (recommended for web apps)
-3. Set **"Pool Size"** to at least **20** (matches our backend config)
-
----
-
-## Step 2: Set Up GitHub OAuth App
-
-### 2.1 Create OAuth App
-
-1. Go to [github.com/settings/developers](https://github.com/settings/developers)
-2. Click **"New OAuth App"**
-3. Fill in:
-   - **Application name:** `MiniCode`
-   - **Homepage URL:** `https://minicode-web.onrender.com` (your frontend URL)
-   - **Authorization callback URL:** `https://minicode-web.onrender.com/auth/callback`
-4. Click **"Register application"**
-5. Copy the **Client ID**
-6. Click **"Generate a new client secret"** and copy it
-
-### 2.2 Create Personal Access Token (for repo creation)
-
-1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
-2. Click **"Generate new token (classic)"**
-3. Select scopes: `repo`, `user`
-4. Copy the token
-
----
-
-## Step 3: Deploy Backend on Render
-
-### 3.1 Create Web Service
-
-1. Go to [dashboard.render.com](https://dashboard.render.com)
-2. Click **"New +"** → **"Web Service"**
-3. Connect your GitHub repository (`LeetCodeCodingClub`)
-4. Configure:
-
-| Setting | Value |
-|---------|-------|
-| **Name** | `minicode-api` |
-| **Region** | Oregon (or closest) |
-| **Branch** | `main` |
-| **Root Directory** | `backend` |
-| **Runtime** | `Docker` |
-| **Instance Type** | Starter ($7/mo) or Standard ($25/mo) for production |
-
-### 3.2 Set Environment Variables
-
-In the **"Environment"** tab, add:
-
-| Key | Value |
-|-----|-------|
-| `DATABASE_URL` | Your Supabase connection string (Step 1.2) |
-| `GITHUB_CLIENT_ID` | From Step 2.1 |
-| `GITHUB_CLIENT_SECRET` | From Step 2.1 |
-| `GITHUB_TOKEN` | From Step 2.2 |
-| `GEMINI_API_KEY` | From [Google AI Studio](https://aistudio.google.com/apikey) |
-| `JWT_SECRET` | Click "Generate" in Render |
-| `CORS_ORIGINS` | `https://minicode-web.onrender.com` |
-| `WEB_CONCURRENCY` | `4` (adjust based on plan) |
-
-### 3.3 Set Health Check
-
-- **Health Check Path:** `/health`
-
-### 3.4 Pre-deploy Command (Automatic)
-
-Render will automatically run `CREATE_TABLES=1 python main.py` before starting the web service. This creates your database tables exactly once, avoiding race conditions if you have multiple workers.
-
-5. Click **"Create Web Service"**
-
-### 3.5 Verify Backend
-
-Once deployed, visit:
-```
-https://minicode-api.onrender.com/health
-→ Should return: {"status": "healthy"}
+```text
+┌─────────────────┐       ┌────────────────────┐       ┌──────────────────┐
+│                 │       │                    │       │                  │
+│    Frontend     │──────▶│    Backend API     │──────▶│   Supabase DB    │
+│  (Next.js 15)   │       │ (FastAPI/Gunicorn) │       │ (PostgreSQL 15)  │
+│  Vercel/Render  │       │   Render/Railway   │       │   w/ PgBouncer   │
+│                 │       │                    │       │                  │
+└─────────────────┘       └─────────┬──────────┘       └──────────────────┘
+                                    │
+    ┌───────────────────────────────┼───────────────────────────────┐
+    ▼                               ▼                               ▼
+┌──────────────┐             ┌──────────────┐               ┌──────────────┐
+│  GitHub API  │             │   Redis DB   │               │ Celery Fleet │
+│ (OAuth, Repos│             │ (Rate Limits,│               │ (Async Judge │
+│  & Commits)  │             │  Caching)    │               │  Execution)  │
+└──────────────┘             └──────────────┘               └──────────────┘
+                                    │
+                                    ▼
+                             ┌──────────────┐
+                             │  Gemini 2.5  │
+                             │ (AI Judging) │
+                             └──────────────┘
 ```
 
 ---
 
-## Step 4: Deploy Frontend on Render
+## 💰 Costing & Tier Breakdown
 
-### 4.1 Create Web Service
+Below is a transparent breakdown of the costs associated with running MiniCode. 
 
-1. Click **"New +"** → **"Web Service"**
-2. Connect the same GitHub repository
-3. Configure:
+### 🎓 The "Student & Bootstrapper" Tier ($0/month)
+Perfect for college coding clubs, 48-hour hackathons, and personal portfolios.
 
-| Setting | Value |
-|---------|-------|
-| **Name** | `minicode-web` |
-| **Region** | Same as backend |
-| **Branch** | `main` |
-| **Root Directory** | `frontend` |
-| **Runtime** | `Docker` |
-| **Instance Type** | Starter ($7/mo) |
+| Component | Provider | Plan | Cost | Limits |
+|-----------|----------|------|------|--------|
+| **Database** | Supabase | Free Tier | $0/mo | 500MB storage, 2 active projects, 50 max connections |
+| **Backend API** | Render / Railway | Free / Trial | $0/mo | Render spins down after 15m inactivity. |
+| **Frontend** | Vercel | Hobby | $0/mo | 100GB Bandwidth, unlimited static requests |
+| **Cache/Broker** | Upstash (Redis) | Free | $0/mo | 10k requests/day |
+| **AI Judge** | Google AI Studio | Free Tier | $0/mo | 15 RPM (Requests Per Minute), 1M Tokens/min |
+| **Auth** | GitHub OAuth | Free | $0/mo | Unlimited |
 
-### 4.2 Set Environment Variables
+### 🚀 The "Production University" Tier (~$35 - $80/month)
+Perfect for 200+ concurrent students, university courses, and major events.
 
-| Key | Value |
-|-----|-------|
-| `NEXT_PUBLIC_API_URL` | `https://minicode-api.onrender.com` |
-| `NEXT_PUBLIC_GITHUB_CLIENT_ID` | Same as backend |
-
-> **Note:** `NEXT_PUBLIC_` vars are baked into the build. If you change them, you must **redeploy** (trigger a manual deploy in Render).
-
-### 4.3 Verify Frontend
-
-Visit `https://minicode-web.onrender.com` — you should see the MiniCode homepage.
+| Component | Provider | Plan | Cost | Benefits |
+|-----------|----------|------|------|----------|
+| **Database** | Supabase | Pro Plan | $25/mo | 8GB storage, daily backups, increased connection limits |
+| **Backend API** | Render / Railway | Standard/Pro | $7-$25/mo | Always-on, 1-2GB RAM, multi-worker FastAPI concurrency |
+| **Frontend** | Vercel | Pro | $20/mo | Increased bandwidth, faster builds, team collaboration |
+| **Cache/Broker** | Upstash (Redis) | Pay-as-you-go | ~$2/mo | High throughput for Celery task queuing |
+| **AI Judge** | Google AI Studio | Pay-as-you-go | Variables | Fraction of a cent per submission |
+| **Total** | | | **~$54/mo** | Highly stable, fast response times |
 
 ---
 
-## Step 5: Seed the Database
+## 🎒 The GitHub Student Developer Pack Advantage
 
-After both services are deployed, seed the database with initial problems:
+If you are a student, you can run the **Production Tier for FREE** using the [GitHub Student Developer Pack](https://education.github.com/pack).
 
-### Option A: Run locally against Supabase
+**How to exploit the pack for MiniCode:**
+1. **Render/Railway Credits:** Apply your student developer pack to get monthly platform credits, allowing you to run the **Standard ($25/mo)** backend instance for free.
+2. **DigitalOcean:** You retrieve $200 in platform credits. You can spin up a heavy Docker droplet and run the entire MiniCode stack via `docker-compose` on a dedicated 4GB RAM VPS.
+3. **GitHub Pro:** Get GitHub Pro for free, unlocking advanced API rate limits and private repository features natively, drastically improving backend sync speeds.
 
-```bash
-cd backend
+---
 
-# Set the Supabase DATABASE_URL
-export DATABASE_URL="postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
+## 📦 Deployment Step-by-Step
 
-# Install deps if not already done
-pip install -r requirements.txt
+### 1️⃣ Database (Supabase)
+1. Create a project on [Supabase.com](https://supabase.com/).
+2. Navigate to **Project Settings → Database**.
+3. Copy the **Connection Pooling URI** (Port `6543`).
+   *Format:* `postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
+4. Set **Pool Mode** to **Transaction**.
 
-# Run the seed script
-python seed.py
-```
+### 2️⃣ OAuth (GitHub)
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers).
+2. Create a new OAuth App.
+3. Set **Authorization callback URL** to: `https://[YOUR_FRONTEND_DOMAIN]/auth/callback`
+4. Save the **Client ID** and generate a **Client Secret**.
 
-### Option B: Use Render Shell
+### 3️⃣ AI Engine (Gemini)
+1. Open [Google AI Studio](https://aistudio.google.com/apikey).
+2. Generate an API Key. Note: The free tier allows 15 RPM, meaning 15 students can submit code simultaneously every minute.
 
-1. Go to your backend service on Render
-2. Click **"Shell"** tab
-3. Run:
+### 4️⃣ Deploying the Backend
+You can deploy the backend using Render, Railway, or any Docker-compatible host.
+
+**Option A: Render (Recommended for stability)**
+1. Create a new **Web Service** on Render.
+2. Point it to your GitHub Repo and select the `backend` directory.
+3. Add the following Environment Variables:
+   - `DATABASE_URL` (From Supabase)
+   - `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`
+   - `GEMINI_API_KEY`
+   - `JWT_SECRET` (Generate a secure random string)
+   - `CORS_ORIGINS` (Your frontend URL)
+4. Render automatically runs `CREATE_TABLES=1 python main.py` to migrate the database before booting `uvicorn`.
+
+**Option B: Railway (Recommended for speed)**
+1. Create a new project on [Railway.app](https://railway.app/).
+2. Point it to the `backend` directory.
+3. Import the same environment variables.
+4. Go to the **Variables** tab and set `PORT` to `8000`.
+
+### 5️⃣ Deploying the Frontend
+1. We highly recommend [Vercel](https://vercel.com/) for deploying the Next.js 15 frontend.
+2. Import the `frontend` folder.
+3. Set the following Build Environment Variables:
+   - `NEXT_PUBLIC_API_URL` (Your deployed backend URL, e.g., `https://minicode-api.onrender.com`)
+   - `NEXT_PUBLIC_GITHUB_CLIENT_ID`
+4. Deploy!
+
+### 6️⃣ Post-Deployment: Seeding
+To initialize the platform with admin roles and sample events:
+1. Open the remote shell (Render Shell or Railway Shell) for your backend service.
+2. Execute:
    ```bash
    python seed.py
    ```
+3. Your database is now populated and ready for action.
 
 ---
 
-## Step 6: Update GitHub OAuth Callback
-
-After noting your final Render URLs, update your GitHub OAuth App:
-
-1. Go to [github.com/settings/developers](https://github.com/settings/developers)
-2. Edit your OAuth App
-3. Update **Authorization callback URL** to:
-   ```
-   https://minicode-web.onrender.com/auth/callback
-   ```
-
----
-
-## 🐳 Local Development with Docker
-
-For local testing with Docker Compose:
-
-### Prerequisites
-- Docker and Docker Compose installed
-- A Supabase project (or use local PostgreSQL)
-
-### Run
+## 🐳 Self-Hosted Docker Deployment
+For full control or utilizing a DigitalOcean student droplet, use the provided `docker-compose.yml`:
 
 ```bash
-# 1. Copy env template
+# Clone the repository
+git clone https://github.com/your-username/MiniCode.git
+cd MiniCode
+
+# Setup variables
 cp .env.example .env
+nano .env # Fill in your DB, API keys, and GitHub credentials
 
-# 2. Fill in your values in .env
-
-# 3. Build and run
-docker compose up --build
-
-# Frontend: http://localhost:3000
-# Backend:  http://localhost:8000
-# Health:   http://localhost:8000/health
+# Build and run the entire ecosystem (Frontend, DB, Backend, Redis, Celery)
+docker-compose up -d --build
 ```
-
-### Useful Commands
-
-```bash
-# Run in background
-docker compose up -d --build
-
-# View logs
-docker compose logs -f backend
-docker compose logs -f frontend
-
-# Stop everything
-docker compose down
-
-# Rebuild a single service
-docker compose up --build backend
-```
-
----
-
-## ⚡ Scaling for High Traffic
-
-### Backend (FastAPI + Gunicorn)
-
-The backend is configured for concurrent traffic handling:
-
-| Config | Default | Purpose |
-|--------|---------|---------|
-| `WEB_CONCURRENCY` | `4` | Number of Gunicorn workers (each handles requests independently) |
-| `pool_size` | `20` | PostgreSQL connection pool size |
-| `max_overflow` | `10` | Extra DB connections under load |
-| `max-requests` | `1000` | Worker restart after N requests (prevents memory leaks) |
-
-**Scaling tips:**
-- **Workers:** Set `WEB_CONCURRENCY` to `2 × CPU cores + 1`. On Render Starter (0.5 CPU), use `2`. On Standard (1 CPU), use `4`.
-- **Upgrade Render plan:** Standard ($25/mo) gives 1 CPU + 2GB RAM. Pro ($85/mo) gives 2 CPU + 4GB RAM.
-- If you need more throughput, scale **horizontally** — Render supports multiple instances.
-
-### Frontend (Next.js)
-
-- Next.js standalone mode runs efficiently with minimal memory
-- Static pages are pre-rendered at build time
-- The Starter plan is sufficient for most frontend traffic
-
-### Database (Supabase)
-
-- Free tier: 500MB storage, sufficient for development
-- Pro plan ($25/mo): 8GB storage, better performance, daily backups
-- Enable **Read Replicas** for high read traffic
-- Connection pooling via PgBouncer is already configured (port `6543`)
-
----
-
-## 🛠️ Troubleshooting
-
-### Backend won't start
-
-```
-Error: connection refused / FATAL: password authentication failed
-```
-→ Check `DATABASE_URL` is correct. Use the **pooler** URL (port `6543`).
-
-### Frontend shows "Network Error"
-
-→ Check `NEXT_PUBLIC_API_URL` points to your backend Render URL.  
-→ Check `CORS_ORIGINS` on the backend includes your frontend URL.
-
-### GitHub OAuth fails
-
-→ Verify **callback URL** in GitHub OAuth App matches your frontend URL.  
-→ Ensure `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are set on both services.
-
-### "Free instance spins down" / Slow first request
-
-→ Render free tier spins down after 15 min of inactivity.  
-→ Upgrade to Starter ($7/mo) for always-on instances.
-
-### Database connection errors under load
-
-→ Ensure you're using the **pooler** connection string (port `6543`).  
-→ Increase `pool_size` in backend if needed.  
-→ Upgrade Supabase plan for higher connection limits.
-
-### Build fails on Render
-
-→ Check Render build logs for errors.  
-→ Ensure `requirements.txt` and `package.json` are complete.  
-→ For frontend: `NEXT_PUBLIC_` env vars must be set as **build-time** variables (not just runtime).
-
----
-
-## 📊 Cost Summary
-
-| Service | Free Tier | Starter | Standard |
-|---------|-----------|---------|----------|
-| **Render Backend** | $0 (spins down) | $7/mo (always-on) | $25/mo (1 CPU) |
-| **Render Frontend** | $0 (spins down) | $7/mo (always-on) | $25/mo |
-| **Supabase** | $0 (500MB) | — | $25/mo (8GB) |
-| **Total** | **$0/mo** | **$14/mo** | **$75/mo** |
-
-> **Recommendation:** Start with **Starter** plan ($14/mo total) for a reliable always-on deployment. Upgrade to Standard when you have 50+ concurrent users.
+Ensure you set your server's IP or Domain in the GitHub OAuth callback configurations.

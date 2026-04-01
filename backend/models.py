@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     github_access_token: Optional[str] = None
     hashed_password: Optional[str] = None
     role: str = Field(default="student")  # student, faculty, admin
+    xp: int = Field(default=0)  # Total XP earned
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     submissions: List["Submission"] = Relationship(back_populates="user")

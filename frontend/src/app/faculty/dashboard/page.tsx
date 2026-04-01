@@ -149,7 +149,7 @@ export default function FacultyDashboard() {
                                             <th className="px-6 py-4 font-semibold whitespace-nowrap">Problem Name</th>
                                             <th className="px-6 py-4 font-semibold">Difficulty</th>
                                             <th className="px-6 py-4 font-semibold">Success</th>
-                                            <th className="px-6 py-4 font-semibold">Status</th>
+                                            {/* <th className="px-6 py-4 font-semibold">Status</th> */}
                                             <th className="px-6 py-4 font-semibold text-right">Action</th>
                                         </tr>
                                     </thead>
@@ -175,12 +175,12 @@ export default function FacultyDashboard() {
                                                         )}>{problem.difficulty}</span>
                                                     </td>
                                                     <td className="px-6 py-4 text-slate-400">{successRate}%</td>
-                                                    <td className="px-6 py-4">
+                                                    {/* <td className="px-6 py-4">
                                                         <div className={clsx("flex items-center gap-2", problem.status === "Active" ? "text-[#22d3ee]" : "text-slate-500")}>
                                                             <span className={clsx("size-2 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.5)]", problem.status === "Active" ? "bg-[#22d3ee] animate-pulse" : "bg-slate-600 shadow-none")}></span>
                                                             {problem.status || "Active"}
                                                         </div>
-                                                    </td>
+                                                    </td> */}
                                                     <td className="px-6 py-4 text-right">
                                                         <button className="text-slate-500 hover:text-primary transition-colors p-1 rounded hover:bg-white/5">
                                                             <MoreHorizontal className="w-5 h-5" />
