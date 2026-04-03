@@ -830,6 +830,26 @@ def get_user_profile(user: User, session: Session):
             }
         )
 
+    # Level mapping based on XP
+    if total_score >= 1500:
+        user_level = 6
+        level_name = "Legend"
+    elif total_score >= 1000:
+        user_level = 5
+        level_name = "Master"
+    elif total_score >= 600:
+        user_level = 4
+        level_name = "Warrior"
+    elif total_score >= 300:
+        user_level = 3
+        level_name = "Ninja"
+    elif total_score >= 100:
+        user_level = 2
+        level_name = "Explorer"
+    else:
+        user_level = 1
+        level_name = "Beginner"
+
     return {
         "id": user.id,
         "username": user.username,
@@ -843,6 +863,8 @@ def get_user_profile(user: User, session: Session):
             "solved": problems_solved,
             "rank": 0,
             "xp": total_score,
+            "level": user_level,
+            "level_name": level_name,
             "streak": streak,
         },
         "contribution_data": submission_counts,

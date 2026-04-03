@@ -2,35 +2,42 @@
 
 import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { 
-    Trophy, 
-    Medal, 
-    Star, 
-    TrendingUp, 
-    Search, 
-    Zap, 
-    Code, 
-    Flame, 
-    Award, 
-    Terminal, 
-    CheckCircle, 
-    AlertCircle, 
-    ArrowRight, 
-    Shield, 
-    Stars, 
-    UserCheck, 
-    BarChart2, 
-    Settings, 
-    HelpCircle, 
+import {
+    Trophy,
+    Medal,
+    Star,
+    TrendingUp,
+    Search,
+    Zap,
+    Code,
+    Flame,
+    Award,
+    Terminal,
+    CheckCircle,
+    AlertCircle,
+    ArrowRight,
+    Shield,
+    Stars,
+    UserCheck,
+    BarChart2,
+    Settings,
+    HelpCircle,
     Clock,
     Activity,
     MessageSquare,
     Check,
     Save,
-    Globe
+    Globe,
+    ExternalLink,
+    ArrowUpRight,
+    Cpu,
+    MousePointer2,
+    Database
 } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import MagneticWrapper from "./MagneticWrapper";
 
 interface RecentSubmission {
     id: number;
@@ -58,6 +65,8 @@ interface ProfileStats {
     solved: number;
     rank: number;
     xp: number;
+    level: number;
+    level_name: string;
     streak: number;
 }
 
@@ -82,34 +91,31 @@ interface StudentProfileViewProps {
     isFacultyView?: boolean;
 }
 
-// Pure helper functions (outside component to avoid recreation)
 const statusColor = (status: string) => {
     switch (status) {
-        case "accepted": return "text-emerald-500 bg-emerald-500/10";
-        case "wrong_answer": return "text-rose-500 bg-rose-500/10";
-        case "pending": return "text-amber-500 bg-amber-500/10";
-        case "error": case "runtime_error": return "text-rose-500 bg-rose-500/10";
-        default: return "text-slate-400 bg-slate-100";
+        case "accepted": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+        case "wrong_answer": return "text-rose-400 bg-rose-500/10 border-rose-500/20";
+        case "pending": return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+        case "error": case "runtime_error": return "text-rose-400 bg-rose-500/10 border-rose-500/20";
+        default: return "text-slate-400 bg-white/5 border-white/10";
     }
 };
 
 const statusLabel = (status: string) => {
     switch (status) {
-        case "accepted": return "Accepted";
-        case "wrong_answer": return "Wrong Answer";
-        case "pending": return "Pending";
-        case "error": return "Error";
-        case "runtime_error": return "Runtime Error";
-        default: return status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ");
+        case "accepted": return "ACCEPTED";
+        case "wrong_answer": return "FAIL_WA";
+        case "pending": return "JUDGING";
+        case "error": return "FAIL_ERR";
+        case "runtime_error": return "FAIL_RTE";
+        default: return status.toUpperCase().replace("_", "_");
     }
 };
 
-// Memoized ContributionGraph component with hover tooltip
-const ContributionGraph = React.memo(function ContributionGraph({ contributionData, contributionDataRaw, stats, recentSubmissions }: {
+const ContributionGraph = React.memo(function ContributionGraph({ contributionData, contributionDataRaw, stats }: {
     contributionData: { date: string; count: number; level: number }[];
     contributionDataRaw: Record<string, number>;
     stats: ProfileStats;
-    recentSubmissions: RecentSubmission[];
 }) {
     const [hoveredDay, setHoveredDay] = useState<{ date: string; count: number } | null>(null);
 
@@ -138,71 +144,87 @@ const ContributionGraph = React.memo(function ContributionGraph({ contributionDa
     });
 
     const levelColors = [
-        "bg-slate-100",
-        "bg-indigo-200",
-        "bg-indigo-400",
-        "bg-indigo-500",
-        "bg-indigo-700",
+        "bg-white/5",
+        "bg-primary/20",
+        "bg-primary/40 shadow-[0_0_10px_rgba(137,91,245,0.2)]",
+        "bg-primary/60 shadow-[0_0_15px_rgba(137,91,245,0.3)]",
+        "bg-primary shadow-[0_0_20px_rgba(137,91,245,0.5)]",
     ];
 
-    const totalContributions = Object.values(contributionDataRaw).reduce((sum, c) => sum + (c || 0), 0);
-
     return (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-2">
-                <div>
-                    <h3 className="text-sm font-bold text-slate-700">Activity Graph</h3>
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">Submission frequency in the last 365 days</p>
+        <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card p-8 rounded-[3rem] border border-white/10 relative overflow-hidden group shadow-3xl"
+        >
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+
+            <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
+                <div className="flex items-center gap-6">
+                    <div className="h-12 w-1.5 bg-primary rounded-full shadow-[0_0_15px_rgba(137,91,245,0.5)]" />
+                    <div>
+                        <h3 className="text-2xl font-black text-white tracking-tight">Execution History</h3>
+                        <p className="text-slate-500 text-[10px] uppercase font-black tracking-[0.3em] mt-1.5">Temporal logic sample distribution</p>
+                    </div>
                 </div>
-                <div className="text-right">
-                    <p className="text-sm font-bold text-slate-900">{totalContributions}</p>
-                    <p className="text-[10px] text-slate-400 uppercase">Total</p>
+                <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[140px] group-hover:border-primary/30 transition-colors">
+                    <p className="text-xl font-black text-white">{Object.values(contributionDataRaw).reduce((sum, c) => sum + (c || 0), 0)}</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Total Signals</p>
                 </div>
             </div>
 
-            <div className="h-10 mb-4 flex items-center justify-center border-b border-dashed border-slate-100">
-                {hoveredDay ? (
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-slate-700">
-                            {new Date(hoveredDay.date).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' })}:
-                        </span>
-                        <span className="text-xs font-bold text-indigo-600">
-                            {hoveredDay.count} contribution{hoveredDay.count !== 1 ? 's' : ''}
-                        </span>
-                    </div>
-                ) : (
-                    <p className="text-xs text-slate-300 italic">Hover over tiles to see details</p>
-                )}
+            <div className="h-12 mb-8 flex items-center justify-center border-b border-dashed border-white/10">
+                <AnimatePresence mode="wait">
+                    {hoveredDay ? (
+                        <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -5 }}
+                            className="flex items-center gap-4"
+                        >
+                            <div className="h-1.5 w-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(137,91,245,0.8)]" />
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                {new Date(hoveredDay.date).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </span>
+                            <span className="text-[11px] font-black text-primary uppercase tracking-widest">
+                                {hoveredDay.count} SUCCESSFUL OPS
+                            </span>
+                        </motion.div>
+                    ) : (
+                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.5em] italic">Scan matrix tiles for authority data</motion.p>
+                    )}
+                </AnimatePresence>
             </div>
 
             <div className="flex flex-col min-w-0">
-                <div className="relative h-4 mb-1 ml-8">
+                <div className="relative h-6 mb-2 ml-10">
                     {monthLabels.map((m, i) => (
-                        <span key={i} className="absolute text-[9px] font-bold text-slate-400 uppercase tracking-tighter" style={{ left: `${m.weekIndex * (14 + 4)}px` }}>{m.month}</span>
+                        <span key={i} className="absolute text-[9px] font-black text-slate-500 uppercase tracking-widest" style={{ left: `${m.weekIndex * (16 + 6)}px` }}>{m.month}</span>
                     ))}
                 </div>
                 <div className="flex">
-                    <div className="flex flex-col justify-between mr-2 text-[9px] font-bold text-slate-300 uppercase py-0.5">
-                        <div className="h-3.5 flex items-center mb-[2px]">Sun</div>
-                        <div className="h-3.5 flex items-center mb-[2px] opacity-0">Mon</div>
-                        <div className="h-3.5 flex items-center mb-[2px]">Tue</div>
-                        <div className="h-3.5 flex items-center mb-[2px] opacity-0">Wed</div>
-                        <div className="h-3.5 flex items-center mb-[2px]">Thu</div>
-                        <div className="h-3.5 flex items-center mb-[2px] opacity-0">Fri</div>
-                        <div className="h-3.5 flex items-center">Sat</div>
+                    <div className="flex flex-col justify-between mr-4 text-[9px] font-black text-slate-600 uppercase py-1">
+                        <div className="h-4 flex items-center">S</div>
+                        <div className="h-4 flex items-center opacity-0">M</div>
+                        <div className="h-4 flex items-center">T</div>
+                        <div className="h-4 flex items-center opacity-0">W</div>
+                        <div className="h-4 flex items-center">T</div>
+                        <div className="h-4 flex items-center opacity-0">F</div>
+                        <div className="h-4 flex items-center">S</div>
                     </div>
-                    <div className="flex gap-1 overflow-x-auto pb-2 scrollbar-hide">
+                    <div className="flex gap-1.5 overflow-x-auto pb-4 scrollbar-hide py-1">
                         {weeks.map((week, wi) => (
-                            <div key={wi} className="flex flex-col gap-1 shrink-0">
+                            <div key={wi} className="flex flex-col gap-1.5 shrink-0">
                                 {week.map((day, di) => (
-                                    <div 
-                                        key={di} 
+                                    <motion.div
+                                        key={di}
+                                        whileHover={{ scale: 1.1, zIndex: 10 }}
                                         onMouseEnter={() => setHoveredDay({ date: day.date, count: day.count })}
                                         onMouseLeave={() => setHoveredDay(null)}
                                         className={clsx(
-                                            "w-3.5 h-3.5 rounded-[2px] cursor-crosshair hover:ring-2 hover:ring-indigo-400 hover:scale-125",
+                                            "w-4 h-4 rounded-md cursor-crosshair transition-colors duration-300",
                                             levelColors[day.level]
-                                        )} 
+                                        )}
                                     />
                                 ))}
                             </div>
@@ -211,57 +233,73 @@ const ContributionGraph = React.memo(function ContributionGraph({ contributionDa
                 </div>
             </div>
 
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-                <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                    <span>Less</span>
-                    <div className="flex gap-1">
-                        {levelColors.map((color, i) => (<div key={i} className={clsx("w-2.5 h-2.5 rounded-[1px]", color)} />))}
+            <div className="flex items-center justify-between mt-12 pt-8 border-t border-white/5">
+                <div className="flex items-center gap-4 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                    <span>Minimum Intensity</span>
+                    <div className="flex gap-1.5">
+                        {levelColors.map((color, i) => (<div key={i} className={clsx("w-3 h-3 rounded-sm", color)} />))}
                     </div>
-                    <span>More</span>
+                    <span>Maximum Intensity</span>
                 </div>
-                <div className="flex gap-5">
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Streak: {stats.streak} Days</span>
+                <div className="flex gap-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Active Streak: {stats.streak}D</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Total: {recentSubmissions.length}</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(137,91,245,0.5)]" />
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Integrity Level: 1.0</span>
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 });
 
-const MetricCard = React.memo(function MetricCard({ icon, iconBg, iconColor, badge, badgeBg, badgeColor, label, value, barWidth, barColor }: any) {
+const MetricTile = React.memo(function MetricTile({ icon, iconColor, label, value, subLabel, progress, index }: any) {
     return (
-        <div className="bg-white p-7 rounded-2xl border border-slate-200 flex flex-col justify-between overflow-hidden relative">
-            <div className="flex justify-between items-start mb-6">
+        <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            whileHover={{ y: -2 }}
+            className="glass-card p-10 rounded-[2.5rem] border border-white/10 flex flex-col justify-between overflow-hidden relative group"
+        >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+
+            <div className="flex justify-between items-start mb-10 relative z-10">
                 <div className={clsx(
-                    "h-12 w-12 rounded-2xl flex items-center justify-center",
-                    iconBg, iconColor
+                    "h-14 w-14 rounded-2xl flex items-center justify-center shadow-2xl relative transition-all duration-300",
+                    "bg-white/5 border border-white/10 group-hover:border-primary/50 group-hover:bg-primary/5 group-hover:shadow-primary/20"
                 )}>
-                    {icon}
+                    {React.cloneElement(icon as React.ReactElement<any>, { className: clsx("w-6 h-6 transition-transform group-hover:scale-110", iconColor) })}
                 </div>
-                <span className={clsx(
-                    "text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest",
-                    badgeBg, badgeColor
-                )}>{badge}</span>
+                <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] group-hover:text-primary group-hover:border-primary/20 transition-all">
+                    {subLabel}
+                </div>
             </div>
-            <div>
-                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">{label}</p>
-                <h3 className="text-3xl font-black mt-2 text-slate-900 tracking-tighter">{value}</h3>
+
+            <div className="relative z-10">
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mb-3 opacity-60 group-hover:opacity-100 transition-opacity">{label}</p>
+                <h3 className="text-5xl font-black text-white tracking-tighter group-hover:text-primary transition-colors flex items-baseline gap-2">
+                    {value}
+                </h3>
             </div>
-            <div className="mt-6">
-                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5">
-                    <div 
-                        className={clsx("h-full rounded-full", barColor)} 
-                        style={{ width: `${Math.min(barWidth, 100)}%` }}
+
+            <div className="mt-10 relative z-10">
+                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5 shadow-inner">
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(progress, 100)}%` }}
+                        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 + (index * 0.05) }}
+                        className={clsx("h-full rounded-full shadow-[0_0_20px_rgba(137,91,245,0.3)]", "bg-primary")}
                     />
                 </div>
             </div>
-        </div>
+
+            {/* Subtle decorative Glow */}
+            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        </motion.div>
     );
 });
 
@@ -275,19 +313,18 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
     const recentSubmissions = data.recentSubmissions;
     const problems = data.problems || [];
     const contributionDataRaw = data.contribution_data || {};
-
     const myRank = stats.rank || 0;
 
     const sidebarItems = useMemo(() => [
-        { icon: <TrendingUp className="w-5 h-5" />, label: "Dashboard", id: "dashboard" },
-        { icon: <Terminal className="w-5 h-5" />, label: "Submissions", id: "submissions" },
-        { icon: <Award className="w-5 h-5" />, label: "Achievements", id: "achievements" },
-        { icon: <BarChart2 className="w-5 h-5" />, label: "Insights", id: "insights" },
+        { icon: <TrendingUp />, label: "Operations", id: "dashboard" },
+        { icon: <Terminal />, label: "Archives", id: "submissions" },
+        { icon: <Award />, label: "Authority", id: "achievements" },
+        { icon: <BarChart2 />, label: "Diagnostics", id: "insights" },
     ], []);
 
     const sidebarSystem = useMemo(() => isFacultyView ? [] : [
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", id: "settings" },
-        { icon: <HelpCircle className="w-5 h-5" />, label: "Help", id: "docs" },
+        { icon: <Settings />, label: "Protocols", id: "settings" },
+        { icon: <HelpCircle />, label: "Manuals", id: "docs" },
     ], [isFacultyView]);
 
     const contributionData = useMemo(() => {
@@ -310,10 +347,6 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
         return result;
     }, [contributionDataRaw]);
 
-    const handleTabChange = useCallback((id: string) => {
-        setActiveTab(id);
-    }, []);
-
     const handleSaveSettings = async () => {
         setIsSaving(true);
         setSaveStatus("idle");
@@ -329,190 +362,282 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
         }
     };
 
+    const handleTabChange = (id: string) => {
+        setActiveTab(id);
+    };
+
     const renderDashboard = useCallback(() => (
-        <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                        {isFacultyView ? "Student Profile: " : "Welcome back, "} 
-                        <span className="text-indigo-600">{data.username}</span>
-                    </h1>
-                    <p className="text-slate-500 mt-2 flex items-center gap-2">
-                        {isFacultyView ? 
-                            <><UserCheck className="w-4 h-4 text-emerald-500" /> Monitoring performance for {data.full_name || data.username}</> : 
-                            <><Zap className="w-4 h-4 text-amber-500" /> Your personalized coding trajectory</>
-                        }
-                    </p>
-                </div>
-                {!isFacultyView && (
-                    <Link href="/problems" className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2">
-                        <Code className="w-4 h-4" />
-                        Solve Problems
-                    </Link>
-                )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard 
-                    icon={<Zap className="w-5 h-5" />} 
-                    iconBg="bg-indigo-500/10" 
-                    iconColor="text-indigo-500" 
-                    badge={stats.solved > 0 ? "Progressing" : "Just Starting"} 
-                    badgeBg="bg-emerald-500/10" 
-                    badgeColor="text-emerald-500" 
-                    label="Problems Solved" 
-                    value={`${stats.solved} / ${problems.length}`} 
-                    barWidth={problems.length > 0 ? (stats.solved / problems.length) * 100 : 0} 
-                    barColor="bg-indigo-500"
-                />
-                <MetricCard 
-                    icon={<Terminal className="w-5 h-5" />} 
-                    iconBg="bg-sky-500/10" 
-                    iconColor="text-sky-500" 
-                    badge="Total Work" 
-                    badgeBg="bg-rose-500/10" 
-                    badgeColor="text-rose-500" 
-                    label="Submissions" 
-                    value={`${recentSubmissions.length}`} 
-                    barWidth={Math.min(recentSubmissions.length * 5, 100)} 
-                    barColor="bg-sky-500"
-                />
-                <MetricCard 
-                    icon={<Flame className="w-5 h-5" />} 
-                    iconBg="bg-emerald-500/10" 
-                    iconColor="text-emerald-500" 
-                    badge={stats.streak > 0 ? "On fire" : "Paused"} 
-                    badgeBg="bg-slate-100" 
-                    badgeColor="text-slate-500" 
-                    label="Current Streak" 
-                    value={`${stats.streak} Days`} 
-                    barWidth={Math.min(stats.streak * 20, 100)} 
-                    barColor="bg-emerald-500"
-                />
-                <MetricCard 
-                    icon={<Trophy className="w-5 h-5" />} 
-                    iconBg="bg-amber-500/10" 
-                    iconColor="text-amber-500" 
-                    badge={myRank > 0 ? "Global" : "Pending"} 
-                    badgeBg="bg-amber-500/10" 
-                    badgeColor="text-amber-500" 
-                    label="World Rank" 
-                    value={myRank > 0 ? `#${myRank}` : "—"} 
-                    barWidth={myRank > 0 ? Math.max(100 - myRank * 10, 10) : 0} 
-                    barColor="bg-amber-500"
-                />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-slate-200 relative overflow-hidden">
-                    <h3 className="text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-indigo-500" /> Performance Metrics
-                    </h3>
-                    <p className="text-sm text-slate-500 mb-8 uppercase tracking-widest font-semibold">Consolidated data point analysis</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <div className="text-center p-6 rounded-2xl bg-indigo-50 border border-indigo-100">
-                            <p className="text-4xl font-black text-indigo-500">{stats.xp}</p>
-                            <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-[0.2em] font-black">Total XP</p>
+        <div className="space-y-12 pb-12">
+            {/* Header Identity */}
+            <motion.div
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 pt-8"
+            >
+                <div className="flex items-center gap-10">
+                    <MagneticWrapper>
+                        <div className="relative group">
+                            <div className="w-40 h-40 rounded-[3rem] p-1 bg-gradient-to-br from-primary via-secondary to-primary bg-[length:300%_300%] animate-gradient-x shadow-3xl relative">
+                                <div className="absolute inset-0 rounded-[3rem] bg-primary/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                <div className="w-full h-full rounded-[2.8rem] bg-slate-900 overflow-hidden border-4 border-slate-900 relative z-10">
+                                    {data.avatar_url ? (
+                                        <img src={data.avatar_url} alt={data.username} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center font-black text-4xl text-white/20 group-hover:text-primary transition-colors">
+                                            {data.username.slice(0, 2).toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {/* Rank Badge Floating */}
+                            <motion.div
+                                animate={{ y: [0, -2, 0] }}
+                                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                                className="absolute -bottom-3 -right-3 px-6 py-2.5 rounded-2xl bg-primary shadow-2xl border border-white/20 text-[11px] font-black text-white uppercase tracking-[0.3em] z-20 shadow-primary/20"
+                            >
+                                RANK #{myRank || "---"}
+                            </motion.div>
                         </div>
-                        <div className="text-center p-6 rounded-2xl bg-emerald-50 border border-emerald-100">
-                            <p className="text-4xl font-black text-emerald-500">{stats.solved}</p>
-                            <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-[0.2em] font-black">Problems</p>
+                    </MagneticWrapper>
+
+                    <div>
+                        <div className="flex items-center gap-6 mb-4">
+                            <h1 className="text-6xl font-black text-white tracking-tighter leading-none bg-clip-text text-transparent bg-gradient-to-br from-white via-white to-white/40">
+                                {isFacultyView ? data.username : "IDENTITY_RECOGNIZED"}
+                            </h1>
+                            <span className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black text-primary uppercase tracking-[0.5em] shadow-inner">
+                                {stats.level_name}
+                            </span>
                         </div>
-                        <div className="text-center p-6 rounded-2xl bg-amber-50 border border-amber-100">
-                            <p className="text-4xl font-black text-amber-500">{myRank > 0 ? `#${myRank}` : "—"}</p>
-                            <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-[0.2em] font-black">Rank</p>
+                        <div className="flex items-center gap-4">
+                            <div className="h-2 w-32 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
+                                <div className="h-full bg-primary rounded-full w-2/3 shadow-[0_0_10px_rgba(137,91,245,0.4)]" />
+                            </div>
+                            <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.4em] flex items-center gap-3">
+                                <Activity className="w-4 h-4 text-primary" />
+                                SYNC_STATUS: ACTIVE_NODE
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200">
-                        <h4 className="font-bold text-slate-800 text-sm mb-6 flex items-center gap-2">
-                             <Clock className="w-4 h-4 text-sky-500" /> Recent Activity
-                        </h4>
-                        {recentSubmissions.length === 0 ? (
-                            <div className="py-10 text-center">
-                                <p className="text-xs text-slate-400 italic">No operations recorded.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {recentSubmissions.slice(0, 5).map((sub) => (
-                                    <div key={sub.id} className="flex items-center gap-4">
-                                        <div className={clsx(
-                                            "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
-                                            sub.status === "accepted" ? "bg-emerald-500/20 text-emerald-500" : "bg-rose-500/20 text-rose-500"
-                                        )}>
-                                            {sub.status === "accepted" ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-bold text-slate-800 truncate">{sub.problem}</p>
-                                            <p className="text-[10px] text-slate-400 mt-0.5">{statusLabel(sub.status)} • {sub.time}</p>
+                {!isFacultyView && (
+                    <MagneticWrapper>
+                        <Link href="/problems" className="group relative px-12 py-6 rounded-[2.5rem] bg-primary text-white font-black text-xs uppercase tracking-[0.4em] overflow-hidden shadow-2xl transition-all hover:shadow-primary/50 hover:-translate-y-1 active:translate-y-0">
+                            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <span className="relative z-10 flex items-center gap-4">
+                                <Terminal className="w-5 h-5 transition-transform group-hover:rotate-12" />
+                                EXECUTE_UPLINK
+                            </span>
+                        </Link>
+                    </MagneticWrapper>
+                )}
+            </motion.div>
+
+            {/* Metrics Matrix */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <MetricTile
+                    icon={<Terminal />}
+                    iconColor="text-primary"
+                    label="Protocols Resolved"
+                    value={stats.solved}
+                    subLabel={`${Math.round((stats.solved / (problems.length || 1)) * 100)}% COMPLETION`}
+                    progress={(stats.solved / (problems.length || 1)) * 100}
+                    index={0}
+                />
+                <MetricTile
+                    icon={<Database />}
+                    iconColor="text-sky-400"
+                    label="Operation History"
+                    value={recentSubmissions.length}
+                    subLabel="LOGGED SIGNALS"
+                    progress={Math.min(recentSubmissions.length * 5, 100)}
+                    index={1}
+                />
+                <MetricTile
+                    icon={<Flame />}
+                    iconColor="text-emerald-400"
+                    label="Temporal Streak"
+                    value={`${stats.streak}D`}
+                    subLabel="CONSECUTIVE UPLINK"
+                    progress={Math.min(stats.streak * 20, 100)}
+                    index={2}
+                />
+                <MetricTile
+                    icon={<Cpu />}
+                    iconColor="text-amber-400"
+                    label="Authority Level"
+                    value={stats.xp}
+                    subLabel="KINETIC XP POINTS"
+                    progress={Math.min(stats.xp / 10, 100)}
+                    index={3}
+                />
+            </div>
+
+            {/* Large Activity Section */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div className="xl:col-span-2 space-y-8">
+                    <ContributionGraph contributionData={contributionData} contributionDataRaw={contributionDataRaw} stats={stats} />
+
+                    {/* Insights Quick Bar */}
+                    {/* <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8 }}
+                        className="glass-card p-10 rounded-[3rem] border border-white/10 flex flex-wrap gap-12"
+                    >
+                        <div className="flex flex-col gap-2">
+                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Network Latency</span>
+                             <span className="text-2xl font-black text-white">0.04ms</span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Compiler Bias</span>
+                             <span className="text-2xl font-black text-emerald-400">OPTIMIZED</span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Memory Footprint</span>
+                             <span className="text-2xl font-black text-white">4.2GB</span>
+                        </div>
+                    </motion.div> */}
+                </div>
+
+                <div className="space-y-8">
+                    {/* Recent Feed */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="glass-card p-8 rounded-[3rem] border border-white/10 min-h-[400px]"
+                    >
+                        <div className="flex items-center justify-between mb-10">
+                            <h4 className="font-black text-white text-sm uppercase tracking-widest flex items-center gap-3">
+                                <Clock className="w-5 h-5 text-primary" /> Live Data Feed
+                            </h4>
+                        </div>
+
+                        <div className="space-y-6">
+                            {recentSubmissions.slice(0, 5).map((sub, i) => (
+                                <motion.div
+                                    initial={{ opacity: 0, x: 10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.4 + (i * 0.1) }}
+                                    key={sub.id}
+                                    className="flex items-center gap-5 p-4 rounded-[1.5rem] bg-white/5 border border-white/10 hover:border-primary/30 transition-all cursor-pointer group"
+                                >
+                                    <div className={clsx(
+                                        "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 shadow-lg",
+                                        sub.status === "accepted" ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"
+                                    )}>
+                                        {sub.status === "accepted" ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-black text-white truncate uppercase tracking-wider">{sub.problem}</p>
+                                        <div className="flex items-center gap-3 mt-1.5">
+                                            <span className={clsx("text-[9px] font-black uppercase tracking-widest", sub.status === "accepted" ? "text-emerald-500" : "text-rose-500")}>
+                                                {statusLabel(sub.status)}
+                                            </span>
+                                            <div className="w-1 h-1 rounded-full bg-slate-700" />
+                                            <span className="text-[9px] text-slate-500 font-bold">{sub.time}</span>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-6 rounded-2xl text-white relative overflow-hidden">
-                        <h4 className="font-bold text-sm mb-4 flex items-center gap-2">
-                            <Shield className="w-4 h-4" /> Identity Verified
+                                    <ArrowUpRight className="w-4 h-4 text-slate-700 group-hover:text-primary transition-colors pr-2" />
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    {/* Pro Card */}
+                    {/* <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-br from-primary/20 via-primary/40 to-primary/20 p-10 rounded-[3rem] border border-primary/40 shadow-3xl relative overflow-hidden group"
+                    >
+                        <div className="absolute top-0 right-0 p-8">
+                            <Shield className="w-12 h-12 text-white/5 group-hover:text-white/20 transition-colors duration-700" />
+                        </div>
+                        <h4 className="font-black text-white text-lg mb-4 flex items-center gap-3 relative z-10 transition-all">
+                            CRYPTO_AUTH
                         </h4>
-                        <div className="space-y-3">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] text-white/60 uppercase font-black tracking-widest">Username</span>
-                                <span className="font-mono text-sm font-bold tracking-tight">{data.username}</span>
+                        <div className="space-y-4 relative z-10">
+                            <div className="flex flex-col"> 
+                                <span className="text-[9px] text-white/60 uppercase font-black tracking-[0.4em]">Subsystem</span>
+                                <span className="font-mono text-xs font-bold text-white tracking-widest uppercase mt-1">Tier-One Sovereign</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] text-white/60 uppercase font-black tracking-widest">Role Authority</span>
-                                <span className="text-sm font-bold capitalize">{data.role}</span>
+                                <span className="text-[9px] text-white/60 uppercase font-black tracking-[0.4em]">Encryption</span>
+                                <span className="text-xs font-black text-primary bg-white/10 px-2 py-1 rounded inline-block w-fit mt-1">AES-256-GCM</span>
                             </div>
                         </div>
-                    </div>
+                        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
+                    </motion.div> */}
                 </div>
             </div>
-
-            <ContributionGraph contributionData={contributionData} contributionDataRaw={contributionDataRaw} stats={stats} recentSubmissions={recentSubmissions} />
         </div>
     ), [contributionData, contributionDataRaw, stats, recentSubmissions, isFacultyView, data, problems.length, myRank]);
 
     const renderSubmissions = useCallback(() => (
-        <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                    <span className="text-indigo-600">{isFacultyView ? `${data.username}'s Archive` : "Submission Audit"}</span>
-                </h1>
-                <p className="text-slate-500 mt-2 uppercase tracking-widest text-[10px] font-bold">Historical data points from the MiniCode core</p>
+        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-12 duration-700 pb-12 pt-8">
+            <div className="flex items-center gap-8">
+                <div className="h-20 w-2 bg-gradient-to-b from-primary to-secondary rounded-full shadow-[0_0_25px_rgba(137,91,245,0.6)]" />
+                <div>
+                    <h1 className="text-6xl font-black text-white tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-br from-white to-white/50">
+                        {isFacultyView ? `${data.username}.log` : "SUBMISSION_ARCHIVE"}
+                    </h1>
+                    <p className="text-[11px] font-black text-slate-500 mt-3 tracking-[0.5em] uppercase flex items-center gap-3">
+                        <Database className="w-4 h-4 text-primary" /> Recovered historical packets
+                    </p>
+                </div>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+
+            <div className="glass-card rounded-[3.5rem] border border-white/10 overflow-hidden shadow-edge relative group">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent pointer-events-none" />
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase font-black tracking-[0.2em] text-slate-400">
-                                <th className="px-6 py-5">Sequence</th>
-                                <th className="px-6 py-5">Problem Statement</th>
-                                <th className="px-6 py-5">Final State</th>
-                                <th className="px-6 py-5">Timestamp</th>
+                            <tr className="bg-white/[0.03] border-b border-white/5">
+                                <th className="px-12 py-10 text-[11px] uppercase font-black text-slate-500 tracking-[0.4em]">Sequence</th>
+                                <th className="px-12 py-10 text-[11px] uppercase font-black text-slate-500 tracking-[0.4em]">Protocol Identifier</th>
+                                <th className="px-12 py-10 text-[11px] uppercase font-black text-slate-500 tracking-[0.4em]">Final State</th>
+                                <th className="px-12 py-10 text-[11px] uppercase font-black text-slate-500 tracking-[0.4em]">Temporal Stamp</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-white/5">
                             {recentSubmissions.length === 0 ? (
-                                <tr><td colSpan={4} className="px-6 py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Zero entries found in database</td></tr>
+                                <tr>
+                                    <td colSpan={4} className="px-10 py-32 text-center">
+                                        <Database className="w-12 h-12 text-slate-800 mx-auto mb-6 opacity-30" />
+                                        <p className="text-slate-600 font-black uppercase tracking-[0.6em] text-xs">No records detected in buffer</p>
+                                    </td>
+                                </tr>
                             ) : (
-                                recentSubmissions.map((sub) => (
-                                    <tr key={sub.id}>
-                                        <td className="px-6 py-5 text-xs text-slate-400 font-mono">#{sub.id.toString().padStart(4, '0')}</td>
-                                        <td className="px-6 py-5 text-sm font-bold text-slate-900">{sub.problem}</td>
-                                        <td className="px-6 py-5">
+                                recentSubmissions.map((sub, i) => (
+                                    <motion.tr
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.05 }}
+                                        key={sub.id}
+                                        className="hover:bg-primary/[0.03] transition-colors group cursor-pointer"
+                                    >
+                                        <td className="px-10 py-8">
+                                            <span className="text-sm font-bold font-mono text-slate-500 group-hover:text-primary transition-colors">0x{sub.id.toString(16).padStart(4, '0').toUpperCase()}</span>
+                                        </td>
+                                        <td className="px-10 py-8">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-2 w-2 rounded-full bg-primary/40 group-hover:bg-primary transition-colors" />
+                                                <span className="text-sm font-black text-white group-hover:translate-x-1 transition-transform">{sub.problem}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-10 py-8">
                                             <span className={clsx(
-                                                "inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                                                "px-4 py-2 rounded-xl text-[10px] font-black border tracking-[0.2em] inline-block",
                                                 statusColor(sub.status)
                                             )}>
                                                 {statusLabel(sub.status)}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-xs text-slate-500 font-mono">{sub.time}</td>
-                                    </tr>
+                                        <td className="px-10 py-8 text-xs font-black text-slate-500 tracking-wider">
+                                            {sub.time}
+                                        </td>
+                                    </motion.tr>
                                 ))
                             )}
                         </tbody>
@@ -524,44 +649,66 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
 
     const renderAchievements = useCallback(() => {
         const badges = [
-            { name: "Initiation", desc: "First challenge completed", icon: <Medal className="w-6 h-6" />, earned: stats.solved >= 1, color: "text-indigo-500", bg: "bg-indigo-500/10" },
-            { name: "Resilience", desc: "Maintained a 3-day active streak", icon: <Flame className="w-6 h-6" />, earned: stats.streak >= 3, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-            { name: "Expertise", desc: "Solved 5 complex scenarios", icon: <Zap className="w-6 h-6" />, earned: stats.solved >= 5, color: "text-sky-500", bg: "bg-sky-500/10" },
-            { name: "Elite Status", desc: "Top 10 global ranking achieved", icon: <Trophy className="w-6 h-6" />, earned: myRank > 0 && myRank <= 10, color: "text-amber-500", bg: "bg-amber-500/10" },
-            { name: "Pioneer", desc: "Accumulated over 100 XP points", icon: <Stars className="w-6 h-6" />, earned: stats.xp >= 100, color: "text-rose-500", bg: "bg-rose-500/10" },
-            { name: "Mastery", desc: "Perfect solution record", icon: <Shield className="w-6 h-6" />, earned: stats.solved >= problems.length && problems.length > 0, color: "text-purple-500", bg: "bg-purple-500/10" },
+            { name: "INITIATION", desc: "Successfully resolved first challenge uplink", icon: <Award />, earned: stats.solved >= 1, color: "text-indigo-400" },
+            { name: "RESILIENCE", desc: "Maintain a 3-day consecutive active synchronization", icon: <Flame />, earned: stats.streak >= 3, color: "text-emerald-400" },
+            { name: "AUTHORITY", desc: "Resolved 5 high-priority logic scenarios", icon: <Zap />, earned: stats.solved >= 5, color: "text-sky-400" },
+            { name: "SUPREMACY", desc: "Achieved Tier-One Global Ranking position", icon: <Trophy />, earned: myRank > 0 && myRank <= 10, color: "text-amber-400" },
+            { name: "XP OVERRIDE", desc: "Accumulated over 100 power units", icon: <Stars />, earned: stats.xp >= 100, color: "text-rose-400" },
+            { name: "MONITOR", desc: "Complete judicial monitoring assigned", icon: <Shield />, earned: stats.solved >= problems.length && problems.length > 0, color: "text-purple-400" },
         ];
         return (
-            <div className="space-y-8">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                        Achievements
-                    </h1>
-                    <p className="text-slate-500 mt-2 uppercase tracking-widest text-[10px] font-bold">Protocol-based merit badge distribution</p>
+            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                        <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.5)]" />
+                        <div>
+                            <h1 className="text-5xl font-black text-white tracking-tight">AUTHORITY_NODES</h1>
+                            <p className="text-slate-500 font-medium text-lg mt-2 uppercase tracking-wide">Merit distribution across the global grid</p>
+                        </div>
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {badges.map((b) => (
-                        <div key={b.name} className={clsx(
-                            "bg-white p-8 rounded-2xl border relative",
-                            b.earned ? "border-slate-200" : "border-slate-100 opacity-40 grayscale"
-                        )}>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {badges.map((b, i) => (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            key={b.name}
+                            className={clsx(
+                                "glass-card p-10 rounded-[3rem] border relative overflow-hidden flex flex-col items-center text-center group",
+                                b.earned ? "border-white/10 hover:border-primary/40 transition-all shadow-2xl" : "border-white/5 opacity-30 grayscale"
+                            )}
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent pointer-events-none" />
+
                             <div className={clsx(
-                                "h-16 w-16 rounded-2xl mx-auto mb-6 flex items-center justify-center",
-                                b.bg, b.color
+                                "h-20 w-20 rounded-[2rem] mb-8 flex items-center justify-center transition-all duration-700 relative",
+                                b.earned ? "bg-white/5 text-white shadow-[0_0_30px_rgba(137,91,245,0.2)]" : "bg-white/5 text-slate-800"
                             )}>
-                                {b.icon}
-                            </div>
-                            <div className="text-center">
-                                <h4 className="font-black text-slate-900 uppercase tracking-widest">{b.name}</h4>
-                                <p className="text-xs text-slate-500 mt-2 leading-relaxed">{b.desc}</p>
+                                {React.cloneElement(b.icon as React.ReactElement<any>, { className: clsx("w-10 h-10", b.earned && b.color) })}
                                 {b.earned && (
-                                    <div className="mt-6 flex items-center justify-center gap-2 text-emerald-500 font-black text-[9px] uppercase tracking-[0.3em]">
-                                        <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                                        Unlocked Authority
-                                    </div>
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                                        className="absolute -inset-3 border border-dashed border-primary/20 rounded-full"
+                                    />
                                 )}
                             </div>
-                        </div>
+
+                            <h4 className="font-black text-white text-xl uppercase tracking-tighter mb-4 group-hover:text-primary transition-colors">{b.name}</h4>
+                            <p className="text-xs text-slate-500 uppercase font-black tracking-widest leading-relaxed mb-8">{b.desc}</p>
+
+                            {b.earned ? (
+                                <div className="px-6 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[9px] font-black text-emerald-500 uppercase tracking-[0.4em] relative z-10 shadow-lg">
+                                    NODE_ACTIVE
+                                </div>
+                            ) : (
+                                <div className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-black text-slate-700 uppercase tracking-[0.4em] relative z-10">
+                                    LOCKED_DATA
+                                </div>
+                            )}
+                        </motion.div>
                     ))}
                 </div>
             </div>
@@ -574,65 +721,73 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
         const successRate = recentSubmissions.length > 0 ? Math.round((acceptedCount / recentSubmissions.length) * 100) : 0;
 
         return (
-            <div className="space-y-8">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                         Intelligence Insights
-                    </h1>
-                    <p className="text-slate-500 mt-2 uppercase tracking-widest text-[10px] font-bold">Deep learning diagnostics of student behavior</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-10 rounded-2xl border border-slate-200 text-center">
-                        <p className="text-5xl font-black text-emerald-500 mb-2">{successRate}%</p>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black">Success Quotient</p>
-                    </div>
-                    <div className="bg-white p-10 rounded-2xl border border-slate-200 text-center">
-                        <p className="text-5xl font-black text-indigo-500 mb-2">{acceptedCount}</p>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black">Valid Executions</p>
-                    </div>
-                    <div className="bg-white p-10 rounded-2xl border border-slate-200 text-center">
-                        <p className="text-5xl font-black text-rose-500 mb-2">{failedCount}</p>
-                        <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black">Error Exceptions</p>
+            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
+                <div className="flex items-center gap-6">
+                    <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.5)]" />
+                    <div>
+                        <h1 className="text-5xl font-black text-white tracking-tight">CORE_DIAGNOSTICS</h1>
+                        <p className="text-slate-500 font-medium text-lg mt-2 uppercase tracking-wide">Neural assessment of student logic patterns</p>
                     </div>
                 </div>
 
-                <div className="bg-slate-50 p-8 rounded-2xl border border-dashed border-slate-300">
-                    <p className="text-sm text-slate-500 italic text-center">
-                        "Your coding trajectory is based on real-time intelligence gathered from {recentSubmissions.length} independent logic samples."
-                    </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <motion.div whileHover={{ y: -5 }} className="glass-card p-12 rounded-[3.5rem] border border-white/10 text-center shadow-3xl bg-gradient-to-br from-emerald-500/5 to-transparent">
+                        <p className="text-7xl font-black text-emerald-400 tracking-tighter mb-4">{successRate}%</p>
+                        <p className="text-[12px] text-slate-500 uppercase tracking-[0.4em] font-black">Success Ratio</p>
+                    </motion.div>
+                    <motion.div whileHover={{ y: -5 }} className="glass-card p-12 rounded-[3.5rem] border border-white/10 text-center shadow-3xl bg-gradient-to-br from-primary/5 to-transparent">
+                        <p className="text-7xl font-black text-white tracking-tighter mb-4">{acceptedCount}</p>
+                        <p className="text-[12px] text-slate-500 uppercase tracking-[0.4em] font-black">Valid Cycles</p>
+                    </motion.div>
+                    <motion.div whileHover={{ y: -5 }} className="glass-card p-12 rounded-[3.5rem] border border-white/10 text-center shadow-3xl bg-gradient-to-br from-rose-500/5 to-transparent">
+                        <p className="text-7xl font-black text-rose-400 tracking-tighter mb-4">{failedCount}</p>
+                        <p className="text-[12px] text-slate-500 uppercase tracking-[0.4em] font-black">Memory Leaks</p>
+                    </motion.div>
+                </div>
+
+                <div className="glass-card p-12 rounded-[3.5rem] border border-dashed border-white/10 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-12 opacity-10">
+                        <Activity className="w-40 h-40 text-primary" />
+                    </div>
+                    <div className="relative z-10 max-w-2xl mx-auto">
+                        <h3 className="text-2xl font-black text-white mb-6">Autonomous Evaluation</h3>
+                        <p className="text-lg text-slate-400 font-medium leading-relaxed italic">
+                            "Neural trajectory mapping confirms a high-probability of success in advanced cryptographic roles based on synchronization of {recentSubmissions.length} independent logic samples logged since registration."
+                        </p>
+                    </div>
                 </div>
             </div>
         );
     }, [recentSubmissions.length]);
 
     const renderSettings = useCallback(() => (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                    <Settings className="w-8 h-8 text-indigo-600" />
-                    Account Settings
-                </h1>
-                <p className="text-slate-500 mt-2">Manage your core credentials and system preferences</p>
+        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
+            <div className="flex items-center gap-6">
+                <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.5)]" />
+                <div>
+                    <h1 className="text-5xl font-black text-white tracking-tight tracking-tighter capitalize">PROTOCOL_SET</h1>
+                    <p className="text-slate-500 font-medium text-lg mt-2 uppercase tracking-wide">Core credential management and system preferences</p>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-8">
+                    <div className="glass-card p-12 rounded-[3.5rem] border border-white/10 shadow-3xl space-y-12 pb-16">
                         <div>
-                            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <UserCheck className="w-5 h-5 text-indigo-500" />
-                                Profile Matrix
+                            <h3 className="text-2xl font-black text-white mb-10 flex items-center gap-4">
+                                <UserCheck className="w-6 h-6 text-primary" />
+                                Static Profile Mapping
                             </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identity ID</label>
-                                    <div className="bg-slate-50 px-4 py-3 rounded-2xl border border-slate-200 text-sm font-bold text-slate-600">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2">Identity UUID</label>
+                                    <div className="bg-white/5 px-6 py-5 rounded-[2rem] border border-white/10 text-sm font-black text-white tracking-widest shadow-inner">
                                         {data.username}
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Node</label>
-                                    <div className="bg-slate-50 px-4 py-3 rounded-2xl border border-slate-200 text-sm font-bold text-slate-600">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2">Communication Node</label>
+                                    <div className="bg-white/5 px-6 py-5 rounded-[2rem] border border-white/10 text-sm font-black text-slate-400 tracking-wider">
                                         {data.email}
                                     </div>
                                 </div>
@@ -640,138 +795,145 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
                         </div>
 
                         {data.role === "faculty" && (
-                            <div className="pt-8 border-t border-slate-100">
-                                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5 text-amber-500" />
-                                    Reporting Configuration
+                            <div className="pt-12 border-t border-white/5">
+                                <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-4">
+                                    <MessageSquare className="w-6 h-6 text-amber-400" />
+                                    Reporting Uplink
                                 </h3>
-                                <p className="text-sm text-slate-500 mb-6">Enter the email address where you'd like to receive periodic student engagement reports.</p>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Report Target Email</label>
-                                        <input 
+                                <p className="text-lg text-slate-500 mb-10 font-medium">Define target endpoint for encrypted student behavior archives.</p>
+                                <div className="space-y-8 max-w-xl">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2">Endpoint Address</label>
+                                        <input
                                             type="email"
                                             value={reportEmail}
                                             onChange={(e) => setReportEmail(e.target.value)}
-                                            placeholder="e.g. professor@university.edu"
-                                            className="w-full bg-white px-4 py-3 rounded-2xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-bold text-slate-900"
+                                            placeholder="RECIPIENT@HOST.DOMAIN"
+                                            className="w-full bg-white/[0.03] px-8 py-5 rounded-[2rem] border-2 border-white/5 focus:border-primary focus:ring-8 focus:ring-primary/10 outline-none transition-all font-black text-white placeholder-slate-700 tracking-wider"
                                         />
                                     </div>
-                                    <button 
-                                        onClick={handleSaveSettings}
-                                        disabled={isSaving}
-                                        className={clsx(
-                                            "flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all",
-                                            saveStatus === "success" ? "bg-emerald-500 text-white" : "bg-indigo-600 text-white hover:bg-indigo-700"
-                                        )}
-                                    >
-                                        {isSaving ? "Synchronizing..." : (
-                                            saveStatus === "success" ? <><Check className="w-4 h-4" /> Saved Successfully</> : <><Save className="w-4 h-4" /> Save Preferences</>
-                                        )}
-                                    </button>
+                                    <MagneticWrapper>
+                                        <button
+                                            onClick={handleSaveSettings}
+                                            disabled={isSaving}
+                                            className={clsx(
+                                                "group relative px-10 py-5 rounded-[2rem] font-black text-sm uppercase tracking-[0.2em] transition-all overflow-hidden shadow-2xl",
+                                                saveStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-primary text-white"
+                                            )}
+                                        >
+                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            {isSaving ? "SYNCING..." : (
+                                                saveStatus === "success" ? <><Check className="w-5 h-5 inline mr-2" /> UPLINK_SYNCED</> : <><Save className="w-5 h-5 inline mr-2" /> Establish Link</>
+                                            )}
+                                        </button>
+                                    </MagneticWrapper>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="space-y-6">
-                    <div className="bg-slate-900 p-8 rounded-3xl text-white">
-                        <h3 className="text-lg font-bold mb-4">Security Status</h3>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-slate-400">Multi-Factor Auth</span>
-                                <span className="text-xs font-black text-emerald-400 uppercase">Active</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm text-slate-400">Session Encryption</span>
-                                <span className="text-xs font-black text-emerald-400 uppercase">AES-256</span>
-                            </div>
-                            <div className="pt-4 border-t border-slate-800">
-                                <button className="text-xs font-black text-slate-400 hover:text-white transition-colors uppercase tracking-widest">Rotate API Keys</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-indigo-600 p-8 rounded-3xl text-white relative overflow-hidden group">
+                <div className="space-y-8">
+                    <motion.div initial={{ x: 20 }} animate={{ x: 0 }} className="glass-card p-10 rounded-[3.5rem] bg-slate-900 border border-white/10 overflow-hidden group">
                         <div className="relative z-10">
-                            <h3 className="text-lg font-bold mb-2">Connected</h3>
-                            <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl backdrop-blur-md">
-                                <Globe className="w-6 h-6" />
-                                <div>
-                                    <p className="text-sm font-bold">GitHub OAuth</p>
-                                    <p className="text-[10px] opacity-70">Linked to @{data.username}</p>
+                            <h3 className="text-xl font-black text-white mb-8">Security Perimeter</h3>
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between group/line cursor-help">
+                                    <span className="text-sm font-bold text-slate-500 group-hover/line:text-slate-300 transition-colors">Multi-Factor Gateway</span>
+                                    <span className="text-[10px] font-black text-emerald-400 uppercase bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">ENFORCED</span>
+                                </div>
+                                <div className="flex items-center justify-between group/line cursor-help">
+                                    <span className="text-sm font-bold text-slate-500 group-hover/line:text-slate-300 transition-colors">Packet Encryption</span>
+                                    <span className="text-[10px] font-black text-emerald-400 uppercase bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">AES-256</span>
+                                </div>
+                                <div className="pt-8 border-t border-white/5">
+                                    <button className="text-[10px] font-black text-slate-600 hover:text-white transition-colors uppercase tracking-[0.4em]">Rotate Security Tokens</button>
                                 </div>
                             </div>
                         </div>
-                        <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-                    </div>
+                        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </motion.div>
+
+                    <motion.div initial={{ y: 20 }} animate={{ y: 0 }} className="bg-primary p-12 rounded-[3.5rem] text-white shadow-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform">
+                        <div className="relative z-10">
+                            <h3 className="text-2xl font-black mb-4">Uplink Status</h3>
+                            <div className="flex items-center gap-6 bg-white/10 p-6 rounded-[2.5rem] backdrop-blur-xl border border-white/10 group-hover:bg-white/20 transition-all">
+                                <div className="p-4 rounded-2xl bg-white/10">
+                                    <Globe className="w-8 h-8" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black uppercase tracking-widest">GitHub Vault</p>
+                                    <p className="text-[10px] font-bold text-white/50 tracking-wider">SYNCED_AS @{data.username}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="absolute -bottom-20 -right-10 w-64 h-64 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
+                    </motion.div>
                 </div>
             </div>
         </div>
     ), [data, reportEmail, isSaving, saveStatus, handleSaveSettings]);
 
     const renderHelp = useCallback(() => (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
-                        <HelpCircle className="w-8 h-8 text-indigo-600" />
-                        Intelligence Matrix Support
-                    </h1>
-                    <p className="text-slate-500 mt-2 uppercase tracking-[0.2em] text-[10px] font-black">Centralized operations and documentation hub</p>
+        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-12">
+                <div className="flex items-center gap-6">
+                    <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.5)]" />
+                    <div>
+                        <h1 className="text-5xl font-black text-white tracking-tight uppercase">USER_MANUALS</h1>
+                        <p className="text-slate-500 font-medium text-lg mt-2 uppercase tracking-wide">Centralized operations and documentation access portal</p>
+                    </div>
                 </div>
-                <a href="https://discord.gg/minicode" target="_blank" className="flex items-center gap-2 bg-[#5865F2] text-white px-6 py-3 rounded-2xl font-bold text-sm hover:scale-105 transition-transform shadow-lg shadow-[#5865F2]/20">
-                    <MessageSquare className="w-4 h-4" />
-                    Join Developer Discord
-                </a>
+                <MagneticWrapper>
+                    <a href="https://discord.gg/minicode" target="_blank" className="flex items-center gap-4 bg-[#5865F2] text-white px-10 py-5 rounded-[2.5rem] font-black text-sm hover:shadow-[#5865F2]/40 transition-shadow shadow-2xl relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <MessageSquare className="w-5 h-5 pr-1" />
+                        JOIN_HQ_SERVER
+                    </a>
+                </MagneticWrapper>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-white p-8 rounded-3xl border border-slate-200 hover:border-indigo-500/50 transition-colors group">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <Code className="w-6 h-6 text-indigo-600" />
-                    </div>
-                    <h3 className="text-lg font-black text-slate-900 mb-3">Logic Execution</h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">
-                        Learn how to synchronize your local environment with the judge matrix. Push code to your private repository for AI evaluation.
-                    </p>
-                    <button className="mt-6 text-xs font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">Read Protocol <ArrowRight className="w-3 h-3" /></button>
-                </div>
-
-                <div className="bg-white p-8 rounded-3xl border border-slate-200 hover:border-emerald-500/50 transition-colors group">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <Trophy className="w-6 h-6 text-emerald-600" />
-                    </div>
-                    <h3 className="text-lg font-black text-slate-900 mb-3">Ranking Algorithms</h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">
-                        Understand how XP is calculated based on problem complexity, execution efficiency, and code quality benchmarks.
-                    </p>
-                    <button className="mt-6 text-xs font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2">View Benchmarks <ArrowRight className="w-3 h-3" /></button>
-                </div>
-
-                <div className="bg-white p-8 rounded-3xl border border-slate-200 hover:border-rose-500/50 transition-colors group">
-                    <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <Shield className="w-6 h-6 text-rose-600" />
-                    </div>
-                    <h3 className="text-lg font-black text-slate-900 mb-3">Integrity Core</h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">
-                        Our anti-plagiarism engine monitors code lineages. Ensure your work is original to avoid disciplinary exceptions.
-                    </p>
-                    <button className="mt-6 text-xs font-black text-rose-600 uppercase tracking-widest flex items-center gap-2">Integrity Guide <ArrowRight className="w-3 h-3" /></button>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[
+                    { title: "Judgement Cycle", desc: "Understanding the asynchronous evaluation and judge feedback mechanisms.", icon: <Code />, color: "text-primary" },
+                    { title: "Grid Economics", desc: "How XP and merit points are distributed across the ranking algorithm.", icon: <Stars />, color: "text-emerald-400" },
+                    { title: "Judicial Integrity", desc: "Policies regarding code derivation and anti-plagiarism protocols.", icon: <Shield />, color: "text-rose-400" },
+                ].map((item, i) => (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={item.title}
+                        className="glass-card p-12 rounded-[3.5rem] border border-white/10 hover:border-primary/50 transition-all group"
+                    >
+                        <div className="w-16 h-16 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-center justify-center mb-8 group-hover:scale-110 group-hover:border-primary/40 transition-all duration-500">
+                            {React.cloneElement(item.icon as React.ReactElement<any>, { className: clsx("w-8 h-8", item.color) })}
+                        </div>
+                        <h3 className="text-2xl font-black text-white mb-4 tracking-tighter">{item.title}</h3>
+                        <p className="text-slate-500 font-medium text-lg leading-relaxed mb-10">{item.desc}</p>
+                        <button className="text-[10px] font-black text-primary uppercase tracking-[0.4em] flex items-center gap-3 group-hover:gap-5 transition-all">
+                            Access Protocol <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                ))}
             </div>
 
-            <div className="bg-slate-900 p-10 rounded-[3rem] text-white relative overflow-hidden">
-                <div className="relative z-10 max-w-2xl">
-                    <h2 className="text-3xl font-black mb-6">Need technical intervention?</h2>
-                    <p className="text-slate-400 mb-8 leading-relaxed">If you encounter judge timeouts or repo synchronization errors, our operations team is ready in the Discord headquarters to assist with manual resets.</p>
-                    <div className="flex flex-wrap gap-4">
-                        <button className="bg-white text-slate-900 px-8 py-4 rounded-2xl font-black text-sm">Open Support Ticket</button>
-                        <button className="bg-slate-800 text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-slate-700 transition-colors">Documentation Wiki</button>
+            <div className="glass-card p-16 rounded-[4rem] text-center bg-gradient-to-br from-primary/10 via-transparent to-transparent border border-white/10 relative overflow-hidden group">
+                <div className="relative z-10 max-w-2xl mx-auto">
+                    <h2 className="text-5xl font-black text-white tracking-tighter mb-8 group-hover:scale-[1.02] transition-transform">Emergency Intervention?</h2>
+                    <p className="text-xl text-slate-400 font-medium leading-relaxed mb-12">If judge synchronization fails or account credentials become desynced, contact the operational commanders in the secure channel for a manual reset.</p>
+                    <div className="flex flex-wrap items-center justify-center gap-6">
+                        <MagneticWrapper>
+                            <button className="bg-white text-slate-900 px-12 py-5 rounded-[2.5rem] font-black text-sm uppercase tracking-widest shadow-2xl hover:bg-slate-100 transition-colors">
+                                Support Request
+                            </button>
+                        </MagneticWrapper>
+                        <button className="px-12 py-5 rounded-[2.5rem] border-2 border-white/5 font-black text-sm uppercase tracking-widest text-slate-500 hover:text-white hover:border-white/20 transition-all">
+                            Archive Wiki
+                        </button>
                     </div>
                 </div>
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-indigo-500/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-primary/5 blur-[100px] pointer-events-none" />
             </div>
         </div>
     ), []);
@@ -789,69 +951,115 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
     }, [activeTab, renderDashboard, renderSubmissions, renderAchievements, renderInsights, renderSettings, renderHelp]);
 
     return (
-        <div className="bg-white text-slate-900 min-h-[calc(100vh-64px)] font-[Inter,sans-serif] w-full selection:bg-indigo-500 selection:text-white">
-            <div className="max-w-[1600px] mx-auto flex h-[calc(100vh-64px)] overflow-hidden">
-                <aside className="w-64 border-r border-slate-200 bg-white flex flex-col shrink-0 relative z-20">
-                    <div className="p-8 pb-4">
-                        <div className="h-16 w-16 rounded-2xl border border-slate-200 overflow-hidden mb-4 ring-2 ring-indigo-500/20 p-0.5">
-                            {data.avatar_url ? (
-                                <img src={data.avatar_url} alt="" className="w-full h-full object-cover rounded-[14px]" />
-                            ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-black text-xl">
-                                    {data.username.slice(0, 2).toUpperCase()}
-                                </div>
-                            )}
+        <div className="min-h-[calc(100vh-112px)] selection:bg-primary selection:text-white relative flex flex-col lg:flex-row gap-1 border-t border-white/5">
+            {/* Sidebar Glass Navigation */}
+            <aside className="w-full lg:w-80 border-r border-white/10 flex flex-col shrink-0 relative z-30 pt-12 bg-black/20 backdrop-blur-3xl lg:h-[calc(100vh-112px)] lg:sticky lg:top-[112px]">
+                <div className="px-10 mb-12">
+                    <div className="flex items-center gap-4 group cursor-pointer">
+                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary to-secondary p-px shadow-lg shadow-primary/20">
+                            <div className="w-full h-full rounded-2xl bg-[#0a0a14] flex items-center justify-center">
+                                <Terminal className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                            </div>
                         </div>
-                        <h2 className="font-black text-slate-900 uppercase tracking-wider text-xs truncate">{data.full_name || data.username}</h2>
-                        <p className="text-[9px] text-slate-400 font-bold tracking-widest mt-1 opacity-70 uppercase">{data.role}</p>
+                        <div>
+                            <h2 className="text-xl font-black text-white tracking-widest bg-clip-text text-transparent bg-gradient-to-br from-white to-white/60">MINICODE</h2>
+                            <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.5em] mt-1">Sovereign_OS v3.0</p>
+                        </div>
                     </div>
+                </div>
 
-                    <nav className="flex-1 p-4 space-y-1 overflow-y-auto pt-4 scrollbar-hide">
-                        <div className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 opacity-50">Intelligence Hub</div>
-                        {sidebarItems.map((item) => (
-                            <button 
-                                key={item.id} 
-                                onClick={() => handleTabChange(item.id)} 
+                <nav className="flex-1 px-4 space-y-2">
+                    {sidebarItems.map((item) => (
+                        <MagneticWrapper key={item.id}>
+                            <button
+                                onClick={() => handleTabChange(item.id)}
                                 className={clsx(
-                                    "w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest",
-                                    activeTab === item.id 
-                                        ? "bg-indigo-600 text-white" 
-                                        : "text-slate-500 hover:bg-slate-100"
+                                    "w-full flex items-center gap-5 px-8 py-5 rounded-[2rem] text-[11px] font-black transition-all group relative overflow-hidden",
+                                    activeTab === item.id
+                                        ? "text-primary shadow-2xl bg-white/[0.05]"
+                                        : "text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]"
                                 )}
                             >
-                                {item.icon}
-                                <span>{item.label}</span>
+                                {activeTab === item.id && (
+                                    <motion.div layoutId="nav-pill" className="absolute inset-0 bg-primary/[0.08] border border-primary/20 rounded-[2rem]" />
+                                )}
+                                <div className={clsx(
+                                    "relative z-10 transition-transform group-hover:scale-110",
+                                    activeTab === item.id ? "text-primary" : "text-slate-600 group-hover:text-slate-400"
+                                )}>
+                                    {React.cloneElement(item.icon as React.ReactElement<any>, { className: "w-5 h-5 shadow-primary/20" })}
+                                </div>
+                                <span className="relative z-10 uppercase tracking-[0.3em]">{item.label}</span>
+                                {activeTab === item.id && (
+                                    <motion.div
+                                        layoutId="dot"
+                                        initial={{ opacity: 0, scale: 0 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="absolute right-6 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_#895bf5]"
+                                    />
+                                )}
                             </button>
-                        ))}
-                        {sidebarSystem.length > 0 && (
-                            <>
-                                <div className="pt-10 px-5 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2 opacity-50">System Link</div>
-                                {sidebarSystem.map((item) => (
-                                    <button 
-                                        key={item.id} 
-                                        onClick={() => handleTabChange(item.id)} 
-                                        className={clsx(
-                                            "w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest",
-                                            activeTab === item.id 
-                                                ? "bg-indigo-600 text-white" 
-                                                : "text-slate-500 hover:bg-slate-100"
-                                        )}
-                                    >
-                                        {item.icon}
-                                        <span>{item.label}</span>
-                                    </button>
-                                ))}
-                            </>
-                        )}
-                    </nav>
-                </aside>
+                        </MagneticWrapper>
+                    ))}
 
-                <main className="flex-1 flex flex-col overflow-hidden relative z-10 bg-slate-50">
-                    <div className="flex-1 overflow-y-auto p-10 lg:p-16 relative">
-                        {renderContent()}
+                    <div className="py-6 px-10">
+                        <div className="h-px bg-white/5 w-full" />
                     </div>
-                </main>
-            </div>
+
+                    {sidebarSystem.map((item) => (
+                        <MagneticWrapper key={item.id}>
+                            <button
+                                onClick={() => handleTabChange(item.id)}
+                                className={clsx(
+                                    "w-full flex items-center gap-5 px-8 py-5 rounded-[2rem] text-[11px] font-black transition-all group relative",
+                                    activeTab === item.id
+                                        ? "text-amber-400 shadow-2xl bg-white/[0.05]"
+                                        : "text-slate-600 hover:text-slate-400 hover:bg-white/[0.02]"
+                                )}
+                            >
+                                {activeTab === item.id && (
+                                    <motion.div layoutId="nav-pill-system" className="absolute inset-0 bg-amber-400/[0.08] border border-amber-400/20 rounded-[2rem]" />
+                                )}
+                                <div className={clsx(
+                                    "relative z-10 transition-transform group-hover:scale-110",
+                                    activeTab === item.id ? "text-amber-400" : "text-slate-700"
+                                )}>
+                                    {React.cloneElement(item.icon as React.ReactElement<any>, { className: "w-5 h-5" })}
+                                </div>
+                                <span className="relative z-10 uppercase tracking-[0.3em]">{item.label}</span>
+                            </button>
+                        </MagneticWrapper>
+                    ))}
+                </nav>
+
+                {/* <div className="p-6 mt-auto">
+                     <div className="p-8 rounded-[2.5rem] bg-indigo-500/5 border border-indigo-500/10 text-center group hover:border-primary/20 transition-all shadow-inner">
+                         <div className="relative inline-block mb-4">
+                            <MousePointer2 className="w-8 h-8 text-primary mx-auto group-hover:animate-bounce relative z-10" />
+                            <div className="absolute inset-0 bg-primary/20 blur-xl scale-150 animate-pulse" />
+                         </div>
+                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Node Analytics</p>
+                         <p className="text-[11px] font-black text-primary uppercase tracking-[0.6em] mt-2">LINK_ACTIVE</p>
+                     </div>
+                </div> */}
+            </aside>
+
+            {/* Main Content Area */}
+            <main className="flex-1 lg:h-[calc(100vh-112px)] overflow-y-auto scrollbar-hide pt-16 px-6 md:px-12 lg:px-20 relative z-20">
+                <div className="max-w-[1200px] mx-auto relative z-10">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, y: 15, filter: "blur(10px)" }}
+                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, y: -15, filter: "blur(10px)" }}
+                            transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
+                        >
+                            {renderContent()}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </main>
         </div>
     );
 }

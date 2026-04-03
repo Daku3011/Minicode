@@ -1,189 +1,314 @@
 "use client";
 
-import { Trophy, Medal, Star, TrendingUp, Search } from "lucide-react";
-import { clsx } from "clsx";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    Trophy, Medal, Crown, TrendingUp, Search,
+    Filter, ArrowUpRight, Zap, Star, ShieldCheck,
+    Activity, Code
+} from "lucide-react";
+import { clsx } from "clsx";
 import api from "@/lib/api";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import MagneticWrapper from "../../components/MagneticWrapper";
 
-interface Leader {
+interface LeaderboardUser {
     id: number;
-    name: string;
     username: string;
+    name: string;
     score: number;
     problems: number;
     avatar: string | null;
     rank: number;
+    tags: string[];
+    level: number;
+    problems_solved: number;
+    experience: number;
+    streak?: number;
 }
 
 export default function LeaderboardPage() {
-    const { user } = useAuth();
-    const [leaders, setLeaders] = useState<Leader[]>([]);
-    const [search, setSearch] = useState("");
+    const { user: currentUser } = useAuth();
+    const [users, setUsers] = useState<LeaderboardUser[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [activeTab, setActiveTab] = useState<"global" | "friends" | "department">("global");
 
     useEffect(() => {
-        const fetchLeaders = async () => {
-            try {
-                const response = await api.get("/leaderboard");
-                setLeaders(response.data);
-            } catch (error) {
-                console.error("Failed to fetch leaderboard: ", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchLeaders();
+        fetchLeaderboard();
     }, []);
 
-    const topThree = leaders.slice(0, 3);
-    const restLeaders = leaders.slice(3).filter(l => l.name.toLowerCase().includes(search.toLowerCase()) || l.username.toLowerCase().includes(search.toLowerCase()));
+    const fetchLeaderboard = async () => {
+        try {
+            const response = await api.get("/leaderboard");
+            // Add mock data for tags and streaks if not present
+            const enhancedData = response.data.map((u: any, i: number) => ({
+                ...u,
+                rank: i + 1,
+                streak: Math.floor(Math.random() * 15),
+                tags: i < 3 ? ["ELITE", "HARDCORE"] : i < 10 ? ["VETERAN"] : ["OPERATOR"],
+                level: Math.floor((u.score || 0) / 1000) + 1,
+                problems_solved: u.problems || 0,
+                experience: u.score || 0
+            }));
+            setUsers(enhancedData);
+        } catch (error) {
+            console.error("Failed to fetch leaderboard:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredUsers = users.filter(u =>
+        u.username.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const topThree = filteredUsers.slice(0, 3);
+    const restOfUsers = filteredUsers.slice(3);
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-12">
-            <div className="text-center mb-16">
-                <h1 className="text-4xl font-extrabold text-white mb-4">
-                    Hall of <span className="gradient-text">Fame</span>
-                </h1>
-                <p className="text-muted-foreground max-w-lg mx-auto">
-                    The top performers of MiniCode. Solve problems, earn XP, and secure your spot at the top.
-                </p>
-            </div>
+        <div className="min-h-screen pt-32 pb-24 px-4 md:px-8">
+            <div className="max-w-7xl mx-auto">
+                {/* Hero Header */}
+                <div className="text-center mb-24 relative">
+                    <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                    >
+                        <span className="text-primary font-black text-[10px] uppercase tracking-[0.6em] mb-6 block">Status Network</span>
+                        <h1 className="text-7xl font-black text-white tracking-tighter mb-8 leading-[0.9]">
+                            HIERARCHY <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">&</span> RANK
+                        </h1>
+                        <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium leading-relaxed mb-12">
+                            The definitive record of operational excellence. Track real-time performance
+                            metrics across the global Minicode network.
+                        </p>
+                    </motion.div>
 
-            {loading ? (
-                <div className="flex justify-center py-20">
-                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    {/* Decorative Nebula */}
+                    <div className="absolute -top-64 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[120px] pointer-events-none -z-10" />
                 </div>
-            ) : topThree.length === 0 ? (
-                <div className="text-center py-20 text-muted-foreground">No rankings yet.</div>
-            ) : (
-                <>
-                    {/* Podium Section */}
-                    <div className="flex flex-col md:flex-row items-end justify-center gap-4 mb-20">
-                        {/* Rank 2 */}
-                        {topThree[1] && (
-                            <div className="order-2 md:order-1 flex flex-col items-center">
-                                <div className="relative group">
-                                    <div className="w-20 h-20 rounded-full glass border-2 border-slate-400 flex items-center justify-center text-xl font-bold text-white mb-4 relative z-10 overflow-hidden">
-                                        {topThree[1].avatar ? <img src={topThree[1].avatar} alt="" className="w-full h-full object-cover" /> : topThree[1].username.slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="absolute -inset-1 bg-slate-400/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                                <div className="h-32 w-32 glass rounded-t-2xl flex flex-col items-center justify-center p-4 border-b-0 border-slate-400/30">
-                                    <span className="text-2xl font-black text-slate-400">2nd</span>
-                                    <span className="text-sm font-bold text-white mt-1">{topThree[1].name}</span>
-                                    <span className="text-xs text-muted-foreground">{topThree[1].score} XP</span>
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Rank 1 */}
-                        {topThree[0] && (
-                            <div className="order-1 md:order-2 flex flex-col items-center -translate-y-4">
-                                <Trophy className="w-8 h-8 text-yellow-500 mb-2 animate-bounce" />
-                                <div className="relative group">
-                                    <div className="w-24 h-24 rounded-full glass border-4 border-yellow-500 flex items-center justify-center text-2xl font-black text-white mb-4 relative z-10 overflow-hidden">
-                                        {topThree[0].avatar ? <img src={topThree[0].avatar} alt="" className="w-full h-full object-cover" /> : topThree[0].username.slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="absolute -inset-2 bg-yellow-500/20 blur-2xl opacity-100" />
-                                </div>
-                                <div className="h-44 w-40 glass rounded-t-2xl flex flex-col items-center justify-center p-4 border-b-0 border-yellow-500/30 bg-yellow-500/5">
-                                    <span className="text-4xl font-black text-yellow-500">1st</span>
-                                    <span className="text-sm font-bold text-white mt-1">{topThree[0].name}</span>
-                                    <span className="text-xs text-muted-foreground">{topThree[0].score} XP</span>
-                                </div>
+                {/* Top 3 Podium */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24 items-end">
+                    {/* Rank 2 */}
+                    {topThree[1] && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="order-2 md:order-1 h-[320px] glass-card rounded-[3rem] p-8 border border-white/10 relative group hover:border-slate-400/30 transition-all duration-300"
+                        >
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 h-14 w-14 rounded-2xl bg-slate-500/20 backdrop-blur-xl border border-slate-500/30 flex items-center justify-center shadow-2xl">
+                                <Medal className="w-8 h-8 text-slate-400" />
                             </div>
-                        )}
-
-                        {/* Rank 3 */}
-                        {topThree[2] && (
-                            <div className="order-3 flex flex-col items-center">
-                                <div className="relative group">
-                                    <div className="w-20 h-20 rounded-full glass border-2 border-orange-600 flex items-center justify-center text-xl font-bold text-white mb-4 relative z-10 overflow-hidden">
-                                        {topThree[2].avatar ? <img src={topThree[2].avatar} alt="" className="w-full h-full object-cover" /> : topThree[2].username.slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="absolute -inset-1 bg-orange-600/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-slate-500/20 to-transparent border-4 border-slate-500/30 mb-6 flex items-center justify-center overflow-hidden">
+                                    <span className="text-3xl font-black text-slate-400">{topThree[1].username[0].toUpperCase()}</span>
                                 </div>
-                                <div className="h-24 w-32 glass rounded-t-2xl flex flex-col items-center justify-center p-4 border-b-0 border-orange-600/30">
-                                    <span className="text-2xl font-black text-orange-600">3rd</span>
-                                    <span className="text-sm font-bold text-white mt-1">{topThree[2].name}</span>
-                                    <span className="text-xs text-muted-foreground">{topThree[2].score} XP</span>
+                                <h3 className="text-2xl font-black text-white mb-2">{topThree[1].username}</h3>
+                                <div className="flex items-center gap-2 px-4 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
+                                    <Star className="w-3.5 h-3.5 text-slate-400" />
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RANK 02</span>
                                 </div>
+                                <div className="text-primary font-black text-lg">{topThree[1].score.toLocaleString()} XP</div>
                             </div>
-                        )}
-                    </div>
+                        </motion.div>
+                    )}
 
-                    {/* Search & Filter */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
-                        <h2 className="text-xl font-bold text-white">Full Rankings</h2>
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    {/* Rank 1 */}
+                    {topThree[0] && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.05 }}
+                            className="order-1 md:order-2 h-[400px] glass-card rounded-[3rem] p-8 border border-amber-500/30 relative group hover:border-amber-500/50 transition-all duration-300 shadow-[0_0_50px_rgba(245,158,11,0.05)]"
+                        >
+                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 h-20 w-20 rounded-[2rem] bg-amber-500/20 backdrop-blur-xl border border-amber-500/40 flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+                                <Crown className="w-10 h-10 text-amber-500" />
+                            </div>
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-amber-500/20 to-transparent border-4 border-amber-500/30 mb-6 flex items-center justify-center overflow-hidden shadow-2xl">
+                                    <span className="text-5xl font-black text-amber-500">{topThree[0].username[0].toUpperCase()}</span>
+                                </div>
+                                <h3 className="text-3xl font-black text-white mb-2">{topThree[0].username}</h3>
+                                <div className="flex items-center gap-2 px-6 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
+                                    <ShieldCheck className="w-4 h-4 text-amber-500" />
+                                    <span className="text-xs font-black text-amber-500 uppercase tracking-widest">SUPREME OPERATOR</span>
+                                </div>
+                                <div className="text-amber-500 font-black text-2xl tracking-tighter">{topThree[0].score.toLocaleString()} XP</div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Rank 3 */}
+                    {topThree[2] && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                            className="order-3 md:order-3 h-[280px] glass-card rounded-[3rem] p-8 border border-rose-500/20 relative group hover:border-rose-400/30 transition-all duration-300"
+                        >
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 h-14 w-14 rounded-2xl bg-rose-500/20 backdrop-blur-xl border border-rose-500/30 flex items-center justify-center shadow-2xl">
+                                <Zap className="w-8 h-8 text-rose-400" />
+                            </div>
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-rose-500/20 to-transparent border-4 border-rose-500/30 mb-6 flex items-center justify-center overflow-hidden">
+                                    <span className="text-2xl font-black text-rose-400">{topThree[2].username[0].toUpperCase()}</span>
+                                </div>
+                                <h3 className="text-xl font-black text-white mb-2">{topThree[2].username}</h3>
+                                <div className="flex items-center gap-2 px-4 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
+                                    <TrendingUp className="w-3.5 h-3.5 text-rose-400" />
+                                    <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest">RANK 03</span>
+                                </div>
+                                <div className="text-rose-400 font-black text-lg">{topThree[2].score.toLocaleString()} XP</div>
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* Main Table Interface */}
+                <div className="glass-card rounded-[3rem] p-8 border border-white/10 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] via-transparent to-transparent pointer-events-none" />
+
+                    {/* Table Header Controls */}
+                    <div className="flex flex-col lg:flex-row items-center justify-between mb-12 gap-8 relative z-10">
+                        <div className="flex items-center gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/5 backdrop-blur-3xl">
+                            {[
+                                { id: "global", label: "Global" },
+                                { id: "department", label: "Department" },
+                                { id: "friends", label: "Contacts" },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={clsx(
+                                        "px-8 py-3 rounded-xl text-xs font-black transition-all uppercase tracking-widest relative whitespace-nowrap",
+                                        activeTab === tab.id ? "text-white" : "text-slate-500 hover:text-white"
+                                    )}
+                                >
+                                    {activeTab === tab.id && (
+                                        <motion.div
+                                            layoutId="tab-pill-leader"
+                                            className="absolute inset-0 bg-primary/20 rounded-xl border border-primary/30"
+                                            transition={{ duration: 0.2 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10">{tab.label}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="relative w-full lg:w-96 group">
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-600 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
-                                placeholder="Search student..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                placeholder="IDENTIFY USER..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-xs text-white placeholder-slate-700 font-bold tracking-widest focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary/40 transition-all shadow-2xl"
                             />
                         </div>
                     </div>
 
-                    {/* Leaderboard Table */}
-                    <div className="glass rounded-2xl overflow-hidden border-white/10">
-                        <table className="w-full text-left">
+                    {/* Table Content */}
+                    <div className="overflow-x-auto relative z-10">
+                        <table className="w-full border-collapse">
                             <thead>
-                                <tr className="border-b border-white/10 bg-white/5">
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Rank</th>
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Student</th>
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Problems</th>
-                                    <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Score</th>
-                                    {(user?.role === "faculty" || user?.role === "admin") && (
-                                        <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Actions</th>
-                                    )}
+                                <tr className="border-b border-white/5 text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">
+                                    <th className="text-left py-6 px-6 pb-8">Rank</th>
+                                    <th className="text-left py-6 px-6 pb-8">Operator</th>
+                                    <th className="text-left py-6 px-6 pb-8">Clearance</th>
+                                    <th className="text-left py-6 px-6 pb-8">Resolved</th>
+                                    <th className="text-left py-6 px-6 pb-8">Experience Points</th>
+                                    <th className="text-right py-6 px-6 pb-8">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {restLeaders.map((leader) => (
-                                    <tr key={leader.id} className="hover:bg-white/5 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-bold text-white">#{leader.rank}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary overflow-hidden">
-                                                    {leader.avatar ? <img src={leader.avatar} alt="" className="w-full h-full object-cover" /> : leader.username.slice(0, 2).toUpperCase()}
-                                                </div>
-                                                <span className="text-sm font-medium text-white group-hover:text-primary transition-colors">
-                                                    {leader.name}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-muted-foreground">
-                                            {leader.problems} Solved
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-sm font-bold text-white">{leader.score} XP</span>
-                                        </td>
-                                        {(user?.role === "faculty" || user?.role === "admin") && (
-                                            <td className="px-6 py-4">
-                                                <Link 
-                                                    href={`/faculty/students/${leader.username}`}
-                                                    className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 group/btn"
-                                                >
-                                                    View Profile
-                                                    <TrendingUp className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
-                                                </Link>
+                                {loading ? (
+                                    [1, 2, 3, 4, 5].map((i) => (
+                                        <tr key={i} className="animate-pulse">
+                                            <td colSpan={6} className="py-8 px-6">
+                                                <div className="h-12 bg-white/5 rounded-2xl w-full" />
                                             </td>
-                                        )}
-                                    </tr>
-                                ))}
+                                        </tr>
+                                    ))
+                                ) : (
+                                    filteredUsers.slice(3).map((u, i) => (
+                                        <motion.tr
+                                            key={u.id}
+                                            initial={{ opacity: 0, x: -5 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.02 * i }}
+                                            className={clsx(
+                                                "group hover:bg-white/[0.02] transition-colors relative",
+                                                currentUser?.username === u.username && "bg-primary/5"
+                                            )}
+                                        >
+                                            <td className="py-6 px-6 font-black text-slate-500 text-sm">
+                                                #{u.rank.toString().padStart(2, '0')}
+                                            </td>
+                                            <td className="py-6 px-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-sm text-slate-400 group-hover:border-primary/50 transition-colors">
+                                                        {u.username[0].toUpperCase()}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-white font-black text-sm">{u.username}</span>
+                                                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest italic">{u.tags?.[0] || 'OPERATOR'}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="py-6 px-6">
+                                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-primary/10 border border-primary/20">
+                                                    <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                                                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">LVL {u.level}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-6 px-6 font-bold text-white text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <Code className="w-4 h-4 text-secondary/60" />
+                                                    {u.problems_solved}
+                                                </div>
+                                            </td>
+                                            <td className="py-6 px-6 font-black text-primary text-sm">
+                                                {u.experience.toLocaleString()} XP
+                                            </td>
+                                            <td className="py-6 px-6 text-right">
+                                                <MagneticWrapper>
+                                                    <Link
+                                                        href={`/profile/${u.username}`}
+                                                        className="h-10 px-6 rounded-xl bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest inline-flex items-center gap-2 hover:bg-primary hover:border-primary transition-all"
+                                                    >
+                                                        Details
+                                                        <ArrowUpRight className="w-3.5 h-3.5" />
+                                                    </Link>
+                                                </MagneticWrapper>
+                                            </td>
+                                        </motion.tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
                     </div>
-                </>
-            )}
+                </div>
+
+                {/* Footer Insight */}
+                {/* <motion.div 
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    className="mt-16 text-center"
+                >
+                    <div className="inline-flex items-center gap-6 px-8 py-4 bg-white/[0.01] rounded-3xl border border-white/5 backdrop-blur-xl">
+                        <Activity className="w-5 h-5 text-emerald-400" />
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            Real-time synchronization active. Last update <span className="text-white font-black">Just Now</span>
+                        </span>
+                    </div>
+                </motion.div> */}
+            </div>
         </div>
     );
 }

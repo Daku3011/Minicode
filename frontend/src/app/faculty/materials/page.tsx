@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { ChevronLeft, Upload, FileText, Sparkles, Loader2, Trash2, BookOpen, Code2, CheckCircle, AlertCircle, Send, Eye } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ChevronLeft, Upload, FileText, Sparkles, Loader2, Trash2, BookOpen, Code2, CheckCircle, AlertCircle, Send, Eye, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import api from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import MagneticWrapper from "@/components/MagneticWrapper";
+import BroadcastAlert from "@/components/BroadcastAlert";
+import { Bell } from "lucide-react";
 
 const subjectAreas = [
     { id: "data-structures", name: "Data Structures", icon: "🌳" },
@@ -51,6 +55,13 @@ export default function StudyMaterialsPage() {
     const [dragActive, setDragActive] = useState(false);
     const [customPrompt, setCustomPrompt] = useState("");
     const [showPreview, setShowPreview] = useState<string | null>(null);
+    const [newsOpen, setNewsOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenNews = () => setNewsOpen(true);
+        window.addEventListener('minicode:openNews', handleOpenNews);
+        return () => window.removeEventListener('minicode:openNews', handleOpenNews);
+    }, []);
 
     const handleDrag = (e: React.DragEvent) => {
         e.preventDefault();
@@ -211,74 +222,96 @@ export default function StudyMaterialsPage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#0f0a1e]">
-            <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+        <div className="min-h-[calc(100vh-64px)] bg-[#0f0a1e] text-slate-100 font-display relative overflow-x-hidden">
+            {/* Ambient Background Elements */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-secondary/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5" />
+            </div>
 
             <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <Link href="/faculty/profile" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6">
-                    <ChevronLeft className="w-4 h-4" />
-                    Back to Dashboard
-                </Link>
+                <div className="flex items-center justify-between mb-8">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                    >
+                        <Link href="/faculty/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-all text-xs font-black uppercase tracking-widest mb-4 group">
+                            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                            Return to Command
+                        </Link>
+                        <h1 className="text-4xl font-black text-white tracking-tight mb-2">Knowledge Matrix</h1>
+                        <p className="text-slate-500 font-medium">Ingest study materials to synthesize algorithmic challenges</p>
+                    </motion.div>
 
-                <div className="mb-8">
-                    <h1 className="text-3xl font-black text-white mb-2">Study Materials</h1>
-                    <p className="text-slate-400">Upload study materials to automatically generate problem statements</p>
+                    <BroadcastAlert />
                 </div>
 
                 {/* Subject & Difficulty Selection */}
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <BookOpen className="w-5 h-5 text-emerald-400" />
-                        Configuration
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="glass-card mb-10 overflow-hidden relative"
+                >
+                    <div className="absolute top-0 left-0 w-2 h-full bg-primary/40" />
+                    <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                            <BookOpen className="w-5 h-5 text-primary" />
+                        </div>
+                        Synthesizer Protocol
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label className="text-sm font-medium text-slate-400 mb-2 block">Subject Area *</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Domain Target *</label>
                             <select
                                 value={selectedSubject}
                                 onChange={(e) => setSelectedSubject(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-black appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
                             >
-                                <option value="">Select Subject</option>
+                                <option value="" className="bg-[#0f0a1e]">Select Domain</option>
                                 {subjectAreas.map((s) => (
-                                    <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
+                                    <option key={s.id} value={s.id} className="bg-[#0f0a1e]">{s.icon} {s.name}</option>
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label className="text-sm font-medium text-slate-400 mb-2 block">Difficulty</label>
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Complexity Level</label>
                             <select
                                 value={selectedDifficulty}
                                 onChange={(e) => setSelectedDifficulty(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-black appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all cursor-pointer"
                             >
                                 {difficulties.map((d) => (
-                                    <option key={d.value} value={d.value}>{d.label} ({d.xp} XP)</option>
+                                    <option key={d.value} value={d.value} className="bg-[#0f0a1e]">{d.label} (+{d.xp} XP)</option>
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label className="text-sm font-medium text-slate-400 mb-2 block">Custom Prompt (Optional)</label>
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Heuristic Guidance</label>
                             <input
                                 type="text"
                                 value={customPrompt}
                                 onChange={(e) => setCustomPrompt(e.target.value)}
-                                placeholder="e.g., Focus on arrays and sorting"
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                placeholder="e.g. Focus on greedy optimization"
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-700"
                             />
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Upload Area */}
-                <div
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
                     onDrop={handleDrop}
                     className={clsx(
-                        "border-2 border-dashed rounded-2xl p-12 text-center transition-all mb-8",
-                        dragActive ? "border-emerald-500 bg-emerald-500/10" : "border-white/20 hover:border-white/40"
+                        "relative group cursor-pointer border-2 border-dashed rounded-3xl p-16 text-center transition-all mb-12",
+                        dragActive ? "border-primary bg-primary/5 shadow-[0_0_40px_rgba(168,85,247,0.1)]" : "border-white/5 bg-white/[0.01] hover:bg-white/[0.02] hover:border-white/10"
                     )}
                 >
                     <input
@@ -289,201 +322,278 @@ export default function StudyMaterialsPage() {
                         onChange={(e) => e.target.files && handleFiles(e.target.files)}
                         className="hidden"
                     />
-                    <Upload className={clsx("w-12 h-12 mx-auto mb-4 transition-colors", dragActive ? "text-emerald-400" : "text-slate-500")} />
-                    <p className="text-white font-bold mb-2">
-                        Drag & drop files here, or{" "}
-                        <button onClick={() => fileInputRef.current?.click()} className="text-emerald-400 hover:text-emerald-300 underline">
-                            browse
-                        </button>
-                    </p>
-                    <p className="text-sm text-slate-500">Supports PDF, DOC, TXT, MD, and code files</p>
-                </div>
-
-                {/* Uploaded Files */}
-                {files.length > 0 && (
-                    <div className="space-y-4 mb-8">
-                        <h3 className="text-lg font-bold text-white">Uploaded Materials ({files.length})</h3>
-                        {files.map((file) => (
-                            <div key={file.id} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                                            <FileText className="w-5 h-5 text-emerald-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-white font-medium">{file.name}</p>
-                                            <p className="text-xs text-slate-500">{formatFileSize(file.size)}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {file.status === "done" && (
-                                            <button onClick={() => previewFile(file)} className="p-2 text-slate-400 hover:text-blue-400 transition-colors" title="Preview">
-                                                <Eye className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                        <button onClick={() => removeFile(file.id)} className="p-2 text-slate-400 hover:text-red-400 transition-colors">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Progress */}
-                                {file.status === "uploading" && (
-                                    <div className="mb-4">
-                                        <div className="flex items-center justify-between text-sm mb-1">
-                                            <span className="text-slate-400">Uploading...</span>
-                                            <span className="text-white">{Math.round(file.progress)}%</span>
-                                        </div>
-                                        <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                                            <div className="h-full bg-emerald-500 transition-all" style={{ width: `${file.progress}%` }} />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {file.status === "processing" && (
-                                    <div className="flex items-center gap-2 text-amber-400 mb-4">
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span className="text-sm">Analyzing content with AI...</span>
-                                    </div>
-                                )}
-
-                                {file.status === "error" && (
-                                    <div className="flex items-center gap-2 text-red-400 mb-4">
-                                        <AlertCircle className="w-4 h-4" />
-                                        <span className="text-sm">Generation failed. Try again.</span>
-                                    </div>
-                                )}
-
-                                {/* Generated Problem */}
-                                {file.generatedProblem && (
-                                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-4">
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <Sparkles className="w-4 h-4 text-emerald-400" />
-                                            <span className="text-sm font-bold text-emerald-400">Generated Problem</span>
-                                            <span className={clsx(
-                                                "px-2 py-0.5 rounded text-[10px] font-bold uppercase border",
-                                                file.generatedProblem.difficulty === "Easy" ? "bg-green-500/10 text-green-400 border-green-500/20" :
-                                                file.generatedProblem.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                                                "bg-red-500/10 text-red-400 border-red-500/20"
-                                            )}>
-                                                {file.generatedProblem.difficulty}
-                                            </span>
-                                        </div>
-                                        <h4 className="text-white font-bold mb-2">{file.generatedProblem.title}</h4>
-                                        <p className="text-sm text-slate-400 whitespace-pre-wrap line-clamp-4 mb-3">{file.generatedProblem.description}</p>
-                                        
-                                        {file.generatedProblem.constraints && (
-                                            <div className="text-xs text-slate-500 font-mono bg-black/20 rounded-lg p-3">
-                                                <p className="font-bold text-slate-400 mb-1">Constraints:</p>
-                                                <p>{file.generatedProblem.constraints}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Actions */}
-                                <div className="flex gap-3">
-                                    {file.status === "done" && !file.generatedProblem && (
-                                        <button
-                                            onClick={() => generateProblemsFromMaterial(file.id)}
-                                            disabled={isGenerating || !selectedSubject}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-medium transition-all"
-                                        >
-                                            <Sparkles className="w-4 h-4" />
-                                            Generate Problem
-                                        </button>
-                                    )}
-                                    {file.generatedProblem && (
-                                        <>
-                                            <button
-                                                onClick={() => generateProblemsFromMaterial(file.id)}
-                                                disabled={isGenerating}
-                                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all"
-                                            >
-                                                <Sparkles className="w-4 h-4" />
-                                                Regenerate
-                                            </button>
-                                            <button
-                                                onClick={() => createProblemFromMaterial(file)}
-                                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all"
-                                            >
-                                                <Code2 className="w-4 h-4" />
-                                                Create as Problem
-                                            </button>
-                                        </>
-                                    )}
-                                    {file.status === "error" && (
-                                        <button
-                                            onClick={() => generateProblemsFromMaterial(file.id)}
-                                            disabled={!selectedSubject}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium transition-all"
-                                        >
-                                            <Loader2 className="w-4 h-4" />
-                                            Retry
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Info Box */}
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
-                        <div>
-                            <h4 className="text-amber-400 font-bold mb-1">AI-Powered Generation</h4>
-                            <p className="text-sm text-amber-200/80">
-                                Upload your study materials (lecture notes, textbooks, code files) and our AI will analyze them to generate relevant coding problems. 
-                                Select the subject area and difficulty level to customize the output.
-                            </p>
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none" />
+                    
+                    <div className="relative z-10">
+                        <div className="w-20 h-20 bg-primary/10 border border-primary/20 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                            <Upload className={clsx("w-10 h-10 transition-colors", dragActive ? "text-primary" : "text-slate-400")} />
+                        </div>
+                        <p className="text-2xl font-black text-white mb-3">
+                            Feed the <span className="text-primary italic">Matrix</span>
+                        </p>
+                        <p className="text-slate-500 font-medium mb-6">
+                            Drop documents or <button onClick={() => fileInputRef.current?.click()} className="text-primary hover:text-white transition-colors underline decoration-primary/30 underline-offset-4">browse filesystem</button>
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                            {['PDF', 'DOCX', 'TXT', 'MD', 'PY', 'JAVA', 'CPP'].map(ext => (
+                                <span key={ext} className="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[10px] font-black text-slate-500 tracking-wider">
+                                    {ext}
+                                </span>
+                            ))}
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Preview Modal */}
-                {showPreview && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div className="bg-[#1a142e] border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-                            {(() => {
-                                const file = files.find(f => f.id === showPreview);
-                                if (!file?.generatedProblem) return null;
-                                return (
-                                    <>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-xl font-bold text-white">{file.generatedProblem.title}</h3>
-                                            <button onClick={() => setShowPreview(null)} className="text-slate-400 hover:text-white">
+                {/* Uploaded Files */}
+                <AnimatePresence mode="popLayout">
+                    {files.length > 0 && (
+                        <div className="space-y-6 mb-12">
+                            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1 flex items-center justify-between">
+                                Active Transfers 
+                                <span className="px-2 py-0.5 rounded-md bg-white/5 text-slate-400">{files.length}</span>
+                            </h3>
+                            {files.map((file) => (
+                                <motion.div 
+                                    key={file.id} 
+                                    layout
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 10 }}
+                                    className="glass-card !p-6 border-white/5 hover:border-primary/20 group relative"
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center gap-5">
+                                            <div className="h-14 w-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center group-hover:bg-primary/5 transition-colors">
+                                                <FileText className="w-7 h-7 text-slate-400 group-hover:text-primary transition-colors" />
+                                            </div>
+                                            <div>
+                                                <p className="text-lg font-black text-white mb-1">{file.name}</p>
+                                                <p className="text-xs font-bold text-slate-500 tracking-wider uppercase">{formatFileSize(file.size)} • {file.type.split('/')[1] || 'DOC'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {file.status === "done" && (
+                                                <button onClick={() => previewFile(file)} className="p-3 rounded-xl hover:bg-primary/10 text-slate-500 hover:text-primary transition-all" title="Review">
+                                                    <Eye className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                            <button onClick={() => removeFile(file.id)} className="p-3 rounded-xl hover:bg-red-500/10 text-slate-500 hover:text-red-500 transition-all">
                                                 <Trash2 className="w-5 h-5" />
                                             </button>
                                         </div>
-                                        <div className="space-y-4 text-sm text-slate-300 whitespace-pre-wrap">
-                                            <p>{file.generatedProblem.description}</p>
-                                            {file.generatedProblem.input_format && (
-                                                <div>
-                                                    <p className="font-bold text-white mb-1">Input Format:</p>
-                                                    <p className="font-mono bg-black/20 p-3 rounded-lg">{file.generatedProblem.input_format}</p>
-                                                </div>
-                                            )}
-                                            {file.generatedProblem.output_format && (
-                                                <div>
-                                                    <p className="font-bold text-white mb-1">Output Format:</p>
-                                                    <p className="font-mono bg-black/20 p-3 rounded-lg">{file.generatedProblem.output_format}</p>
-                                                </div>
-                                            )}
-                                            {file.generatedProblem.constraints && (
-                                                <div>
-                                                    <p className="font-bold text-white mb-1">Constraints:</p>
-                                                    <p className="font-mono bg-black/20 p-3 rounded-lg">{file.generatedProblem.constraints}</p>
-                                                </div>
-                                            )}
+                                    </div>
+
+                                    {/* Progress */}
+                                    {file.status === "uploading" && (
+                                        <div className="mt-6 pt-6 border-t border-white/5">
+                                            <div className="flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] mb-3">
+                                                <span>Stabilizing Connection...</span>
+                                                <span className="text-primary">{Math.round(file.progress)}%</span>
+                                            </div>
+                                            <div className="h-2 bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
+                                                <motion.div 
+                                                    className="h-full bg-gradient-to-r from-primary to-secondary" 
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${file.progress}%` }}
+                                                />
+                                            </div>
                                         </div>
-                                    </>
-                                );
-                            })()}
+                                    )}
+
+                                    {file.status === "processing" && (
+                                        <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-3 text-secondary">
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            <span className="text-sm font-black uppercase tracking-wider">Synthesizing Logic...</span>
+                                        </div>
+                                    )}
+
+                                    {file.status === "error" && (
+                                        <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-3 text-red-500">
+                                            <AlertCircle className="w-5 h-5" />
+                                            <span className="text-sm font-black uppercase tracking-wider">Sequence Failure</span>
+                                        </div>
+                                    )}
+
+                                    {/* Generated Problem */}
+                                    {file.generatedProblem && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-6 pt-6 border-t border-white/5"
+                                        >
+                                            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl mb-6 relative overflow-hidden group/opt">
+                                                <div className="absolute top-0 right-0 p-3">
+                                                    <Sparkles className="w-5 h-5 text-primary opacity-30 group-hover/opt:opacity-100 transition-opacity" />
+                                                </div>
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <span className={clsx(
+                                                        "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm",
+                                                        file.generatedProblem.difficulty === "Easy" ? "bg-green-500/10 text-green-400 border-green-500/20" :
+                                                        file.generatedProblem.difficulty === "Medium" ? "bg-primary/10 text-primary border-primary/20" :
+                                                        "bg-red-500/10 text-red-400 border-red-500/20"
+                                                    )}>
+                                                        {file.generatedProblem.difficulty}
+                                                    </span>
+                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Logic Output</span>
+                                                </div>
+                                                <h4 className="text-xl font-black text-white mb-3 tracking-tight">{file.generatedProblem.title}</h4>
+                                                <p className="text-slate-400 text-sm font-medium leading-relaxed line-clamp-3 mb-6">{file.generatedProblem.description}</p>
+                                                
+                                                {file.generatedProblem.constraints && (
+                                                    <div className="bg-black/40 rounded-xl p-4 border border-white/5 group-hover/opt:border-primary/10 transition-colors">
+                                                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">Computational Constraints</p>
+                                                        <p className="text-xs font-mono text-primary/70 leading-relaxed">{file.generatedProblem.constraints}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex gap-4">
+                                                {file.status === "done" && !file.generatedProblem && (
+                                                    <MagneticWrapper>
+                                                        <button
+                                                            onClick={() => generateProblemsFromMaterial(file.id)}
+                                                            disabled={isGenerating || !selectedSubject}
+                                                            className="premium-btn px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3 disabled:opacity-50"
+                                                        >
+                                                            <Sparkles className="w-4 h-4" />
+                                                            Synthesize Problem
+                                                        </button>
+                                                    </MagneticWrapper>
+                                                )}
+                                                {file.generatedProblem && (
+                                                    <>
+                                                        <MagneticWrapper>
+                                                            <button
+                                                                onClick={() => generateProblemsFromMaterial(file.id)}
+                                                                disabled={isGenerating}
+                                                                className="px-8 py-3 rounded-2xl bg-white/[0.02] border border-white/5 text-slate-400 hover:text-white transition-all text-xs font-black uppercase tracking-widest flex items-center gap-2"
+                                                            >
+                                                                <Sparkles className="w-4 h-4" />
+                                                                Regenerate
+                                                            </button>
+                                                        </MagneticWrapper>
+                                                        <MagneticWrapper>
+                                                            <button
+                                                                onClick={() => createProblemFromMaterial(file)}
+                                                                className="premium-btn px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3 transition-all"
+                                                            >
+                                                                <Code2 className="w-4 h-4" />
+                                                                Commit to Problem Bank
+                                                            </button>
+                                                        </MagneticWrapper>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                {/* Info Box */}
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="glass-card bg-primary/5 border-primary/20 rounded-3xl p-8"
+                >
+                    <div className="flex items-start gap-6">
+                        <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 mt-1">
+                            <Sparkles className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                            <h4 className="text-xl font-black text-white mb-2 tracking-tight uppercase">AI Synthesis Engine</h4>
+                            <p className="text-slate-400 font-medium leading-relaxed">
+                                Upload lecture notes, code repositories, or reference texts. The Matrix will parse the core logic and synthesize production-grade coding challenges mapped to your chosen domain. 
+                                <span className="block mt-2 text-primary font-bold">Requires Subject Domain selection to initialize logic mapping.</span>
+                            </p>
                         </div>
                     </div>
-                )}
+                </motion.div>
+
+                {/* Preview Modal */}
+                <AnimatePresence>
+                    {showPreview && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowPreview(null)}
+                                className="absolute inset-0 bg-[#05020a]/80 backdrop-blur-md" 
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="glass-card p-10 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar relative z-10 shadow-3xl border-white/10"
+                            >
+                                {(() => {
+                                    const file = files.find(f => f.id === showPreview);
+                                    if (!file?.generatedProblem) {
+                                        return (
+                                            <div className="text-center py-20">
+                                                <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-6" />
+                                                <p className="text-slate-500 font-black uppercase tracking-widest">Awaiting Synthesis...</p>
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <>
+                                            <div className="flex items-center justify-between mb-10">
+                                                <div className="space-y-1">
+                                                    <h3 className="text-3xl font-black text-white tracking-tight">{file.generatedProblem.title}</h3>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-widest">
+                                                            {file.generatedProblem.difficulty}
+                                                        </span>
+                                                        <span className="text-xs font-bold text-slate-500">{file.name}</span>
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => setShowPreview(null)} className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-slate-400 hover:text-white transition-all">
+                                                    <X className="w-6 h-6" />
+                                                </button>
+                                            </div>
+                                            <div className="space-y-8">
+                                                <div className="space-y-3">
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Mission Strategy</label>
+                                                    <p className="text-slate-300 font-medium leading-relaxed whitespace-pre-wrap bg-white/[0.02] border border-white/5 rounded-2xl p-6">{file.generatedProblem.description}</p>
+                                                </div>
+                                                
+                                                {file.generatedProblem.input_format && (
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Input Protocol</label>
+                                                        <div className="font-mono text-sm bg-black/40 p-4 rounded-2xl border border-white/5 text-primary/80">{file.generatedProblem.input_format}</div>
+                                                    </div>
+                                                )}
+                                                
+                                                {file.generatedProblem.output_format && (
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Output Verification</label>
+                                                        <div className="font-mono text-sm bg-black/40 p-4 rounded-2xl border border-white/5 text-secondary/80">{file.generatedProblem.output_format}</div>
+                                                    </div>
+                                                )}
+                                                
+                                                <div className="flex justify-end pt-6">
+                                                    <MagneticWrapper>
+                                                        <button 
+                                                            onClick={() => setShowPreview(null)}
+                                                            className="px-10 py-4 rounded-2xl bg-white/[0.02] border border-white/5 text-slate-400 hover:text-white transition-all text-xs font-black uppercase tracking-widest"
+                                                        >
+                                                            Close Matrix
+                                                        </button>
+                                                    </MagneticWrapper>
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

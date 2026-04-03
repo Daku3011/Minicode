@@ -4,7 +4,7 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 
-from models import User, Notification
+from models import User, Notification, NewsItem
 from auth import get_current_user, get_session
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -101,12 +101,35 @@ def get_unread_count(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    statement = select(Notification).where(
+    # 1. Count personal unread notifications
+    notif_statement = select(Notification).where(
         Notification.user_id == user.id, Notification.is_read == False
     )
-    # Filter by user id
-    notifications = session.exec(statement).all()
-    return {"unread_count": len(notifications)}
+    personal_unread = len(session.exec(notif_statement).all())
+
+    # 2. Count active news created after last_news_viewed_at
+    news_statement = select(NewsItem).where(NewsItem.is_active == True)
+    if user.last_news_viewed_at:
+        news_statement = news_statement.where(NewsItem.created_at > user.last_news_viewed_at)
+    
+    # Also ignore news created by the user themselves if they are faculty
+    if user.role != "student":
+        news_statement = news_statement.where(NewsItem.created_by != user.id)
+        
+    unread_news = len(session.exec(news_statement).all())
+
+    return {"unread_count": personal_unread + unread_news}
+
+
+@router.post("/mark-news-read")
+def mark_news_as_read(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    user.last_news_viewed_at = datetime.utcnow()
+    session.add(user)
+    session.commit()
+    return {"message": "News marked as read"}
 
 
 @router.delete("/{notification_id}")

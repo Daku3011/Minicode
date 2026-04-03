@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ExternalLink, Megaphone, Code, Calendar, Link as LinkIcon, X, Plus, Trash2, Bell } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
@@ -85,8 +86,10 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                 setNews(res.data);
                 
                 // Also mark personal notifications as read when panel is opened
-                if (user?.role === "student") {
+                if (user) {
                     await api.post("/notifications/mark-all-read");
+                    await api.post("/notifications/mark-news-read");
+                    window.dispatchEvent(new CustomEvent('minicode:notificationsRead'));
                 }
             } catch (err) {
                 console.error("Failed to fetch news or mark notifications as read:", err);
@@ -143,7 +146,24 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
     if (!isOpen) return null;
 
     return (
-        <div className="w-80 shrink-0 border-l border-white/10 bg-white/5 backdrop-blur-sm flex flex-col h-full overflow-hidden">
+        <>
+            {/* Backdrop Overlay */}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+            />
+
+            {/* Sidebar Panel */}
+            <motion.div 
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed top-0 right-0 w-80 md:w-96 h-full border-l border-white/10 bg-[#0a0a14]/90 backdrop-blur-2xl flex flex-col z-[101] shadow-2xl"
+            >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                 <h2 className="text-sm font-bold text-white flex items-center gap-2">
@@ -285,6 +305,7 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                     })
                 )}
             </div>
-        </div>
+            </motion.div>
+        </>
     );
 }

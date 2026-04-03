@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Search, Filter, X, BookOpen, ChevronRight, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Filter, X, BookOpen, ChevronRight, Loader2, CheckCircle, AlertCircle, Bell } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
+import MagneticWrapper from "@/components/MagneticWrapper";
+import BroadcastAlert from "@/components/BroadcastAlert";
 
 interface Problem {
     id: number;
@@ -61,6 +64,13 @@ export default function FacultyProblemsPage() {
 
     useEffect(() => {
         fetchData();
+        
+        const handleOpenNews = () => {
+             // BroadcastAlert handles its own visibility via the event
+        };
+        
+        window.addEventListener('minicode:openNews', handleOpenNews);
+        return () => window.removeEventListener('minicode:openNews', handleOpenNews);
     }, []);
 
     const fetchData = async () => {
@@ -135,292 +145,393 @@ export default function FacultyProblemsPage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#0f0a1e]">
-            <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-purple-500/10 via-transparent to-transparent pointer-events-none" />
+        <div className="min-h-screen relative overflow-hidden bg-[#0a0a0f]">
+            {/* Ambient Page Glow */}
+            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-blue-500/10 blur-[120px] -z-10 pointer-events-none" />
+            <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/10 blur-[150px] -z-10 pointer-events-none" />
+            
+            <BroadcastAlert />
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-3xl font-black text-white mb-2">Problem Management</h1>
-                        <p className="text-slate-400">Create, edit, and manage coding challenges</p>
-                    </div>
-                    <Link
-                        href="/problems/create"
-                        className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-purple-500/20"
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
                     >
-                        <Plus className="w-4 h-4" /> New Problem
-                    </Link>
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="h-px w-8 bg-primary" />
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary">Command Center</span>
+                        </div>
+                        <h1 className="text-5xl font-black text-white mb-4 tracking-tight leading-none">Problem <span className="text-slate-500">Registry</span></h1>
+                        <p className="text-slate-400 text-lg font-medium opacity-80">Architect and oversee the matrix of logical challenges</p>
+                    </motion.div>
+                    
+                    <motion.div 
+                        className="flex items-center gap-4"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                    >
+                    </motion.div>
                 </div>
 
                 {/* Search & Filters */}
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="flex flex-col sm:flex-row gap-4 mb-8"
+                >
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search problems..."
-                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                            placeholder="Identify specific records..."
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all text-lg font-medium"
                         />
                     </div>
-                    <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className={clsx(
-                            "flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all",
-                            showFilters ? "bg-purple-500/20 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-slate-400"
-                        )}
-                    >
-                        <Filter className="w-4 h-4" /> Filters
-                    </button>
-                </div>
+                    <MagneticWrapper>
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={clsx(
+                                "flex items-center gap-3 px-8 h-full rounded-2xl border text-sm font-black uppercase tracking-wider transition-all",
+                                showFilters ? "bg-primary/20 border-primary/30 text-white" : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+                            )}
+                        >
+                            <Filter className="w-4 h-4" /> 
+                            <span>Logic Filter</span>
+                        </button>
+                    </MagneticWrapper>
+                </motion.div>
 
-                {showFilters && (
-                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 mb-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-white">Filter Problems</h3>
-                            <button onClick={() => { setSelectedDifficulty(""); setSelectedLevel(""); }} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
-                                <X className="w-3 h-3" /> Clear
-                            </button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-xs font-medium text-slate-400 mb-2 block">Difficulty</label>
-                                <div className="flex flex-wrap gap-2">
-                                    <button onClick={() => setSelectedDifficulty("")} className={clsx("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all", !selectedDifficulty ? "bg-purple-500/20 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-slate-400")}>All</button>
-                                    {["Easy", "Medium", "Hard"].map((d) => (
-                                        <button key={d} onClick={() => setSelectedDifficulty(d)} className={clsx("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all", selectedDifficulty === d ? "bg-purple-500/20 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-slate-400")}>{d}</button>
-                                    ))}
+                <AnimatePresence>
+                    {showFilters && (
+                        <motion.div 
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden mb-8"
+                        >
+                            <div className="glass-card border border-white/10 rounded-3xl p-8 space-y-8">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                            <Filter className="w-4 h-4" />
+                                        </div>
+                                        <h3 className="text-lg font-black text-white uppercase tracking-wider">Refine Operations</h3>
+                                    </div>
+                                    <button onClick={() => { setSelectedDifficulty(""); setSelectedLevel(""); }} className="text-xs font-black text-slate-500 hover:text-rose-500 flex items-center gap-2 transition-colors uppercase tracking-[0.2em]">
+                                        <X className="w-4 h-4" /> Reset Identity
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Intensity Level</label>
+                                        <div className="grid grid-cols-4 gap-2">
+                                            <button onClick={() => setSelectedDifficulty("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedDifficulty ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
+                                            {["Easy", "Medium", "Hard"].map((d) => (
+                                                <button key={d} onClick={() => setSelectedDifficulty(d)} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedDifficulty === d ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{d}</button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Access Clearance</label>
+                                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                                            <button onClick={() => setSelectedLevel("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedLevel ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
+                                            {LEVELS.map((l) => (
+                                                <button key={l.level} onClick={() => setSelectedLevel(String(l.level))} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedLevel === String(l.level) ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{l.level}</button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <label className="text-xs font-medium text-slate-400 mb-2 block">Level</label>
-                                <div className="flex flex-wrap gap-2">
-                                    <button onClick={() => setSelectedLevel("")} className={clsx("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all", !selectedLevel ? "bg-purple-500/20 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-slate-400")}>All</button>
-                                    {LEVELS.map((l) => (
-                                        <button key={l.level} onClick={() => setSelectedLevel(String(l.level))} className={clsx("px-3 py-1.5 rounded-lg text-xs font-medium border transition-all", selectedLevel === String(l.level) ? "bg-purple-500/20 border-purple-500/30 text-purple-400" : "bg-white/5 border-white/10 text-slate-400")}>Lvl {l.level}</button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Problems Table */}
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="glass-card border border-white/10 rounded-[2.5rem] overflow-hidden"
+                >
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="border-b border-white/10 bg-white/5">
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Problem</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Subject</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Difficulty</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Level</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Author</th>
-                                    <th className="px-6 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">XP</th>
-                                    <th className="px-6 py-3 text-right text-xs font-bold text-slate-400 uppercase tracking-wider">Actions</th>
+                                <tr className="border-b border-white/10 bg-white/5 relative">
+                                    <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Identity & Origin</th>
+                                    <th className="px-6 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Logic Core</th>
+                                    <th className="px-6 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Intensity</th>
+                                    <th className="px-6 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Clearance</th>
+                                    <th className="px-6 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Value</th>
+                                    <th className="px-10 py-6 text-right text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Protocols</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/10">
                                 {loading ? (
-                                    <tr><td colSpan={7} className="px-6 py-12 text-center"><Loader2 className="w-6 h-6 text-purple-500 animate-spin mx-auto" /></td></tr>
+                                    <tr><td colSpan={6} className="px-10 py-24 text-center">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">Synchronizing Data Streams...</span>
+                                        </div>
+                                    </td></tr>
                                 ) : filteredProblems.length > 0 ? (
-                                    filteredProblems.map((problem) => (
-                                        <tr key={problem.id} className="hover:bg-white/5 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <p className="text-white font-medium">{problem.title}</p>
-                                                <p className="text-xs text-slate-500 mt-1">{new Date(problem.created_at).toLocaleDateString()}</p>
+                                    filteredProblems.map((problem, idx) => (
+                                        <tr key={problem.id} className="hover:bg-white/[0.02] transition-colors group/row">
+                                            <td className="px-10 py-8">
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-black text-lg tracking-tight group-hover/row:text-primary transition-colors">{problem.title}</span>
+                                                    <div className="flex items-center gap-3 mt-2">
+                                                        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest italic">{new Date(problem.created_at).toLocaleDateString()}</span>
+                                                        <div className="h-1 w-1 rounded-full bg-slate-800" />
+                                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{getAuthorName(problem.author_id)}</span>
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-sm text-slate-300">{getSubjectInfo(problem.subject).icon} {getSubjectInfo(problem.subject).name}</span>
+                                            <td className="px-6 py-8">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-xl grayscale group-hover/row:grayscale-0 transition-all">{getSubjectInfo(problem.subject).icon}</span>
+                                                    <span className="text-sm font-black text-slate-400 uppercase tracking-tighter">{getSubjectInfo(problem.subject).name}</span>
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-8">
                                                 <span className={clsx(
-                                                    "px-2 py-0.5 rounded text-[10px] font-bold uppercase border",
-                                                    problem.difficulty === "Easy" ? "bg-green-500/10 text-green-400 border-green-500/20" :
+                                                    "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
+                                                    problem.difficulty === "Easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
                                                     problem.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                                                    "bg-red-500/10 text-red-400 border-red-500/20"
+                                                    "bg-rose-500/10 text-rose-400 border-rose-500/20"
                                                 )}>
                                                     {problem.difficulty}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={clsx(
-                                                    "px-1 py-0.5 rounded text-[10px] font-bold uppercase border",
-                                                    LEVELS.find(l => l.level === problem.level)?.color || "bg-slate-200/10 text-slate-400 border-slate-500/20"
-                                                )}>
-                                                    Lvl- {problem.level}
+                                            <td className="px-6 py-8">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white">
+                                                        {problem.level}
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Level</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-8">
+                                                <span className="text-lg font-black text-white tabular-nums tracking-tight">
+                                                    <span className="text-primary mr-1">+</span>{problem.xp_reward}
+                                                    <span className="text-[9px] text-slate-600 ml-1 uppercase">XP</span>
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-sm text-slate-300">{getAuthorName(problem.author_id)}</span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-sm font-bold text-purple-400">{problem.xp_reward} XP</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button
-                                                        onClick={() => startEdit(problem)}
-                                                        className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                    <Link
-                                                        href={`/problems/${problem.id}`}
-                                                        className="p-2 text-slate-400 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-all"
-                                                        title="View"
-                                                    >
-                                                        <ChevronRight className="w-4 h-4" />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => setDeleteConfirm(problem.id)}
-                                                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                            <td className="px-10 py-8 text-right">
+                                                <div className="flex items-center justify-end gap-3 opacity-20 group-hover/row:opacity-100 transition-all duration-300">
+                                                    <MagneticWrapper intensity={0.2}>
+                                                        <button
+                                                            onClick={() => startEdit(problem)}
+                                                            className="p-3 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-2xl transition-all border border-transparent hover:border-cyan-500/20"
+                                                            title="Reconfigure"
+                                                        >
+                                                            <Edit className="w-5 h-5" />
+                                                        </button>
+                                                    </MagneticWrapper>
+                                                    <MagneticWrapper intensity={0.2}>
+                                                        <Link
+                                                            href={`/problems/${problem.id}`}
+                                                            className="p-3 text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-2xl transition-all border border-transparent hover:border-emerald-500/20"
+                                                            title="Inspect"
+                                                        >
+                                                            <ChevronRight className="w-5 h-5" />
+                                                        </Link>
+                                                    </MagneticWrapper>
+                                                    <MagneticWrapper intensity={0.2}>
+                                                        <button
+                                                            onClick={() => setDeleteConfirm(problem.id)}
+                                                            className="p-3 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all border border-transparent hover:border-rose-500/20"
+                                                            title="Decommission"
+                                                        >
+                                                            <Trash2 className="w-5 h-5" />
+                                                        </button>
+                                                    </MagneticWrapper>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                                            <BookOpen className="w-10 h-10 mx-auto mb-3 opacity-50" />
-                                            <p>No problems found</p>
-                                            <Link href="/problems/create" className="text-purple-400 hover:underline text-sm mt-2 inline-block">
-                                                Create your first problem
-                                            </Link>
+                                        <td colSpan={6} className="px-10 py-32 text-center">
+                                            <div className="flex flex-col items-center gap-6 opacity-30">
+                                                <BookOpen className="w-16 h-16" />
+                                                <div className="space-y-1">
+                                                    <p className="text-xl font-black text-white uppercase tracking-wider">Registry Void</p>
+                                                    <p className="text-sm text-slate-600 font-medium">No logical challenges detected in this sector</p>
+                                                </div>
+                                                <Link href="/problems/create" className="premium-btn py-4 px-8 mt-4">
+                                                    Forge First Entry
+                                                </Link>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Edit Modal */}
-                {editingProblem && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div className="bg-[#1a142e] border border-white/10 rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold text-white">Edit Problem</h3>
-                                <button onClick={() => setEditingProblem(null)} className="text-slate-400 hover:text-white">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm font-medium text-slate-400 mb-1 block">Title</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.title}
-                                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-medium text-slate-400 mb-1 block">Difficulty</label>
-                                        <select
-                                            value={editForm.difficulty}
-                                            onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                        >
-                                            <option value="Easy">Easy</option>
-                                            <option value="Medium">Medium</option>
-                                            <option value="Hard">Hard</option>
-                                        </select>
+                <AnimatePresence>
+                    {editingProblem && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setEditingProblem(null)}
+                                className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                className="glass-card border border-white/10 rounded-[3rem] p-10 w-full max-w-2xl relative z-10 shadow-2xl"
+                            >
+                                <div className="flex items-center justify-between mb-10">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                                            <Edit className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-black text-white tracking-tight">Reconfigure Problem</h3>
+                                            <p className="text-slate-500 text-sm font-medium">Updating logic sector: {editingProblem?.id}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-slate-400 mb-1 block">Level</label>
+                                    <button onClick={() => setEditingProblem(null)} className="p-3 text-slate-500 hover:text-white transition-colors">
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+                                
+                                <div className="space-y-8">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Display Alias</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.title}
+                                            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+                                            placeholder="Enter problem title..."
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Logic Tier</label>
+                                            <select
+                                                value={editForm.difficulty}
+                                                onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
+                                            >
+                                                <option className="bg-[#0a0a14]" value="Easy">Easy</option>
+                                                <option className="bg-[#0a0a14]" value="Medium">Medium</option>
+                                                <option className="bg-[#0a0a14]" value="Hard">Hard</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Access Level</label>
+                                            <select
+                                                value={editForm.level}
+                                                onChange={(e) => setEditForm({ ...editForm, level: parseInt(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
+                                            >
+                                                {LEVELS.map((l) => (
+                                                    <option className="bg-[#0a0a14]" key={l.level} value={l.level}>Lvl {l.level}: {l.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Domain Sector</label>
                                         <select
-                                            value={editForm.level}
-                                            onChange={(e) => setEditForm({ ...editForm, level: parseInt(e.target.value) })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                            value={editForm.subject}
+                                            onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
                                         >
-                                            {LEVELS.map((l) => (
-                                                <option key={l.level} value={l.level}>Level {l.level}: {l.name}</option>
+                                            <option className="bg-[#0a0a14]" value="">Not Set</option>
+                                            {SUBJECTS.map((s) => (
+                                                <option className="bg-[#0a0a14]" key={s.id} value={s.id}>{s.icon} {s.name}</option>
                                             ))}
                                         </select>
                                     </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Problem Schematics</label>
+                                        <textarea
+                                            value={editForm.description}
+                                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                            rows={6}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
+                                            placeholder="Define technical requirements..."
+                                        />
+                                    </div>
+                                    <div className="flex gap-4 justify-end pt-6">
+                                        <button
+                                            onClick={() => setEditingProblem(null)}
+                                            className="px-8 py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-widest"
+                                        >
+                                            Abort
+                                        </button>
+                                        <button
+                                            onClick={saveEdit}
+                                            disabled={saving}
+                                            className="premium-btn py-4 px-10 rounded-2xl disabled:opacity-50"
+                                        >
+                                            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+                                            <span>{saving ? "Commiting..." : "Confirm Protocol"}</span>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="text-sm font-medium text-slate-400 mb-1 block">Subject</label>
-                                    <select
-                                        value={editForm.subject}
-                                        onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                    >
-                                        <option value="">Not Set</option>
-                                        {SUBJECTS.map((s) => (
-                                            <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-slate-400 mb-1 block">Description</label>
-                                    <textarea
-                                        value={editForm.description}
-                                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                        rows={4}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
-                                    />
-                                </div>
-                                <div className="flex gap-3 justify-end pt-2">
-                                    <button
-                                        onClick={() => setEditingProblem(null)}
-                                        className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 transition-all text-sm font-medium"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={saveEdit}
-                                        disabled={saving}
-                                        className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white transition-all text-sm font-medium flex items-center gap-2"
-                                    >
-                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                                        {saving ? "Saving..." : "Save Changes"}
-                                    </button>
-                                </div>
-                            </div>
+                            </motion.div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </AnimatePresence>
 
                 {/* Delete Confirmation */}
-                {deleteConfirm && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                        <div className="bg-[#1a142e] border border-white/10 rounded-2xl p-6 w-full max-w-sm">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="h-10 w-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                                    <AlertCircle className="w-5 h-5 text-red-400" />
+                <AnimatePresence>
+                    {deleteConfirm && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setDeleteConfirm(null)}
+                                className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            />
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="glass-card border border-rose-500/20 rounded-[2.5rem] p-10 w-full max-w-md relative z-10 shadow-2xl"
+                            >
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="h-20 w-20 rounded-full bg-rose-500/10 flex items-center justify-center mb-6">
+                                        <AlertCircle className="w-10 h-10 text-rose-500" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Decommission Entry?</h3>
+                                    <p className="text-slate-500 font-medium mb-10 leading-relaxed">This action will permanently erase the logical challenge from the registry. This is irreversible.</p>
+                                    
+                                    <div className="flex flex-col w-full gap-3">
+                                        <button
+                                            onClick={() => deleteConfirm && deleteProblem(deleteConfirm)}
+                                            className="w-full py-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white transition-all text-sm font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-900/20"
+                                        >
+                                            Confirm Deletion
+                                        </button>
+                                        <button
+                                            onClick={() => setDeleteConfirm(null)}
+                                            className="w-full py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-[0.2em]"
+                                        >
+                                            Abort Operation
+                                        </button>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-white">Delete Problem?</h3>
-                                    <p className="text-sm text-slate-400">This action cannot be undone.</p>
-                                </div>
-                            </div>
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    onClick={() => setDeleteConfirm(null)}
-                                    className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 transition-all text-sm font-medium"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => deleteProblem(deleteConfirm)}
-                                    className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all text-sm font-medium"
-                                >
-                                    Delete
-                                </button>
-                            </div>
+                            </motion.div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

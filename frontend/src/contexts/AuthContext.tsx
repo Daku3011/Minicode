@@ -11,8 +11,16 @@ export interface User {
     full_name: string | null;
     avatar_url: string | null;
     role: "student" | "admin" | "faculty";
-    github_id: number;
+    github_id: number | null;
     created_at: string;
+    stats?: {
+        solved: number;
+        rank: number;
+        xp: number;
+        level: number;
+        level_name: string;
+        streak: number;
+    };
 }
 
 interface AuthContextType {

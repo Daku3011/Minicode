@@ -40,6 +40,10 @@ def run_migrations():
             if 'faculty_report_email' not in cols:
                 conn.execute(text("ALTER TABLE users ADD COLUMN faculty_report_email TEXT;"))
                 print("Added faculty_report_email to users (SQLite)")
+            
+            if 'last_news_viewed_at' not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN last_news_viewed_at DATETIME;"))
+                print("Added last_news_viewed_at to users (SQLite)")
         else:
             # For PostgreSQL (supports IF NOT EXISTS in 9.6+)
             try:
@@ -53,6 +57,12 @@ def run_migrations():
                 print("Applied faculty_report_email migration (Postgres)")
             except Exception as e:
                 print(f"Postgres migration error (faculty_report_email): {e}")
+
+            try:
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_news_viewed_at TIMESTAMP;"))
+                print("Applied last_news_viewed_at migration (Postgres)")
+            except Exception as e:
+                print(f"Postgres migration error (last_news_viewed_at): {e}")
         
         conn.commit()
         print("Migrations completed.")

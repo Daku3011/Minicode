@@ -4,26 +4,24 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     Play,
-    Loader2,
     CheckCircle2,
     XCircle,
     Brain,
     Github,
     Copy,
-    RefreshCw,
-    Terminal,
-    FileCode,
-    Timer,
-    Code,
-    ArrowRight,
-    Settings,
-    Bell,
     ChevronLeft,
-    ChevronRight,
-    CloudSync,
-    Layers,
-    AlertCircle,
-    Sparkles
+    Trophy,
+    Code2,
+    Shield,
+    Rocket,
+    RotateCcw,
+    Zap,
+    ListTodo,
+    Sparkles,
+    Timer,
+    FileCode,
+    Settings,
+    ArrowRight
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
@@ -31,6 +29,7 @@ import { clsx } from "clsx";
 import api from "@/lib/api";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TestCaseExample {
     id: number;
@@ -49,6 +48,11 @@ export default function ProblemDetailPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [repoError, setRepoError] = useState<string | null>(null);
     const [result, setResult] = useState<{ status: string; ai_feedback: string; score?: number; code_evaluated?: string } | null>(null);
+
+    // Derived states
+    const isProvisioned = !!repoUrl;
+    const isLoading = isStarting;
+    const isEvaluating = isSubmitting;
 
     useEffect(() => {
         const fetchProblem = async () => {
@@ -81,10 +85,10 @@ export default function ProblemDetailPage() {
         }
     };
 
-    const pollSubmissionStatus = async (id: number) => {
+    const pollSubmissionStatus = async (submissionId: number) => {
         const interval = setInterval(async () => {
             try {
-                const response = await api.get(`/submissions/${id}`);
+                const response = await api.get(`/submissions/${submissionId}`);
                 const submission = response.data;
                 
                 if (submission.status !== "pending") {
@@ -103,15 +107,14 @@ export default function ProblemDetailPage() {
                 clearInterval(interval);
                 setIsSubmitting(false);
             }
-        }, 2500); // Poll every 2.5 seconds
+        }, 2500); 
         
-        // Safety timeout: stop polling after 60 seconds
         setTimeout(() => clearInterval(interval), 60000);
     };
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
-        setResult(null); // Clear previous result
+        setResult(null);
         setActiveTab("result");
         
         try {
@@ -122,10 +125,8 @@ export default function ProblemDetailPage() {
             const submission = response.data;
             
             if (submission.status === "pending") {
-                // If it's pending, start polling the new endpoint
                 pollSubmissionStatus(submission.id);
             } else {
-                // Should not happen with Celery, but handle just in case
                 setResult({
                     status: submission.status === "accepted" ? "Accepted" :
                         submission.status === "wrong_answer" ? "Wrong Answer" : "Error",
@@ -151,376 +152,367 @@ export default function ProblemDetailPage() {
 
     if (!problem) {
         return (
-            <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] bg-[#0d0a16] p-8">
-                <LoadingSpinner size="lg" label="Decrypting problem data..." />
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] bg-[#0a0a14] p-8">
+                <LoadingSpinner size="lg" label="Decrypting Problem Node..." />
             </div>
         );
     }
 
     const confettiStyle = {
-        backgroundImage: `radial-gradient(circle at 20% 30%, rgba(137, 91, 245, 0.1) 0%, transparent 10%),
-                          radial-gradient(circle at 80% 10%, rgba(16, 185, 129, 0.1) 0%, transparent 10%),
-                          radial-gradient(circle at 50% 50%, rgba(137, 91, 245, 0.05) 0%, transparent 50%)`
+        backgroundImage: `radial-gradient(circle at 20% 30%, rgba(137, 91, 245, 0.05) 0%, transparent 20%),
+                          radial-gradient(circle at 80% 10%, rgba(0, 242, 255, 0.05) 0%, transparent 20%)`
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-[#0d0a16] font-display text-slate-100 overflow-hidden">
-            {/* Minimal Sub-Header */}
-            <header className="flex items-center justify-between border-b border-primary/20 bg-[#1b1429]/50 backdrop-blur-md px-4 md:px-8 py-2 z-20">
-                <div className="flex items-center gap-6">
-                    <button onClick={() => router.push('/problems')} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-                        <ChevronLeft className="w-4 h-4" />
-                        <span className="text-sm font-bold uppercase tracking-widest hidden sm:block">Back to Arena</span>
-                    </button>
-                    <div className="h-4 w-px bg-white/10 hidden sm:block" />
-                    <nav className="hidden md:flex items-center gap-6">
-                        <button onClick={() => setActiveTab("description")} className={clsx("text-sm font-bold uppercase tracking-wider transition-colors pb-1 border-b-2", activeTab === "description" ? "text-primary border-primary" : "text-slate-400 border-transparent hover:text-white")}>Problem</button>
-                        <button onClick={() => setActiveTab("result")} className={clsx("text-sm font-bold uppercase tracking-wider transition-colors pb-1 border-b-2", activeTab === "result" ? "text-primary border-primary" : "text-slate-400 border-transparent hover:text-white")}>AI Feedback</button>
+        <div className="flex flex-col h-[calc(100vh-64px)] bg-[#0d0a14]/80 backdrop-blur-3xl font-display text-slate-100 overflow-hidden relative">
+            {/* Spectral Aura Accents */}
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/10 blur-[150px] -z-10" />
+            <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-cyan-500/5 blur-[150px] -z-10" />
+
+            {/* Premium Workspace Header */}
+            <header className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] backdrop-blur-xl px-6 md:px-10 py-5 z-20">
+                <div className="flex items-center gap-10">
+                    <Link 
+                        href="/problems" 
+                        className="group flex items-center gap-3 text-slate-400 hover:text-white transition-all duration-300"
+                    >
+                        <div className="p-2 bg-white/5 rounded-xl border border-white/5 group-hover:bg-primary/20 group-hover:border-primary/40 transition-all">
+                            <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                        </div>
+                        <span className="text-xs font-black uppercase tracking-[0.2em] hidden sm:block">Arena Return</span>
+                    </Link>
+                    
+                    <div className="h-6 w-px bg-white/5 hidden sm:block" />
+                    
+                    <nav className="flex items-center gap-8 relative">
+                        {[
+                            { id: "description", label: "Quantum Specs" },
+                            { id: "result", label: "Neural Result" }
+                        ].map((tab) => (
+                            <button 
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)} 
+                                className={clsx(
+                                    "relative text-xs font-black uppercase tracking-[0.3em] transition-all py-1.5",
+                                    activeTab === tab.id ? "text-primary" : "text-slate-500 hover:text-slate-300"
+                                )}
+                            >
+                                {tab.label}
+                                {activeTab === tab.id && (
+                                    <motion.div 
+                                        layoutId="activeTab"
+                                        className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary shadow-[0_0_15px_rgba(137,91,245,0.4)]"
+                                        transition={{ duration: 0.2 }}
+                                    />
+                                )}
+                            </button>
+                        ))}
                     </nav>
                 </div>
-                {/* <div className="flex items-center gap-4">
-                    <div className="flex gap-2">
-                        <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all">
-                            <Settings className="w-4 h-4" />
-                        </button>
+
+                <div className="flex items-center gap-4">
+                    <div className="px-5 py-2.5 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_rgba(137,91,245,0.5)]" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Node Sync Active</span>
                     </div>
-                </div> */}
+                </div>
             </header>
 
-            {activeTab === "description" ? (
-                /* Main Workspace: Split Pane */
-                <main className="flex flex-1 overflow-hidden">
-                    {/* Left Pane: Problem Description */}
-                    <section className="w-1/2 flex flex-col border-r border-primary/10 bg-[#1b1429]/30 overflow-y-auto">
-                        <div className="p-8 max-w-2xl mx-auto w-full">
-                            <div className="flex items-center gap-2 text-primary mb-4 font-mono text-xs uppercase tracking-widest">
-                                <span className={clsx("px-2 py-0.5 rounded border",
-                                    problem.difficulty === "Easy" ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" :
-                                    problem.difficulty === "Medium" ? "text-amber-400 bg-amber-400/10 border-amber-400/20" :
-                                    "text-rose-400 bg-rose-400/10 border-rose-400/20"
-                                )}>
-                                    Level: {problem.difficulty}
-                                </span>
-                                <span className="text-slate-500">•</span>
-                                <span>Core Algorithms</span>
-                            </div>
-                            
-                            <h1 className="text-4xl font-extrabold text-white mb-6 pr-4">{problem.id}. {problem.title}</h1>
-                            
-                            <div className="prose prose-invert prose-slate mb-8 max-w-none prose-p:leading-relaxed prose-pre:bg-slate-900/50 prose-pre:border prose-pre:border-white/5 prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none max-w-none prose-headings:text-white prose-headings:font-bold prose-strong:text-primary prose-a:text-[#06b6d4]">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {problem.description}
-                                </ReactMarkdown>
-                            </div>
-
-                            {/* Technical Specs */}
-                            <div className="grid grid-cols-1 gap-4 mb-8">
-                                {problem.input_format && (
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                            <FileCode className="w-4 h-4 text-primary" />
-                                            Input Format
-                                        </h3>
-                                        <div className="text-sm text-slate-300 font-mono bg-black/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
-                                            {problem.input_format}
-                                        </div>
+            <AnimatePresence mode="wait">
+                {activeTab === "description" ? (
+                    <motion.main 
+                        key="description"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex-1 flex overflow-hidden p-6 md:p-8 gap-8"
+                    >
+                        {/* Left Column: Problem Specs */}
+                        <div className="flex-1 flex flex-col gap-8 overflow-y-auto pr-4 scroll-smooth custom-scrollbar">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className={clsx(
+                                        "px-4 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-[0.2em] shadow-lg",
+                                        problem?.difficulty === 'Easy' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-emerald-500/10" :
+                                        problem?.difficulty === 'Medium' ? "bg-orange-500/10 border-orange-500/20 text-orange-400 shadow-orange-500/10" :
+                                        "bg-rose-500/10 border-rose-500/20 text-rose-400 shadow-rose-500/10"
+                                    )}>
+                                        {problem?.difficulty || 'Medium'} Level
                                     </div>
-                                )}
-                                {problem.output_format && (
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                            <FileCode className="w-4 h-4 text-[#06b6d4]" />
-                                            Output Format
-                                        </h3>
-                                        <div className="text-sm text-slate-300 font-mono bg-black/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
-                                            {problem.output_format}
-                                        </div>
-                                    </div>
-                                )}
-                                {problem.constraints && (
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-5">
-                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                            <Settings className="w-4 h-4 text-amber-400" />
-                                            Constraints
-                                        </h3>
-                                        <div className="text-sm text-slate-300 font-mono bg-black/20 p-3 rounded-lg border border-white/5 whitespace-pre-wrap">
-                                            {problem.constraints}
-                                        </div>
-                                    </div>
-                                )}
-                                {problem.hints && (
-                                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-5">
-                                        <h3 className="text-xs font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
-                                            <Sparkles className="w-4 h-4" />
-                                            Mentor's Hint
-                                        </h3>
-                                        <div className="text-sm text-slate-300 italic">
-                                            {problem.hints}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-
-                            {/* Examples */}
-                            {testCases.map((tc, idx) => (
-                                <div key={tc.id} className="bg-primary/5 border border-primary/20 rounded-xl p-6 mb-6">
-                                    <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                                        <Layers className="w-4 h-4 text-[#06b6d4]" />
-                                        EXAMPLE {idx + 1}
-                                    </h3>
-                                    <div className="space-y-4">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                            <div className="flex-1 flex flex-col items-center p-3 rounded-lg border border-primary/20 bg-[#1b1429]">
-                                                <span className="text-[10px] text-slate-500 mb-1 font-bold tracking-widest uppercase">Input</span>
-                                                <span className="font-mono text-sm text-[#06b6d4]">{tc.input}</span>
-                                            </div>
-                                            <ArrowRight className="text-primary hidden md:block w-5 h-5 shrink-0" />
-                                            <div className="flex-1 flex flex-col items-center p-3 rounded-lg border border-primary/20 bg-[#1b1429]">
-                                                <span className="text-[10px] text-slate-500 mb-1 font-bold tracking-widest uppercase">Expected Output</span>
-                                                <span className="font-mono text-sm text-[#06b6d4]">{tc.expected_output}</span>
-                                            </div>
-                                        </div>
+                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5">
+                                        <Trophy className="w-3.5 h-3.5 text-primary" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{problem?.points || 0} XP</span>
                                     </div>
                                 </div>
-                            ))}
+
+                                <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                                    {problem?.title}
+                                </h1>
+                            </div>
+
+                            <div className="glass-effect rounded-3xl p-8 border border-white/5 shadow-2xl relative group">
+                                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <Code2 className="w-32 h-32 text-primary" />
+                                </div>
+                                <div className="prose prose-invert prose-slate max-w-none prose-pre:bg-[#0a0a0a] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-2xl">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{problem?.description || ""}</ReactMarkdown>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="glass-effect rounded-3xl p-6 border border-white/5 space-y-4">
+                                    <div className="flex items-center gap-3 text-primary">
+                                        <Shield className="w-5 h-5" />
+                                        <h3 className="text-xs font-black uppercase tracking-[0.2em]">Constraints</h3>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {problem?.constraints?.split('\n').filter(Boolean).map((constraint: string, i: number) => (
+                                            <div key={i} className="flex gap-3 text-sm text-slate-400">
+                                                <span className="text-primary font-bold">•</span>
+                                                {constraint}
+                                            </div>
+                                        )) || <span className="text-slate-500 text-sm">No standard constraints applied.</span>}
+                                    </div>
+                                </div>
+
+                                <div className="glass-effect rounded-3xl p-6 border border-white/5 space-y-4">
+                                    <div className="flex items-center gap-3 text-cyan-400">
+                                        <Sparkles className="w-5 h-5" />
+                                        <h3 className="text-xs font-black uppercase tracking-[0.2em]">Neural Hints</h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {problem?.hints?.split('\n').filter(Boolean).map((hint: string, i: number) => (
+                                            <div key={i} className="p-3 rounded-xl bg-white/5 border border-white/5 text-sm text-slate-400">
+                                                {hint}
+                                            </div>
+                                        )) || <span className="text-slate-500 text-sm">Solve to unlock Neural Guidance.</span>}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </section>
 
-                    {/* Right Pane: Code Status & Evaluation */}
-                    <section className="w-1/2 flex flex-col bg-[#1b1429]/50 relative">
-                        {!repoUrl ? (
-                            <div className="flex flex-col items-center justify-center p-12 h-full text-center relative overflow-hidden">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
-                                <div className="size-20 bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-xl relative z-10 border border-white/5">
-                                    <Github className="w-10 h-10 text-white" />
-                                </div>
-                                <h3 className="text-3xl font-black text-white mb-4 relative z-10">Start Challenge</h3>
-                                <p className="text-slate-400 text-base leading-relaxed mb-10 max-w-md relative z-10">
-                                    Click below to provision a private GitHub repository synced to your account. Clone it, write your solution locally, and push back to evaluate.
-                                </p>
-                                <button
-                                    onClick={handleStart}
-                                    disabled={isStarting}
-                                    className="w-full max-w-sm flex items-center justify-center gap-3 px-8 py-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)] disabled:opacity-50 relative z-10"
-                                >
-                                    {isStarting ? <LoadingSpinner size="sm" /> : <CloudSync className="w-5 h-5" />}
-                                    <span>{isStarting ? "Provisioning..." : "Provision Repository"}</span>
-                                </button>
-                                
-                                {repoError && (
-                                    <div className="mt-6 p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 flex gap-3 text-left max-w-md relative z-10 animate-in fade-in zoom-in duration-300">
-                                        <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
-                                        <div>
-                                            <p className="text-rose-500 font-bold text-sm">Provisioning Failed</p>
-                                            <p className="text-slate-400 text-xs leading-relaxed mt-1">{repoError}</p>
+                        {/* Right Column: Arena Connectivity */}
+                        <div className="w-full max-w-md flex flex-col gap-6">
+                            <div className="glass-effect rounded-3xl border border-white/10 overflow-hidden flex flex-col shadow-2xl relative">
+                                <div className="bg-white/5 px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-lg bg-primary/20 text-primary">
+                                            <Rocket className="w-4 h-4" />
                                         </div>
+                                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em]">Arena Link</h2>
+                                    </div>
+                                    {isProvisioned && (
+                                        <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[8px] font-black uppercase tracking-widest text-emerald-400">
+                                            Node Active
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="p-8 space-y-8">
+                                    {!isProvisioned ? (
+                                        <div className="space-y-6 text-center py-4">
+                                            <div className="w-20 h-20 bg-primary/10 rounded-[2rem] border-2 border-dashed border-primary/30 mx-auto flex items-center justify-center relative group">
+                                                <Github className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
+                                                <div className="absolute inset-x-0 h-full w-full bg-primary/5 animate-pulse" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <h3 className="text-lg font-black tracking-tight">Initialize Workspace</h3>
+                                                <p className="text-sm text-slate-400 leading-relaxed px-4">
+                                                    We'll create a private neural node for your code.
+                                                </p>
+                                            </div>
+                                            <button 
+                                                onClick={handleStart}
+                                                disabled={isStarting}
+                                                className="w-full h-14 bg-primary hover:bg-primary/90 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50 group relative overflow-hidden shadow-[0_0_30px_rgba(137,91,245,0.3)]"
+                                            >
+                                                {isLoading ? (
+                                                    <RotateCcw className="w-5 h-5 animate-spin" />
+                                                ) : (
+                                                    <Play className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                                                )}
+                                                <span className="font-black uppercase tracking-[0.15em] text-sm">Deploy Node</span>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-8">
+                                            <div className="space-y-4">
+                                                <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Interactive Terminal</h3>
+                                                <div className="space-y-3">
+                                                    {[
+                                                        { label: "Clone Node", cmd: `git clone ${repoUrl}` },
+                                                        { label: "Push Flux", cmd: "git push origin main" }
+                                                    ].map((item, i) => (
+                                                        <div key={i} className="group flex flex-col gap-2">
+                                                            <div className="flex items-center justify-between px-2">
+                                                                <span className="text-[9px] font-black uppercase tracking-widest text-primary/60">{item.label}</span>
+                                                                <button 
+                                                                    onClick={() => copyToClipboard(item.cmd)}
+                                                                    className="text-slate-600 hover:text-primary transition-colors"
+                                                                >
+                                                                    <Copy className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                            <div className="bg-[#050505] p-4 rounded-2xl border border-white/5 font-mono text-[10px] flex items-center justify-between group-hover:border-primary/30 transition-colors">
+                                                                <span className="truncate text-slate-400">$ {item.cmd}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-4 border-t border-white/5">
+                                                <button 
+                                                    onClick={handleSubmit}
+                                                    disabled={isEvaluating}
+                                                    className="w-full h-16 bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/40 rounded-2xl flex items-center justify-center gap-4 transition-all active:scale-[0.98] group"
+                                                >
+                                                    {isEvaluating ? (
+                                                        <RotateCcw className="w-5 h-5 animate-spin text-primary" />
+                                                    ) : (
+                                                        <Zap className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                                                    )}
+                                                    <div className="text-left">
+                                                        <div className="text-[10px] font-black uppercase tracking-widest text-primary">Initiate Evaluation</div>
+                                                        <div className="text-[8px] font-black uppercase tracking-widest text-slate-500">Sync & Analyze</div>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Node Progress */}
+                            <div className="glass-effect rounded-3xl p-6 border border-white/5 flex items-center gap-6">
+                                <div className="h-16 w-16 rounded-[1.25rem] bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                    <ListTodo className="w-8 h-8 text-emerald-400" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Progress Vector</div>
+                                    <div className="text-lg font-black tracking-tight">Level 0: Synced</div>
+                                </div>
+                            </div>
+
+                            {repoError && (
+                                <motion.div 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold leading-tight"
+                                >
+                                    {repoError}
+                                </motion.div>
+                            )}
+                        </div>
+                    </motion.main>
+                ) : (
+                    <motion.main 
+                        key="result"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="flex-1 flex flex-col items-center py-12 px-6 md:px-20 overflow-y-auto relative" 
+                        style={confettiStyle}
+                    >
+                        {!result ? (
+                            <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
+                                {isEvaluating ? (
+                                    <>
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse scale-150" />
+                                            <Brain className="w-24 h-24 text-primary relative animate-bounce" />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <h3 className="text-3xl font-black text-white tracking-tight">Neural Judge Analyzing...</h3>
+                                            <p className="text-slate-400 font-mono text-sm uppercase tracking-widest">Scanning Repository • Verifying Logic • Generating Feedback</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-4 opacity-50">
+                                        <Brain className="w-20 h-20 text-slate-600 mx-auto" />
+                                        <p className="text-slate-500 font-black uppercase tracking-[0.2em]">Waiting for Submission</p>
                                     </div>
                                 )}
                             </div>
                         ) : (
-                            <div className="flex flex-col h-full">
-                                {/* Github Connection Widget */}
-                                <div className="p-6">
-                                    <div className="bg-[#0d0a16]/80 border border-primary/20 rounded-xl p-4 flex items-center justify-between shadow-xl">
-                                        <div className="flex items-center gap-4">
-                                            <div className="size-12 rounded-lg bg-slate-800 flex items-center justify-center border border-white/5">
-                                                <Github className="w-6 h-6 text-white" />
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h4 className="text-white font-bold text-sm">Connected to Github</h4>
-                                                    <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
-                                                </div>
-                                                <p className="text-slate-400 font-mono text-[10px] sm:text-xs truncate max-w-[200px] sm:max-w-xs">{repoUrl.replace('https://github.com/', '')}</p>
-                                            </div>
+                            <div className="w-full max-w-4xl space-y-10">
+                                {/* Result Hero */}
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="mb-8 relative">
+                                        <div className={clsx(
+                                            "absolute -inset-8 blur-[100px] rounded-full opacity-30",
+                                            result.status === "Accepted" ? "bg-emerald-500" : "bg-rose-500"
+                                        )} />
+                                        <div className={clsx(
+                                            "relative size-24 rounded-[2rem] border-2 flex items-center justify-center rotate-3",
+                                            result.status === "Accepted" ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                                        )}>
+                                            {result.status === "Accepted" ? <CheckCircle2 className="w-12 h-12" /> : <XCircle className="w-12 h-12" />}
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Terminal Instructions */}
-                                <div className="flex-1 px-8 py-2 overflow-y-auto custom-scrollbar">
-                                    <div className="flex flex-col gap-6">
-                                        <h3 className="text-slate-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                                            <Terminal className="w-4 h-4" />
-                                            Terminal Workflow
-                                        </h3>
-                                        
-                                        <div className="space-y-4 font-mono text-sm max-w-md">
-                                            <div className="bg-black/40 border border-primary/20 rounded-lg p-4">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-primary text-xs font-bold uppercase">1. Clone</span>
-                                                    <button onClick={() => copyToClipboard(`git clone ${repoUrl}.git`)} className="text-slate-500 hover:text-white"><Copy className="w-4 h-4" /></button>
-                                                </div>
-                                                <p className="text-slate-300 break-all text-xs">git clone {repoUrl}.git</p>
-                                            </div>
-                                            
-                                            <div className="bg-black/40 border border-primary/20 rounded-lg p-4">
-                                                <div className="mb-2">
-                                                    <span className="text-[#06b6d4] text-xs font-bold uppercase">2. Code & Push</span>
-                                                </div>
-                                                <p className="text-slate-500 text-xs leading-relaxed">
-                                                    cd {repoUrl.split('/').pop()}<br/>
-                                                    <span className="text-slate-300"># edit solution.py</span><br/>
-                                                    git add .<br/>
-                                                    git commit -m "My solution"<br/>
-                                                    git push origin main
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Footer Action */}
-                                <div className="p-8 bg-[#0d0a16]/80 backdrop-blur-md border-t border-primary/20">
-                                    <button 
-                                        onClick={handleSubmit}
-                                        disabled={isSubmitting}
-                                        className="w-full h-16 rounded-xl bg-gradient-to-r from-primary via-primary to-[#06b6d4] text-white font-bold text-lg flex items-center justify-center gap-3 transition-transform hover:scale-[1.01] active:scale-[0.99] shadow-[0_0_20px_rgba(137,91,245,0.4)] group disabled:opacity-50"
-                                    >
-                                        <RefreshCw className={clsx("w-6 h-6", isSubmitting ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-500")} />
-                                        {isSubmitting ? "ANALYZING REPO..." : "SYNC & EVALUATE CODE"}
-                                    </button>
-                                    <p className="text-center mt-4 text-slate-500 text-xs font-mono">
-                                        Ensure your latest code is pushed to <span className="text-slate-400">main</span> branch
+                                    <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-3">
+                                        {result.status === "Accepted" ? "Neural Node Accepted" : "Sync Failed"}
+                                    </h1>
+                                    <p className="text-slate-400 text-lg md:text-xl font-medium">
+                                        {result.status === "Accepted" ? "You've successfully bridged the logic gap." : "The judge found inconsistencies in your flux stream."}
                                     </p>
+                                </div>
+
+                                {/* Scoreboard */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="glass-effect rounded-3xl p-8 border border-white/5 flex flex-col justify-between h-44 group relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                                            <Timer className="w-20 h-20 text-cyan-400" />
+                                        </div>
+                                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Success Rate</h3>
+                                        <div className="text-5xl font-black text-white tracking-tighter">
+                                            {result.status === "Accepted" ? "100%" : "FAIL"}
+                                        </div>
+                                    </div>
+                                    <div className="glass-effect rounded-3xl p-8 border border-white/5 flex flex-col justify-between h-44 group relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                                            <Trophy className="w-20 h-20 text-primary" />
+                                        </div>
+                                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Neural Reward</h3>
+                                        <div className="text-5xl font-black text-primary tracking-tighter shadow-primary/20">
+                                            {result.score || 0} <span className="text-xl text-slate-600">XP</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* AI Feedback */}
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-4 px-2">
+                                        <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                                            <Brain className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <h2 className="text-xl font-black tracking-tight">Judge Analysis</h2>
+                                    </div>
+                                    <div className="glass-effect rounded-[2rem] p-8 md:p-10 border border-white/5 shadow-2xl relative overflow-hidden">
+                                        <div className="prose prose-invert prose-slate max-w-none prose-p:leading-relaxed prose-pre:bg-[#0a0a0a] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-2xl prose-strong:text-primary prose-code:text-cyan-400 prose-code:bg-cyan-500/5 prose-code:px-2 prose-code:rounded">
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.ai_feedback}</ReactMarkdown>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Re-test Button */}
+                                <div className="flex justify-center pt-8">
+                                    <button 
+                                        onClick={() => setActiveTab("description")}
+                                        className="flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all"
+                                    >
+                                        <RotateCcw className="w-4 h-4" />
+                                        Re-open Specs
+                                    </button>
                                 </div>
                             </div>
                         )}
-                    </section>
-                </main>
-            ) : (
-                /* Main Workspace: Full Screen AI Feedback */
-                <main className="flex-1 flex flex-col items-center py-8 px-6 md:px-20 lg:px-40 overflow-y-auto relative" style={confettiStyle}>
-                    {!result ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center space-y-6 relative z-10">
-                            {isSubmitting ? (
-                                <>
-                                    <div className="relative">
-                                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
-                                        <Brain className="w-20 h-20 text-primary animate-bounce" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-2xl font-black text-white tracking-tight">AI Judge is analyzing your repository...</h3>
-                                        <p className="text-slate-400 font-mono text-sm">Syncing latest commits and evaluating problem logic.</p>
-                                        <div className="flex justify-center gap-1 mt-4">
-                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-                                            <div className="w-2 h-2 rounded-full bg-primary animate-bounce" />
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <Brain className="w-16 h-16 text-slate-500 opacity-50" />
-                                    <p className="text-slate-400 text-lg opacity-50">No submission results yet. Submit your code to see AI feedback.</p>
-                                </>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="max-w-4xl w-full relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                            {/* Hero Section */}
-                            <div className="flex flex-col items-center text-center mb-10">
-                                <div className="mb-6 relative">
-                                    <div className={clsx("absolute -inset-4 blur-xl rounded-full", result.status === "Accepted" ? "bg-[#10b981]/20" : "bg-rose-500/20")} />
-                                    <div className={clsx("relative border p-6 rounded-full flex items-center justify-center", result.status === "Accepted" ? "bg-[#10b981]/10 border-[#10b981]/30" : "bg-rose-500/10 border-rose-500/30")}>
-                                        {result.status === "Accepted" ? (
-                                            <CheckCircle2 className="text-[#10b981] w-12 h-12" />
-                                        ) : (
-                                            <XCircle className="text-rose-500 w-12 h-12" />
-                                        )}
-                                    </div>
-                                </div>
-                                <h1 className="text-slate-100 text-4xl md:text-5xl font-black leading-tight tracking-tight mb-2">
-                                    {result.status === "Accepted" ? "Review complete!" : "Keep Trying!"}
-                                </h1>
-                                <p className="text-slate-400 text-lg">
-                                    {result.status === "Accepted" ? "You're crushing it! Here's how your solution performed." : "Every error is a step closer to mastery. Review the feedback below."}
-                                </p>
-                            </div>
-
-                            {/* Score Matrix Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-                                <div className={clsx("rounded-xl p-6 flex flex-col gap-4 border bg-[#2e2348]/40 backdrop-blur-md", result.status === "Accepted" ? "shadow-[0_0_20px_rgba(16,185,129,0.15)] border-[#10b981]/20" : "border-rose-500/20")}>
-                                    <div className="flex items-center justify-between">
-                                        <div className={clsx("p-2 rounded-lg", result.status === "Accepted" ? "bg-[#10b981]/20" : "bg-rose-500/20")}>
-                                            <CheckCircle2 className={clsx("w-5 h-5", result.status === "Accepted" ? "text-[#10b981]" : "text-rose-500")} />
-                                        </div>
-                                        <span className={clsx("font-bold text-xs uppercase tracking-widest", result.status === "Accepted" ? "text-[#10b981]" : "text-rose-500")}>Correctness</span>
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <h3 className="text-slate-400 text-sm font-medium">Test Cases</h3>
-                                        <p className="text-slate-100 text-2xl font-bold">{result.status === "Accepted" ? "100%" : "Failed"}</p>
-                                    </div>
-                                </div>
-                                <div className="bg-[#2e2348]/40 backdrop-blur-md border border-primary/20 rounded-xl p-6 flex flex-col gap-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="bg-primary/20 p-2 rounded-lg">
-                                            <Timer className="text-primary w-5 h-5" />
-                                        </div>
-                                        <span className="text-primary font-bold text-xs uppercase tracking-widest">Efficiency</span>
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <h3 className="text-slate-400 text-sm font-medium">Overall Score</h3>
-                                        <p className="text-slate-100 text-2xl font-bold">{result.score}/100</p>
-                                    </div>
-                                </div>
-                                {/* <div className="bg-[#2e2348]/40 backdrop-blur-md border border-primary/20 rounded-xl p-6 flex flex-col gap-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="bg-amber-500/20 p-2 rounded-lg">
-                                            <Code className="text-amber-500 w-5 h-5" />
-                                        </div>
-                                        <span className="text-amber-500 font-bold text-xs uppercase tracking-widest">Quality</span>
-                                    </div>
-                                    <div className="flex flex-col gap-1">
-                                        <h3 className="text-slate-400 text-sm font-medium">Code Quality</h3>
-                                        <p className="text-slate-100 text-2xl font-bold">Analyzed</p>
-                                    </div>
-                                </div> */}
-                            </div>
-
-                            {/* Mentor's Notes Section */}
-                            <div className="flex flex-col gap-6 mb-12">
-                                <h2 className="text-slate-100 text-2xl font-bold tracking-tight px-2">Mentor's Notes</h2>
-                                <div className="flex items-start gap-4">
-                                    <div className="flex-shrink-0">
-                                        <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary shadow-lg shadow-primary/20 bg-slate-800 flex items-center justify-center">
-                                           <Brain className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div className="flex justify-center mt-1">
-                                            <span className="bg-primary text-[10px] font-bold text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">AI Mentor</span>
-                                        </div>
-                                    </div>
-                                    <div className="relative flex-1">
-                                        <div className="bg-[#2e2348]/40 backdrop-blur-md border border-primary/20 rounded-2xl rounded-tl-none p-6 shadow-xl relative z-10">
-                                            <div className="text-slate-200 text-sm leading-relaxed prose prose-invert prose-p:leading-relaxed prose-pre:bg-[#06b6d4]/10 prose-pre:border prose-pre:border-[#06b6d4]/20 prose-code:text-[#06b6d4] prose-code:bg-[#06b6d4]/10 prose-code:px-1 prose-code:rounded prose-code:before:content-none prose-code:after:content-none max-w-none prose-headings:text-white prose-headings:font-bold prose-strong:text-primary prose-a:text-[#06b6d4]">
-                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                                    {result.ai_feedback}
-                                                </ReactMarkdown>
-                                            </div>
-                                        </div>
-                                        {/* Chat Bubble Triangle */}
-                                        <div className="absolute top-0 -left-2 w-0 h-0 border-t-[12px] border-t-primary/20 border-r-[12px] border-r-transparent"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </main>
-            )}
-
-            {/* Status Bar */}
-            {/* <footer className="bg-[#1b1429] border-t border-primary/10 px-6 py-2 flex items-center justify-between text-[11px] font-mono text-slate-500 z-20 shrink-0">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5">
-                        <span className="size-2 rounded-full bg-[#06b6d4] shadow-[0_0_5px_#06b6d4]"></span>
-                        <span>API: Connected</span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <span className="text-primary font-bold px-2 py-0.5 bg-primary/10 rounded">PREMIUM ACCESS</span>
-                </div>
-            </footer> */}
+                    </motion.main>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
+

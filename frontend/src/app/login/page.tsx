@@ -1,11 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { Terminal, Github, ArrowRight, Loader2, Code2, Zap } from "lucide-react";
+import { Terminal, Github, ArrowRight, Loader2, Code2, Shield, Sparkles, UserCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
+import { clsx } from "clsx";
+import MagneticWrapper from "@/components/MagneticWrapper";
+
+const containerVars = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+        },
+    },
+} as const;
+
+const itemVars = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { type: "spring", stiffness: 300, damping: 24 }
+    },
+} as const;
+
 
 export default function LoginPage() {
     const { user, loading, login } = useAuth();
@@ -52,213 +76,254 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col lg:flex-row bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
-            {/* Left Side: Visual/Branding */}
-            <div className="relative hidden lg:flex w-1/2 flex-col justify-between p-12 mesh-gradient overflow-hidden">
-                {/* Abstract Mesh Visual (Decorative) */}
-                <div
-                    className="absolute inset-0 opacity-30"
-                    style={{
-                        backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBsVUwlEMkNKH5AFqHy3-hQsdxt0vQgawSc44X1zb4yxWyL-8Amz-i6qbVGnPF2HaslNrWvPpvlmAFCtXxbVi-1uZtvRd32wdFLNFrXCd1F4xfoT1-nw2UekKcWrBrTzsHBqoPVrlecP6bv-uZv8KFYGzfrxck3hnBPDIOe3kYcpZiZvqpWbDGAeXd59K3jqQreXIylldg8TtQGgaB5mMAlnU_azawKg61LyRtRSFJbhingmHoJpZmrxYuhk6XWCPWw7i7z5klk5knd')",
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                    }}
-                ></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
+        <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-hidden">
+            {/* Ambient Background Depth */}
+            <div className="absolute top-1/4 -left-20 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[160px] animate-pulse pointer-events-none" />
+            <div className="absolute bottom-1/4 -right-20 w-[40rem] h-[40rem] bg-secondary/10 rounded-full blur-[160px] animate-pulse pointer-events-none" style={{ animationDelay: "1s" }} />
 
-                <div className="relative z-10 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
-                        <Terminal className="text-white w-6 h-6" />
+            <main className="w-full max-w-7xl z-10">
+                <motion.div
+                    variants={containerVars}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center"
+                >
+                    {/* Left Column: Platform Origin & Credits */}
+                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-12 order-1">
+                        {/* Elite Partnership Badge */}
+                        <div className="flex flex-col items-center lg:items-start group">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="h-px w-3 bg-primary/30" />
+                                <span className="text-[13px] text-purple-400 text-primary uppercase tracking-[0.5em]">Powered by</span>
+                                <div className="h-px w-12 bg-primary/30 hidden lg:block" />
+                            </div>
+                            <div className="space-y-2">
+                                <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-[0.85] group-hover:tracking-tight transition-all duration-400">
+                                    CODING <br className="hidden lg:block"/> CLUB
+                                </h2>
+                            </div>
+                            <div className="flex flex-col lg:flex-row items-center lg:items-center gap-4 mt-8">
+                                <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                                    <span className="text-[10px] text-purple-400 text-secondary uppercase tracking-[0.4em]">In Collaboration with</span>
+                                </div>
+                                <a 
+                                    href="https://scet.ac.in/department/computer-engineering" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-lg font-black text-slate-300 uppercase tracking-widest lg:border-l border-white/10 lg:pl-6 pl-0 py-1 underline underline-offset-4"
+                                >
+                                    SCET COMPUTER DEPT.
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Signature Credits */}
+                        <div className="flex flex-col items-center lg:items-start mt-1 py-8 lg:py-7 lg:px-14 px-12 rounded-[2rem] bg-white/[0.04] border border-white/10 backdrop-blur-xl relative overflow-hidden group/team shadow-2xl">
+                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover/team:opacity-100 transition-opacity duration-1000" />
+                            <div className="flex items-center gap-2 mb-3 relative z-10">
+                                {/* <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" /> */}
+                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em]">Architected & Developed by</span>
+                            </div>
+                            <span className="relative text-3xl font-black text-white tracking-tight italic relative z-10 drop-shadow-sm"><a href="https://github.com/Daku3011" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Dwarkesh Ramani </a>& <a href="https://github.com/jenilgajera18" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Jenil Gajera</a></span>
+                            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover/team:bg-primary/20 transition-colors" />
+                        </div>
+
+                        {/* Visual Connector for Desktop */}
+                        {/* <div className="hidden lg:block relative mt-16 ml-2">
+                            <div className="w-40 h-px bg-gradient-to-r from-primary/40 via-white/10 to-transparent" />
+                            <div className="absolute -left-1 -top-1 w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" />
+                        </div> */}
                     </div>
-                    <h2 className="text-2xl font-bold tracking-tight text-white">MiniCode</h2>
-                </div>
 
-                <div className="relative z-10 space-y-6">
-                    <h1 className="text-6xl font-black leading-tight tracking-tighter text-white">
-                        Code like a pro.<br />
-                        <span className="text-primary">Real-world tasks.</span><br />
-                        AI-driven growth.
-                    </h1>
-                    <p className="max-w-md text-lg text-slate-200">
-                        Step into a production-ready environment. Solve real engineering challenges with the guidance of advanced AI.
-                    </p>
-
-                    <div className="flex gap-8 pt-8 border-t border-slate-800">
-                        <div>
-                            <div className="text-2xl font-bold text-white">500+</div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest">Active Repos</div>
-                        </div>
-                        <div>
-                            <div className="text-2xl font-bold text-white">10k+</div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest">Developers</div>
-                        </div>
-                        <div>
-                            <div className="text-2xl font-bold text-white">99%</div>
-                            <div className="text-sm text-slate-500 uppercase tracking-widest">AI Accuracy</div>
-                        </div>
-                    </div>
-
-                    <div className="relative z-10 pt-12 mt-4 space-y-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-md">
-                            <Zap className="w-3 h-3 text-primary-light animate-pulse" />
-                            <span className="text-[10px] font-white uppercase tracking-[0.2em] text-primary-light">Official Collaboration</span>
-                        </div>
-                        <div className="space-y-1">
-                            <h2 className="text-5xl lg:text-6xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                                Coding Club
-                            </h2>
-                            <div className="flex items-center gap-3">
-                                <div className="h-0.5 w-12 bg-gradient-to-r from-primary to-transparent"></div>
-                                <p className="text-1xl lg:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-rose-400 tracking-tight">
-                                    & Dwarkesh Ramani
+                    {/* Right Column: Branding & Authentication Card */}
+                    <div className="flex flex-col items-center space-y-12 order-2">
+                        {/* Auth-Linked Branding */}
+                        <motion.div variants={itemVars} className="flex flex-col items-center gap-4 mb-4">
+                            <MagneticWrapper>
+                                <motion.div
+                                    whileHover={{ rotate: 10, scale: 1.15 }}
+                                    className="bg-primary p-4 rounded-2xl shadow-2xl shadow-primary/20 ring-1 ring-white/10"
+                                >
+                                    <Terminal className="text-white w-10 h-10" />
+                                </motion.div>
+                            </MagneticWrapper>
+                            <div className="text-center">
+                                <h1 className="text-3xl font-black tracking-tighter text-white">
+                                    MINICODE
+                                </h1>
+                                <p className="text-slate-500 font-black mt-1 tracking-[0.4em] uppercase text-[9px] opacity-60">
+                                    The Elite Coding Arena
                                 </p>
                             </div>
-                        </div>
-                        <div className="pt-2">
-                            <div className="inline-block px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 text-[11px] font-medium tracking-wide">
-                                Infrastructure Powered by SCET
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        </motion.div>
 
+                    {/* Main Content Card (Weightless Glass) */}
+                    <motion.div
+                        variants={itemVars}
+                        className={clsx(
+                            "glass-card rounded-[3rem] p-10 md:p-14 shadow-antigravity border border-white/10 relative overflow-hidden group",
+                            "hover:border-primary/20 transition-all duration-700"
+                        )}
+                    >
+                        {/* Reflective Highlight Overlay */}
+                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
-            </div>
-
-            {/* Right Side: Login Form */}
-            <div className="flex flex-1 items-center justify-center p-6 sm:p-12 lg:w-1/2 bg-background-light dark:bg-background-dark">
-                <div className="w-full max-w-md space-y-8">
-                    {/* Mobile Header */}
-                    <div className="lg:hidden flex flex-col items-center gap-4 mb-12">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
-                            <Terminal className="w-8 h-8" />
-                        </div>
-                        <div className="text-center">
-                            <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">MiniCode</h1>
-                            <p className="text-slate-500 dark:text-slate-400 mt-2">Code like a pro. Real-world tasks. AI-driven growth.</p>
-                        </div>
-                    </div>
-
-                    {/* Glassmorphic Card */}
-                    <div className="glass-card rounded-2xl p-8 shadow-2xl dark:shadow-primary/5">
-                        <div className="mb-8 text-center lg:text-left">
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h2>
-                            <p className="text-slate-500 dark:text-slate-400 mt-1">
-                                {isStaffMode ? "Sign in to your staff portal" : "Sign in to continue your journey"}
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
+                        <AnimatePresence mode="wait">
                             {!isStaffMode ? (
-                                <>
-                                    <button
-                                        onClick={handleGithubLogin}
-                                        className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-slate-900 dark:bg-white px-5 py-4 text-white dark:text-slate-900 transition-transform active:scale-95"
-                                    >
-                                        <Github className="w-6 h-6" />
-                                        <span className="text-base font-bold">Continue with GitHub</span>
-                                    </button>
-
-                                    <div className="relative py-4">
-                                        <div className="absolute inset-0 flex items-center">
-                                            <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
-                                        </div>
-                                        <div className="relative flex justify-center text-sm">
-                                            <span className="bg-background-light dark:bg-transparent px-2 text-slate-500">Staff Access</span>
-                                        </div>
+                                <motion.div
+                                    key="student"
+                                    initial={{ opacity: 0, x: -30 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 30 }}
+                                    transition={{ duration: 0.5, ease: "anticipate" }}
+                                    className="space-y-10 relative z-10"
+                                >
+                                    <div className="text-center space-y-3">
+                                        <h2 className="text-3xl font-black text-white tracking-tight text-center">Level Up Your Code</h2>
+                                        <p className="text-slate-400 font-medium">Join the next generation of engineers solving high-stakes challenges.</p>
                                     </div>
 
-                                    <button
-                                        onClick={() => setIsStaffMode(true)}
-                                        className="flex w-full cursor-pointer items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 px-5 py-4 text-slate-900 dark:text-white transition-all hover:bg-slate-100 dark:hover:bg-slate-800/50"
-                                    >
-                                        <span className="text-base font-semibold">Faculty / Admin Login</span>
-                                    </button>
-                                </>
+                                    <div className="space-y-4">
+                                        <MagneticWrapper>
+                                            <button
+                                                onClick={handleGithubLogin}
+                                                className="flex w-full items-center justify-center gap-4 rounded-2xl bg-white px-6 py-6 text-slate-950"
+                                            >
+                                                <Github className="w-7 h-7" />
+                                                <span className="text-xl font-black uppercase tracking-tight">Authorize via GitHub</span>
+                                            </button>
+                                        </MagneticWrapper>
+
+                                        <div className="flex items-center gap-4 text-slate-500 py-2">
+                                            <div className="h-px flex-1 bg-white/5" />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Proprietary Access</span>
+                                            <div className="h-px flex-1 bg-white/5" />
+                                        </div>
+
+                                        <button
+                                            onClick={() => setIsStaffMode(true)}
+                                            className="w-full py-5 rounded-2xl border border-white/5 text-slate-400 font-black hover:bg-white/5 hover:text-secondary transition-all text-xs uppercase tracking-[0.2em] group"
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Shield className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                                                <span>Staff Authentication</span>
+                                            </div>
+                                        </button>
+                                    </div>
+
+                                    <div className="pt-8 flex flex-col items-center gap-6 border-t border-white/5">
+                                        {/* <div className="flex items-center gap-6 text-slate-400">
+                                            <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/10 border border-white/5 group hover:border-primary/30 transition-colors">
+                                                <Code2 className="w-4 h-4 text-primary" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Matrix Problems</span>
+                                            </div>
+                                            <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/10 border border-white/5 group hover:border-secondary/30 transition-colors">
+                                                <Sparkles className="w-4 h-4 text-secondary" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Quantum Learning</span>
+                                            </div>
+                                        </div> */}
+                                        <p className="text-center text-[10px] text-slate-600 px-8 uppercase tracking-[0.2em] font-bold leading-relaxed">
+                                            By connecting, you consent to our <Link className="text-primary underline text-gray-200" href="/terms">Terms of Engagement</Link> & <Link className="text-primary underline text-gray-200" href="/privacy">Encryption Privacy</Link>.
+                                        </p>
+                                    </div>
+                                </motion.div>
                             ) : (
-                                <form onSubmit={handleStaffLogin} className="space-y-4">
-                                    {error && (
-                                        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold text-center">
-                                            {error}
+                                <motion.form
+                                    key="staff"
+                                    onSubmit={handleStaffLogin}
+                                    initial={{ opacity: 0, x: 30 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -30 }}
+                                    transition={{ duration: 0.5, ease: "anticipate" }}
+                                    className="space-y-8 relative z-10"
+                                >
+                                    <div className="text-center mb-10">
+                                        <div className="inline-flex p-4 rounded-2xl bg-secondary/10 text-secondary mb-6 border border-secondary/20 shadow-lg shadow-secondary/5">
+                                            <UserCircle2 className="w-8 h-8" />
                                         </div>
-                                    )}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-2">Username</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                            placeholder="admin"
-                                        />
+                                        <h2 className="text-3xl font-black text-white tracking-tight">Command Center</h2>
+                                        <p className="text-slate-400 mt-2 font-medium">Elevated authorization required for this sector.</p>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-2">Password</label>
-                                        <input
-                                            type="password"
-                                            required
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-                                            placeholder="••••••••"
-                                        />
-                                    </div>
-                                    <button
-                                        type="submit"
-                                        disabled={submitting}
-                                        className="w-full flex items-center justify-center space-x-2 bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(137,91,245,0.3)] disabled:opacity-50"
-                                    >
-                                        {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                                            <>
-                                                <span>Sign In</span>
-                                                <ArrowRight className="w-4 h-4 ml-2" />
-                                            </>
-                                        )}
-                                    </button>
 
-                                    <div className="pt-2 text-center">
+                                    {error && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-black text-center tracking-wide"
+                                        >
+                                            ACCESS DENIED: {error}
+                                        </motion.div>
+                                    )}
+
+                                    <div className="space-y-6">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Identity Signature</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={username}
+                                                onChange={(e) => setUsername(e.target.value)}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:ring-secondary/40 placeholder:text-slate-700 transition-all font-bold tracking-tight"
+                                                placeholder="User identity"
+                                            />
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Security Key</label>
+                                            <input
+                                                type="password"
+                                                required
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:ring-secondary/40 placeholder:text-slate-700 transition-all font-bold tracking-tight"
+                                                placeholder="••••••••"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 pt-4">
+                                        <MagneticWrapper>
+                                            <button
+                                                type="submit"
+                                                disabled={submitting}
+                                                className="premium-btn w-full py-6 rounded-2xl justify-center shadow-xl shadow-secondary/10 disabled:opacity-50 group grow"
+                                            >
+                                                {submitting ? <Loader2 className="w-7 h-7 animate-spin" /> : (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xl">Decrypt Access</span>
+                                                        <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </MagneticWrapper>
+
                                         <button
                                             type="button"
                                             onClick={() => setIsStaffMode(false)}
-                                            className="text-sm font-medium text-primary hover:underline underline-offset-4"
+                                            className="w-full text-center text-xs font-black text-slate-500 hover:text-white transition-colors uppercase tracking-widest"
                                         >
-                                            ← Back to Student Login
+                                            Return to Core Arena
                                         </button>
                                     </div>
-                                </form>
+                                </motion.form>
                             )}
-                        </div>
+                        </AnimatePresence>
+                    </motion.div>
 
-                        {!isStaffMode && (
-                            <div className="mt-10 flex flex-col gap-3">
-                                <p className="text-center text-xs text-slate-500 px-6 leading-relaxed">
-                                    By continuing, you agree to our <Link className="underline hover:text-purple-400 transition-colors" href="/terms">Terms of Service</Link> and <Link className="underline hover:text-purple-400 transition-colors" href="/privacy">Privacy Policy</Link>.
-                                </p>
+                        {/* Subtle Security Indicator */}
+                        {/* <motion.div 
+                            variants={itemVars}
+                            className="mt-12 text-center"
+                        >
+                            <div className="flex items-center justify-center gap-3 opacity-20 hover:opacity-40 transition-opacity cursor-default group">
+                                <Shield className="w-3.5 h-3.5 text-slate-500 group-hover:text-primary transition-colors" />
+                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.5em] leading-relaxed">
+                                    Secure Quantum Environment
+                                </span>
                             </div>
-                        )}
+                        </motion.div> */}
                     </div>
-
-                    {/* Footer Features (Mobile only hint) */}
-                    <div className="lg:hidden grid grid-cols-1 gap-4 mt-8">
-                        <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/50">
-                            <Code2 className="text-primary w-5 h-5 mt-0.5" />
-                            <div>
-                                <h3 className="font-bold text-sm dark:text-white">Real Repositories</h3>
-                                <p className="text-xs text-slate-500">Ship code to actual projects.</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-100 dark:bg-slate-900/50">
-                            <Zap className="text-primary w-5 h-5 mt-0.5" />
-                            <div>
-                                <h3 className="font-bold text-sm dark:text-white">AI Mentorship</h3>
-                                <p className="text-xs text-slate-500">Instant reviews and guidance.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+                </motion.div>
+            </main>
         </div>
     );
 }

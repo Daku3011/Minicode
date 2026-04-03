@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Download, Terminal, CheckCircle2, TrendingUp, AlertTriangle, List, MoreHorizontal, Lightbulb, Search, Settings, MoreVertical, Edit, Trash, BarChart3 } from "lucide-react";
+import { Plus, Download, Terminal, CheckCircle2, TrendingUp, AlertTriangle, List, MoreHorizontal, Lightbulb, Search, Settings, MoreVertical, Edit, Trash, BarChart3, Bell } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import api from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import MagneticWrapper from "@/components/MagneticWrapper";
+import BroadcastAlert from "@/components/BroadcastAlert";
 
 interface FacultyAnalytics {
     problem_title: string;
@@ -55,41 +58,59 @@ export default function FacultyDashboard() {
     }, []);
 
     const totalActiveProblems = problems.length;
-    const totalSubmissions = Object.values(analytics).reduce((acc, curr) => acc + curr.total_submissions, 0);
-    const totalAccepted = Object.values(analytics).reduce((acc, curr) => acc + curr.accepted_count, 0);
+    const totalSubmissions = Object.values(analytics).reduce((acc: number, curr: FacultyAnalytics) => acc + curr.total_submissions, 0);
+    const totalAccepted = Object.values(analytics).reduce((acc: number, curr: FacultyAnalytics) => acc + curr.accepted_count, 0);
     const overallPassRate = totalSubmissions > 0 ? (totalAccepted / totalSubmissions) * 100 : 0;
 
     return (
-        <div className="bg-[#f6f5f8] dark:bg-[#0f0a1e] text-slate-900 dark:text-slate-100 min-h-[calc(100vh-64px)] font-display relative overflow-x-hidden">
-            {/* Background Gradient */}
-            <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
-
-            {/* Inner Top Nav for Faculty specifically */}
-            <div className="flex items-center gap-8 border-b border-primary/10 bg-[#1a142e]/50 backdrop-blur-md px-6 py-3 relative z-10 w-full mb-8">
-                <nav className="flex items-center gap-6 overflow-x-auto">
-                    <button className="text-primary text-sm font-semibold border-b-2 border-primary pb-1 whitespace-nowrap">Dashboard</button>
-                    <button className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap">Curriculum</button>
-                    <button className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap">Student Roster</button>
-                    <button className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap">Reports</button>
-                </nav>
+        <div className="bg-[#0f0a1e] text-slate-100 min-h-[calc(100vh-64px)] font-display relative overflow-x-hidden">
+            {/* Ambient Background Elements */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-[#22d3ee]/10 rounded-full blur-[120px]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5" />
             </div>
 
-            <main className="flex-1 px-6 lg:px-10 max-w-7xl mx-auto w-full space-y-8 relative z-10 mb-20">
-                {/* Header & Stats Overview */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-                    <div>
-                        <h1 className="text-4xl font-black text-slate-100 tracking-tight">Faculty Overview</h1>
-                        <p className="text-slate-400 mt-2">Real-time performance analytics for CS101: Data Structures</p>
-                    </div>
-                    <div className="flex gap-4">
-                        <button className="bg-[#1a142e] border border-primary/20 text-slate-100 px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary/10 transition-all shadow-sm">
-                            <Download className="w-4 h-4" /> Export Data
-                        </button>
-                        <Link href="/problems/create" className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(137,91,245,0.3)]">
-                            <Plus className="w-4 h-4 text-white" /> New Assignment
-                        </Link>
-                    </div>
+            {/* Inner Top Nav for Faculty specifically */}
+            <div className="sticky top-0 z-40 w-full mb-8">
+                <div className="flex items-center gap-8 border-b border-primary/10 bg-[#1a142e]/40 backdrop-blur-xl px-6 py-3 w-full">
+                    <nav className="flex items-center gap-8 overflow-x-auto no-scrollbar">
+                        <button className="text-primary text-sm font-bold border-b-2 border-primary pb-2 whitespace-nowrap">Dashboard</button>
+                        <button className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Curriculum</button>
+                        <Link href="/faculty/students" className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Student Roster</Link>
+                        <button className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Reports</button>
+                    </nav>
                 </div>
+            </div>
+
+            <main className="flex-1 px-6 lg:px-10 max-w-7xl mx-auto w-full space-y-10 relative z-10 mb-20">
+                {/* Header & Stats Overview */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pt-4"
+                >
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-3 mb-1">
+                            <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-wider">Faculty Portal</span>
+                        </div>
+                        <h1 className="text-5xl font-black text-white tracking-tight">Faculty Overview</h1>
+                        <p className="text-slate-400 text-lg">Real-time performance analytics for CS101: Data Structures</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <BroadcastAlert />
+                        <MagneticWrapper>
+                            <button className="glass-card border-primary/20 text-slate-100 px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 hover:bg-primary/10 transition-all">
+                                <Download className="w-4 h-4" /> Export Data
+                            </button>
+                        </MagneticWrapper>
+                        <MagneticWrapper>
+                            <Link href="/faculty/problems" className="premium-btn px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 transition-all">
+                                <Plus className="w-4 h-4" /> New Assignment
+                            </Link>
+                        </MagneticWrapper>
+                    </div>
+                </motion.div>
 
                 {/* High-Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -141,20 +162,19 @@ export default function FacultyDashboard() {
                             </h2>
                             <button className="text-primary text-sm font-semibold hover:underline">View All</button>
                         </div>
-                        <div className="bg-[#1a142e]/60 backdrop-blur-md border border-primary/10 rounded-xl overflow-hidden shadow-lg">
-                            <div className="overflow-x-auto">
+                        <div className="glass-card rounded-2xl overflow-hidden shadow-2xl border-white/5">
+                            <div className="overflow-x-auto no-scrollbar">
                                 <table className="w-full text-left border-collapse">
-                                    <thead className="bg-primary/5 text-slate-400 text-xs uppercase tracking-widest border-b border-primary/10">
-                                        <tr>
-                                            <th className="px-6 py-4 font-semibold whitespace-nowrap">Problem Name</th>
-                                            <th className="px-6 py-4 font-semibold">Difficulty</th>
-                                            <th className="px-6 py-4 font-semibold">Success</th>
-                                            {/* <th className="px-6 py-4 font-semibold">Status</th> */}
-                                            <th className="px-6 py-4 font-semibold text-right">Action</th>
+                                    <thead>
+                                        <tr className="bg-white/[0.02] border-b border-white/5">
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Problem Name</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Difficulty</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Success</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="text-sm divide-y divide-primary/5">
-                                        {problems.length > 0 ? problems.map((problem) => {
+                                    <tbody className="divide-y divide-white/5">
+                                        {problems.length > 0 ? problems.map((problem: Problem) => {
                                             const stats = analytics[problem.id];
                                             const successRate = stats && stats.total_submissions > 0
                                                 ? Math.round((stats.accepted_count / stats.total_submissions) * 100)
@@ -204,12 +224,20 @@ export default function FacultyDashboard() {
                                 <BarChart3 className="w-5 h-5 text-[#22d3ee]" /> Student Insights
                             </h2>
                         </div>
-                        <div className="bg-[#1a142e]/60 backdrop-blur-md border border-primary/10 p-6 rounded-xl shadow-lg flex flex-col items-center justify-center min-h-[250px] text-center">
-                            <BarChart3 className="w-12 h-12 text-slate-600 mb-4" />
-                            <h3 className="text-lg font-bold text-slate-300">Awaiting Submissions</h3>
-                            <p className="text-sm text-slate-500 mt-2 max-w-xs">
+                        <div className="glass-card p-10 rounded-2xl flex flex-col items-center justify-center min-h-[350px] text-center relative overflow-hidden group">
+                            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 mb-6 group-hover:scale-110 transition-transform duration-500">
+                                <BarChart3 className="w-14 h-14 text-slate-600" />
+                            </div>
+                            <h3 className="text-2xl font-black text-white">Awaiting Submissions</h3>
+                            <p className="text-slate-500 mt-4 max-w-xs text-sm font-medium leading-relaxed">
                                 Student insights and activity charts will populate automatically once assignments are submitted.
                             </p>
+                            <MagneticWrapper>
+                                <button className="mt-8 px-6 py-2.5 rounded-xl border border-white/10 text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all">
+                                    Refresh Data
+                                </button>
+                            </MagneticWrapper>
                         </div>
                     </div>
                 </div>
