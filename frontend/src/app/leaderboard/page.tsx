@@ -3,7 +3,9 @@
 import { Trophy, Medal, Star, TrendingUp, Search } from "lucide-react";
 import { clsx } from "clsx";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Leader {
     id: number;
@@ -16,6 +18,7 @@ interface Leader {
 }
 
 export default function LeaderboardPage() {
+    const { user } = useAuth();
     const [leaders, setLeaders] = useState<Leader[]>([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
@@ -136,6 +139,9 @@ export default function LeaderboardPage() {
                                     <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Student</th>
                                     <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Problems</th>
                                     <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Score</th>
+                                    {(user?.role === "faculty" || user?.role === "admin") && (
+                                        <th className="px-6 py-4 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Actions</th>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
@@ -160,6 +166,17 @@ export default function LeaderboardPage() {
                                         <td className="px-6 py-4">
                                             <span className="text-sm font-bold text-white">{leader.score} XP</span>
                                         </td>
+                                        {(user?.role === "faculty" || user?.role === "admin") && (
+                                            <td className="px-6 py-4">
+                                                <Link 
+                                                    href={`/faculty/students/${leader.username}`}
+                                                    className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 group/btn"
+                                                >
+                                                    View Profile
+                                                    <TrendingUp className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                                                </Link>
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>

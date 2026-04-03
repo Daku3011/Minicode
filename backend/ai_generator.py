@@ -52,7 +52,7 @@ async def generate_problem_content(text_content: str) -> Dict[str, Any]:
     ]
     
     prompt = f"""
-    TASK: You are an elite curriculum designer for a technical coding platform. Your goal is to transform the following material into a professional, high-fidelity coding problem statement.
+    TASK: You are an elite curriculum designer for a technical coding platform. Your goal is to transform the following material into a professional, high-fidelity coding problem statement AND a set of valid test cases.
 
     CORE PRINCIPLE: 
     - If the source material ALREADY contains a structured problem statement (like a hackathon brief), PRESERVE and REFORMAT it faithfully. Do NOT summarize or lose technical details.
@@ -70,21 +70,21 @@ async def generate_problem_content(text_content: str) -> Dict[str, Any]:
        - 'input_format': Describe the parameters/data input.
        - 'output_format': Describe the return values/results.
        - 'constraints': List time/memory limits and tech-specific rules.
-       - 'hint': A small, helpful clue for the student.
+       - 'hints': A small, helpful clue for the student.
+       - 'test_cases': A list of at least 5 objects (min 2 marked 'is_sample': True). Include: 1 Base Case, 1 Simple Varied Case, 1 Large Value Edge Case, 1 Empty/Null Edge Case, 1 Complex Case. Each with 'input_data', 'expected_output', and 'is_sample' (boolean).
 
     PREDEFINED SUBJECTS: Use 'blockchain' for smart contracts, Web3, or crypto-specific challenges.
 
     MATERIAL SOURCE:
     \"\"\"
-    {text_content[:15000]}  # Increased token limit for better context
+    {text_content[:15000]}
     \"\"\"
 
     RESPONSE: Return JSON only. No wrappers or markdown code blocks.
     """
     
     try:
-        # Using the synchronous client wrapped in a thread to avoid aiohttp version conflicts
-        # while keeping the FastAPI event loop responsive.
+        # Using gemini-2.5-flash for optimal speed and reasoning stability
         response = await anyio.to_thread.run_sync(
             lambda: client.models.generate_content(
                 model='gemini-2.5-flash',

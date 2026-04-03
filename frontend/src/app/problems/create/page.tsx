@@ -77,6 +77,15 @@ export default function CreateProblemPage() {
                 constraints: data.constraints || "1 <= values <= 10^9",
                 hints: data.hint || "",
             });
+
+            // Automatically populate test cases if provided by AI
+            if (data.test_cases && Array.isArray(data.test_cases)) {
+                setTestCases(data.test_cases.map((tc: any) => ({
+                    input: tc.input_data || tc.input || "",
+                    output: tc.expected_output || tc.output || "",
+                    is_sample: !!tc.is_sample
+                })));
+            }
             
             // Clear the file input for future identical uploads
             if (fileInputRef.current) fileInputRef.current.value = "";

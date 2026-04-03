@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import json
 from jose import JWTError, jwt
 
-from models import User
+from models import User, NewsItem
 from models_events import Event, EventParticipant, EventSubmission, TeamInvitation
 from auth import get_current_user, require_faculty, get_session, JWT_SECRET, ALGORITHM
 from slowapi import Limiter
@@ -338,6 +338,19 @@ async def create_event(
     session.add(event)
     session.commit()
     session.refresh(event)
+
+    news_item = NewsItem(
+        title=f"New Event: {event.title}",
+        content=event.description[:200] + "..."
+        if len(event.description) > 200
+        else event.description,
+        news_type="event",
+        link=f"/events/{event.id}",
+        priority=2,
+        created_by=user.id,
+    )
+    session.add(news_item)
+    session.commit()
 
     return {"id": event.id, "message": "Event created successfully"}
 
@@ -716,16 +729,23 @@ async def award_participant(
     # Update user's total XP
     participant_user = session.get(User, participant.user_id)
     if participant_user:
+        # Atomic update within the session
         participant_user.xp = max(0, participant_user.xp + xp_diff)
         session.add(participant_user)
+        # Invalidate leaderboard cache
+        from main import invalidate_leaderboard_cache
+
+        invalidate_leaderboard_cache()
 
     session.add(participant)
     session.commit()
+    session.refresh(participant)
+    session.refresh(participant_user)
 
     return {
         "message": "Reward updated successfully",
         "xp_awarded": participant.xp_awarded,
-        "user_total_xp": participant_user.xp if participant_user else 0,
+        "user_total_xp": participant_user.xp,
     }
 
 

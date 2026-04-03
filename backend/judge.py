@@ -7,30 +7,37 @@ from github import Github
 from auth import decrypt_token
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
-    reraise=True
+    reraise=True,
 )
-async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, commit_history_info: str = "", persona: str = "standard"):
+async def run_ai_judge(
+    user_code: str,
+    problem_desc: str,
+    test_cases_info: str,
+    commit_history_info: str = "",
+    persona: str = "standard",
+):
     """
     Uses Gemini to analyze the code, act as judge, and provide feedback + score.
     """
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         return None, "AI Judge unavailable (API key missing)."
-    
+
     client = genai.Client(api_key=api_key)
-    
+
     persona_prompts = {
         "standard": "You are a Fair & Experienced Coding Mentor and Judge.",
         "cto": "You are a Grumpy CTO. Focus on Engineering Rigor and Architecture.",
         "professor": "You are a CS Professor. Focus on Algorithms and Complexity.",
-        "roast": "You are a Sarcastic Code Reviewer. Be witty but helpful."
+        "roast": "You are a Sarcastic Code Reviewer. Be witty but helpful.",
     }
-    
+
     role = persona_prompts.get(persona, persona_prompts["standard"])
-    
+
     prompt = f"""
     ROLE: {role}
     
@@ -64,31 +71,32 @@ async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, 
          * If wrong, give hints without giving the full answer
          * EXTREMELY IMPORTANT: If ai_probability > 60, you MUST include a brief explanation in the feedback about why you suspect AI generation.
     """
-    
+
     try:
         from google.genai import types
+
         response = await client.aio.models.generate_content(
-            model='gemini-2.5-flash',
+            model="gemini-2.5-flash",
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
-            )
+            ),
         )
-        
+
         text = response.text.strip()
         import re
-        
+
         # Find JSON object
-        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+        json_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
         if json_match:
             text = json_match.group(1).strip()
         else:
-            obj_match = re.search(r'(\{.*\})', text, re.DOTALL)
+            obj_match = re.search(r"(\{.*\})", text, re.DOTALL)
             if obj_match:
                 text = obj_match.group(1).strip()
-                
+
         result = json.loads(text)
-        
+
         # Inject warning if AI probability is high
         ai_prob = result.get("ai_probability", 0)
         if isinstance(ai_prob, (int, float)) and ai_prob > 60:
@@ -96,27 +104,37 @@ async def run_ai_judge(user_code: str, problem_desc: str, test_cases_info: str, 
 ⚠️ WARNING: This submission has a high likelihood ({ai_prob}%) of being AI-generated based on code patterns and commit history.
 </div>\n\n"""
             result["feedback"] = warning_msg + result.get("feedback", "")
-            
+
         return result, None
     except json.JSONDecodeError:
         # If JSON parsing fails due to unescaped newlines etc, extract feedback robustly
-        fallback_feedback = response.text if response else "Could not parse AI response."
+        fallback_feedback = (
+            response.text if response else "Could not parse AI response."
+        )
         if response:
             import re
+
             # Extract content from "feedback": "..."
-            match = re.search(r'"feedback"\s*:\s*"(.*?)"\s*\}?$', response.text, re.DOTALL)
+            match = re.search(
+                r'"feedback"\s*:\s*"(.*?)"\s*\}?$', response.text, re.DOTALL
+            )
             if match:
-                fallback_feedback = match.group(1).replace('\\n', '\n').replace('\\"', '"')
-                
-        return {
-            "status": "accepted",
-            "score": 75,
-            "feedback": fallback_feedback
-        }, None
+                fallback_feedback = (
+                    match.group(1).replace("\\n", "\n").replace('\\"', '"')
+                )
+
+        return {"status": "accepted", "score": 75, "feedback": fallback_feedback}, None
     except Exception as e:
         return None, f"Gemini Error: {str(e)}"
 
-async def judge_submission(submission: Submission, user: User, problem: Problem, test_cases: list[TestCase], session):
+
+async def judge_submission(
+    submission: Submission,
+    user: User,
+    problem: Problem,
+    test_cases: list[TestCase],
+    session,
+):
     """
     Main entry point for judging. Fetches code from GitHub and runs AI judge.
     """
@@ -124,45 +142,44 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
     user_code = "# Code not found"
     commit_history_info = "No commit history available."
 
-    
     if user.github_access_token and submission.repo_url:
         try:
             decrypted_token = decrypt_token(user.github_access_token)
             if not decrypted_token:
                 raise Exception("Invalid GitHub token")
-            
+
             g = Github(decrypted_token)
             repo_name = submission.repo_url.rstrip("/").split("/")[-1]
             # GitHub Optimization: Fetch repo by full name instead of hitting /user endpoint first
             repo = g.get_repo(f"{user.username}/{repo_name}")
-            
+
             # Helper to try multiple branches and extensions
             content_file = None
             branches_to_try = [repo.default_branch, "main", "master"]
-            
+
             for branch in branches_to_try:
                 try:
                     root_files = repo.get_contents("", ref=branch)
                     if not isinstance(root_files, list):
                         root_files = [root_files]
-                        
+
                     for f in root_files:
                         if f.name.lower().startswith("solution."):
                             # It's better to fetch explicitly if the file is large, but root_files objects have content if small.
                             # We'll just fetch by name to be safe
                             content_file = repo.get_contents(f.name, ref=branch)
                             break
-                            
+
                     if content_file:
                         break
                 except Exception:
                     continue
-                    
+
             if content_file:
                 user_code = content_file.decoded_content.decode("utf-8")
             else:
                 user_code = f"# Error fetching code: A file named 'solution.*' was not found in repository {repo_name}."
-                
+
             # Fetch recent commits
             commit_history_info = "Recent Commits:\n"
             try:
@@ -176,19 +193,21 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
             logger.error(f"Error fetching code from GitHub: {e}")
             user_code = f"# Error fetching code: {str(e)}"
             commit_history_info = "No commit history available due to error."
-    
+
     # 2. Build test case info string for AI
     test_cases_info = ""
     if test_cases:
         for i, tc in enumerate(test_cases):
-            test_cases_info += f"Test Case {i+1}:\n  Input: {tc.input_data}\n  Expected Output: {tc.expected_output}\n\n"
+            test_cases_info += f"Test Case {i + 1}:\n  Input: {tc.input_data}\n  Expected Output: {tc.expected_output}\n\n"
     else:
         test_cases_info = "No test cases provided. Judge based on problem description."
-    
+
     # 3. Run AI Judge
-    ai_result_data = await run_ai_judge(user_code, problem.description, test_cases_info, commit_history_info)
+    ai_result_data = await run_ai_judge(
+        user_code, problem.description, test_cases_info, commit_history_info
+    )
     ai_result, error = ai_result_data
-    
+
     if ai_result:
         submission.status = ai_result.get("status", "error")
         submission.score = ai_result.get("score", 0)
@@ -199,9 +218,39 @@ async def judge_submission(submission: Submission, user: User, problem: Problem,
         submission.score = 0
         submission.ai_feedback = error or "Judge failed to evaluate."
         submission.judge_output = "Judge error"
-    
+
     submission.code_content = user_code  # Store what was evaluated
-    
+
+    # Update user's total XP if this is an improvement for this problem
+    if submission.status == "accepted":
+        from sqlmodel import select, func
+
+        # Get previous highest score for this problem by this user
+        prev_best = (
+            session.exec(
+                select(func.max(Submission.score))
+                .where(Submission.user_id == user.id)
+                .where(Submission.problem_id == problem.id)
+                .where(
+                    Submission.id != submission.id
+                )  # Exclude current (if already in DB)
+            ).first()
+            or 0
+        )
+
+        new_score = submission.score
+        if new_score > prev_best:
+            xp_diff = new_score - prev_best
+            user.xp += xp_diff
+            session.add(user)
+            logger.info(
+                f"User {user.username} earned {xp_diff} XP (New best: {new_score})"
+            )
+            # Invalidate leaderboard cache
+            from main import invalidate_leaderboard_cache
+
+            invalidate_leaderboard_cache()
+
     session.add(submission)
     session.commit()
     return submission

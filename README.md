@@ -122,5 +122,9 @@ docker-compose up -d --build
 ## 🎨 UI/UX Design Philosophies
 The UI/UX is built to break away from traditional "intimidating" dark-mode coding arenas. We utilize an aesthetic of approachability, incorporating fluid micro-animations, glassmorphism components, and neon-purple highlights. Take a closer look at the [DESIGN_VISION.md](DESIGN_VISION.md) for UX philosophies.
 
+Admin: admin / admin123
+Faculty: faculty / faculty123
+Student: student / student123
+
 ---
 *Elevate competitive programming to the modern enterprise level.* 🚀

@@ -16,6 +16,8 @@ class User(SQLModel, table=True):
     role: str = Field(default="student")  # student, faculty, admin
     xp: int = Field(default=0)  # Total XP earned
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    last_login: Optional[datetime] = Field(default=None)  # For inactivity tracking
+    faculty_report_email: Optional[str] = Field(default=None)  # For faculty reports
 
     submissions: List["Submission"] = Relationship(back_populates="user")
     created_problems: List["Problem"] = Relationship(back_populates="author")
@@ -79,3 +81,34 @@ class Submission(SQLModel, table=True):
 
     user: User = Relationship(back_populates="submissions")
     problem: Problem = Relationship(back_populates="submissions")
+
+
+class NewsItem(SQLModel, table=True):
+    __tablename__ = "news_items"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str
+    content: str
+    news_type: str = Field(default="announcement", index=True)
+    link: Optional[str] = None
+    priority: int = Field(default=0, index=True)
+    is_active: bool = Field(default=True, index=True)
+    created_by: Optional[int] = Field(default=None, foreign_key="users.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    expires_at: Optional[datetime] = None
+
+    author: Optional["User"] = Relationship()
+
+
+class Notification(SQLModel, table=True):
+    __tablename__ = "notifications"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    title: str
+    message: str
+    notification_type: str = Field(default="info", index=True)
+    is_read: bool = Field(default=False, index=True)
+    related_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    expires_at: Optional[datetime] = None
+
+    user: "User" = Relationship()

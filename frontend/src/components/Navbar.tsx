@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Terminal, Search, Flame, LogIn, LogOut, Medal, Code2, Calendar, Trophy } from "lucide-react";
+import { Terminal, Search, Flame, LogIn, LogOut, Medal, Code2, Calendar, Trophy, Bell } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import api from "@/lib/api";
 
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
@@ -14,6 +16,24 @@ export default function Navbar() {
     if (pathname === "/login") {
         return null;
     }
+
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchUnreadCount = async () => {
+        if (!user) return;
+        try {
+            const res = await api.get("/notifications/unread-count");
+            setUnreadCount(res.data.unread_count);
+        } catch (err) {
+            console.error("Failed to fetch unread count:", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchUnreadCount();
+        const interval = setInterval(fetchUnreadCount, 60000); // Poll every minute
+        return () => clearInterval(interval);
+    }, [user]);
 
     const handleLogin = () => {
         router.push("/login");
@@ -85,6 +105,22 @@ export default function Navbar() {
                                     </div>
                                 </>
                             )} */}
+                            
+                            {user.role === "student" && (
+                                <Link 
+                                    href="/problems?showNews=true" // Temporary link to trigger news panel
+                                    className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all relative"
+                                    title="Notifications"
+                                >
+                                    <Bell className="w-5 h-5" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background-dark">
+                                            {unreadCount > 9 ? "9+" : unreadCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            )}
+
                             <div className="flex items-center gap-3 ml-2">
                                 <Link 
                                     href={user.role === "faculty" || user.role === "admin" ? "/faculty/profile" : "/profile"} 

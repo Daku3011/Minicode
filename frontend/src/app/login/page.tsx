@@ -97,11 +97,32 @@ export default function LoginPage() {
                             <div className="text-sm text-slate-500 uppercase tracking-widest">AI Accuracy</div>
                         </div>
                     </div>
+
+                    <div className="relative z-10 pt-12 mt-4 space-y-3">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-md">
+                            <Zap className="w-3 h-3 text-primary-light animate-pulse" />
+                            <span className="text-[10px] font-white uppercase tracking-[0.2em] text-primary-light">Official Collaboration</span>
+                        </div>
+                        <div className="space-y-1">
+                            <h2 className="text-5xl lg:text-6xl font-black tracking-tighter text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                                Coding Club
+                            </h2>
+                            <div className="flex items-center gap-3">
+                                <div className="h-0.5 w-12 bg-gradient-to-r from-primary to-transparent"></div>
+                                <p className="text-1xl lg:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-rose-400 tracking-tight">
+                                    & Dwarkesh Ramani
+                                </p>
+                            </div>
+                        </div>
+                        <div className="pt-2">
+                            <div className="inline-block px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/50 text-[11px] font-medium tracking-wide">
+                                Infrastructure Powered by SCET
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="relative z-10 text-sm text-slate-500">
-                    © 2026 <a href="https://github.com/Daku3011" className="underline hover:text-purple-400 transition-colors" target="_blank">Daku3011</a> <a href="https://scet.ac.in" className="underline hover:text-purple-400 transition-colors" target="_blank">SCET</a>. All rights reserved.
-                </div>
+
             </div>
 
             {/* Right Side: Login Form */}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { User, BookOpen, Users, Trophy, Calendar, Settings, BarChart3, Target, Plus, Download, Mail, Award, TrendingUp, Clock, ChevronRight, Edit, Loader2, FileText, Sparkles, BookMarked } from "lucide-react";
+import { User, BookOpen, Users, Trophy, Calendar, Settings, BarChart3, Target, Plus, Download, Mail, Award, TrendingUp, Clock, ChevronRight, Edit, Loader2, FileText, Sparkles, BookMarked, Search, ArrowRight } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -83,6 +83,45 @@ export default function FacultyProfilePage() {
     const renderOverview = () => (
         <div className="space-y-8">
             {/* Stats Grid */}
+            {/* Student Quick Search */}
+            <div className="bg-[#1a142e]/60 backdrop-blur-md border border-indigo-500/20 p-8 rounded-2xl relative overflow-hidden group shadow-2xl">
+                <div className="absolute top-0 right-0 p-32 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="max-w-md">
+                        <h3 className="text-xl font-black text-white flex items-center gap-2">
+                             <Search className="w-5 h-5 text-indigo-400" /> Student Telemetry
+                        </h3>
+                        <p className="text-sm text-slate-400 mt-2">
+                            Enter a student's username to view their detailed performance profile, submission history, and achievement status.
+                        </p>
+                    </div>
+                    <div className="flex-1 max-w-sm">
+                        <form 
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                const username = (e.target as any).username.value;
+                                if (username) window.location.href = `/faculty/students/${username}`;
+                            }}
+                            className="relative group/form"
+                        >
+                            <input
+                                name="username"
+                                type="text"
+                                placeholder="Student username (e.g. jdoe123)"
+                                className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-5 pr-12 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition-all placeholder:text-slate-500 font-mono"
+                                required
+                            />
+                            <button 
+                                type="submit"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-400 transition-colors shadow-lg shadow-indigo-500/20"
+                            >
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-[#1a142e]/60 backdrop-blur-md border border-purple-500/20 p-6 rounded-xl">
                     <div className="flex items-center justify-between mb-4">

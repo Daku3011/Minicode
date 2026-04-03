@@ -1,4 +1,4 @@
-import os
+from email_service import SMTP_CONFIG
 from datetime import datetime
 from fastapi import FastAPI, Depends, HTTPException, Request, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +21,8 @@ from fastapi_cache.backends.redis import RedisBackend
 from fastapi_cache.decorator import cache
 from redis import asyncio as aioredis
 import bleach
+import os
+import redis as sync_redis
 
 load_dotenv()
 
@@ -32,13 +34,12 @@ logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 
-from models import User, Problem, Submission, TestCase
+from models import User, Problem, Submission, TestCase, NewsItem
 from models_events import Event, EventParticipant, EventSubmission
 from auth import (
     get_current_user,
     create_access_token,
     get_github_user_info,
-    get_session,
     require_admin,
     require_faculty,
     encrypt_token,
@@ -89,8 +90,24 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic: Database tables are created via preDeployCommand (Render)
-    # or manually to avoid race conditions between Gunicorn workers.
+    # Ensure database tables are created on startup
+    try:
+        from scripts.migrate_db import run_migrations
+        run_migrations()
+        logger.info("Database tables and migrations initialized successfully")
+
+        # Run seeding script if needed
+        try:
+            from scripts.seed_db import seed_database
+
+            seed_database()
+            logger.info("Database seeding checked/completed")
+        except Exception as seed_err:
+            logger.warning(f"Seeding skipped or failed: {seed_err}")
+
+    except Exception as e:
+        logger.error(f"Failed to initialize database tables: {e}")
+
     redis_url = os.getenv("REDIS_URL")
     if redis_url:
         try:
@@ -265,6 +282,18 @@ def create_problem(
     session.add(problem)
     session.commit()
     session.refresh(problem)
+
+    news_item = NewsItem(
+        title=f"New Problem: {problem.title}",
+        content=f"A new {problem.difficulty} problem has been added to the arena.",
+        news_type="problem",
+        link=f"/problems/{problem.id}",
+        priority=1,
+        created_by=user.id,
+    )
+    session.add(news_item)
+    session.commit()
+
     return problem
 
 
@@ -409,6 +438,9 @@ async def github_callback(
     else:
         user.github_access_token = encrypt_token(access_token)
 
+    # Update last login
+    user.last_login = datetime.utcnow()
+    session.add(user)
     session.commit()
     session.refresh(user)
 
@@ -432,6 +464,11 @@ async def login(
 
     if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
+
+    # Update last login
+    user.last_login = datetime.utcnow()
+    session.add(user)
+    session.commit()
 
     token = create_access_token(data={"sub": user.username})
     return {"access_token": token, "token_type": "bearer"}
@@ -551,44 +588,88 @@ def get_submission_status(
     }
 
 
+# Leaderboard cache version for manual invalidation
+LEADERBOARD_CACHE_VERSION = 0
+REDIS_CLIENT_SYNC = None
+
+def get_redis_sync():
+    global REDIS_CLIENT_SYNC
+    if REDIS_CLIENT_SYNC is None:
+        redis_url = os.getenv("REDIS_URL")
+        if redis_url:
+            try:
+                REDIS_CLIENT_SYNC = sync_redis.from_url(redis_url, decode_responses=True)
+            except Exception as e:
+                logger.error(f"Failed to connect to sync Redis: {e}")
+    return REDIS_CLIENT_SYNC
+
+def invalidate_leaderboard_cache():
+    global LEADERBOARD_CACHE_VERSION
+    r = get_redis_sync()
+    if r:
+        try:
+            LEADERBOARD_CACHE_VERSION = r.incr("minicode:leaderboard_version")
+            logger.info(f"Leaderboard cache invalidated in Redis (New version: {LEADERBOARD_CACHE_VERSION})")
+        except Exception as e:
+            logger.error(f"Failed to increment leaderboard version in Redis: {e}")
+            LEADERBOARD_CACHE_VERSION += 1
+    else:
+        LEADERBOARD_CACHE_VERSION += 1
+        logger.info(f"Leaderboard cache invalidated locally (New version: {LEADERBOARD_CACHE_VERSION})")
+
+def leaderboard_cache_key_builder(func, *args, **kwargs):
+    global LEADERBOARD_CACHE_VERSION
+    r = get_redis_sync()
+    if r:
+        try:
+            # We use a short-lived local version to avoid hitting Redis on every single request
+            # if we really wanted to optimize, but for now we fetch it sync
+            v = r.get("minicode:leaderboard_version")
+            if v:
+                LEADERBOARD_CACHE_VERSION = int(v)
+        except Exception as e:
+            logger.error(f"Failed to fetch leaderboard version from Redis: {e}")
+    
+    return f"leaderboard:v{LEADERBOARD_CACHE_VERSION}"
+
+
 # Leaderboard Endpoint
 @app.get("/leaderboard")
-@cache(expire=300)
+@cache(expire=3600, key_builder=leaderboard_cache_key_builder)
 def get_leaderboard(session: Session = Depends(get_session)):
-    # Optimized single query to calculate max scores per problem per user
+    # Simple and fast: Order by User.xp and filter out admins/faculty if needed
+    # We also show count of accepted problems for context
     subquery = (
         select(
             Submission.user_id,
-            Submission.problem_id,
-            func.max(Submission.score).label("max_score"),
+            func.count(func.distinct(Submission.problem_id)).label("problems_count"),
         )
         .where(Submission.status == "accepted")
-        .group_by(Submission.user_id, Submission.problem_id)
+        .group_by(Submission.user_id)
         .subquery()
     )
 
     statement = (
         select(
-            User,
-            func.sum(subquery.c.max_score).label("total_score"),
-            func.count(subquery.c.problem_id).label("problems_count"),
+            User, func.coalesce(subquery.c.problems_count, 0).label("problems_solved")
         )
-        .join(subquery, User.id == subquery.c.user_id)
-        .group_by(User.id)
-        .order_by(func.sum(subquery.c.max_score).desc())
+        .outerjoin(subquery, User.id == subquery.c.user_id)
+        .where(User.role == "student")
+        .order_by(User.xp.desc())
+        .limit(100)
     )
 
     results = session.exec(statement).all()
     leaderboard = []
 
-    for i, (user, total_score, problems_solved) in enumerate(results):
+    for i, (user, problems_solved) in enumerate(results):
         leaderboard.append(
             {
                 "rank": i + 1,
                 "id": user.id,
                 "name": user.full_name or user.username,
                 "username": user.username,
-                "score": int(total_score),
+                "score": user.xp,
                 "problems": problems_solved,
                 "avatar": user.avatar_url,
             }
@@ -684,10 +765,13 @@ def update_user_role(
 
 
 # Auth & User endpoints (to be implemented in auth.py)
-@app.get("/auth/me")
-def get_me(
-    user: User = Depends(get_current_user), session: Session = Depends(get_session)
-):
+def get_user_profile(user: User, session: Session):
+    from datetime import timedelta
+
+    # Batch fetch all problems once to avoid N+1 queries
+    all_problems = session.exec(select(Problem)).all()
+    problem_map = {p.id: p for p in all_problems}
+
     # Calculate stats for profile
     submissions = session.exec(
         select(Submission).where(Submission.user_id == user.id)
@@ -702,48 +786,39 @@ def get_me(
         ):
             problem_scores[sub.problem_id] = sub.score
 
-    total_score = sum(problem_scores.values())
+    total_score = user.xp
     problems_solved = len(problem_scores)
 
-    # Calculate contribution data (last 365 days)
     now = datetime.utcnow()
     one_year_ago = now.replace(year=now.year - 1)
-    
-    # Efficiently aggregate submissions by date in one query
-    # (Using Python grouping for simpler logic on smaller datasets,
-    # could be optimized with SQL func.date if needed)
+
     submission_counts = {}
     for sub in submissions:
         if sub.timestamp and sub.timestamp >= one_year_ago:
             date_str = sub.timestamp.strftime("%Y-%m-%d")
             submission_counts[date_str] = submission_counts.get(date_str, 0) + 1
 
-    # Calculate Streak
-    from datetime import timedelta
     streak = 0
     curr_date = now.date()
-    # Check today and then go backwards
     while True:
         date_str = curr_date.strftime("%Y-%m-%d")
         if date_str in submission_counts:
             streak += 1
             curr_date = curr_date - timedelta(days=1)
         else:
-            # If today has no submissions, the streak might still be active if yesterday had some
             if streak == 0:
                 yesterday = now.date() - timedelta(days=1)
                 if yesterday.strftime("%Y-%m-%d") in submission_counts:
-                    # Streak is from yesterday, today is pending
                     curr_date = yesterday
                     continue
             break
 
-    recent_submissions = []
     sorted_submissions = sorted(
         submissions, key=lambda x: x.timestamp or datetime.min, reverse=True
     )
+    recent_submissions = []
     for sub in sorted_submissions[:5]:
-        prob = session.get(Problem, sub.problem_id)
+        prob = problem_map.get(sub.problem_id)
         recent_submissions.append(
             {
                 "id": sub.id,
@@ -775,10 +850,56 @@ def get_me(
     }
 
 
+@app.get("/auth/me")
+def get_me(
+    user: User = Depends(get_current_user), session: Session = Depends(get_session)
+):
+    return get_user_profile(user, session)
+
+
+@app.get("/faculty/student/{username}")
+def get_student_profile(
+    username: str,
+    faculty: User = Depends(require_faculty),
+    session: Session = Depends(get_session),
+):
+    statement = select(User).where(User.username == username)
+    student = session.exec(statement).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    return get_user_profile(student, session)
+
+
+@app.put("/users/me/settings")
+def update_user_settings(
+    report_email: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    if report_email:
+        current_user.faculty_report_email = report_email
+    
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    return {"message": "Settings updated", "faculty_report_email": current_user.faculty_report_email}
+
+
 # Include Events Router
 from events import router as events_router
 
 app.include_router(events_router)
+
+# Include News Router
+from news import router as news_router
+
+app.include_router(news_router)
+
+# Include Notifications Router
+from notifications import router as notifications_router
+
+app.include_router(notifications_router)
 
 if __name__ == "__main__":
     import uvicorn

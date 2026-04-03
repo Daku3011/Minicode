@@ -1,15 +1,17 @@
 # ============================================
 # Stage 1: Build dependencies
 # ============================================
-FROM python:3.12-slim AS builder
+FROM python:3.12-alpine AS builder
 
 WORKDIR /build
 
 # Install build dependencies for psycopg2 and bcrypt
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+    musl-dev \
+    postgresql-dev \
+    python3-dev \
+    libffi-dev
 
 COPY requirements.txt .
 RUN python -m venv /opt/venv
@@ -20,17 +22,17 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # ============================================
 # Stage 2: Production image
 # ============================================
-FROM python:3.12-slim AS production
+FROM python:3.12-alpine AS production
 
 # Install runtime dependencies only (libpq for psycopg2)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
+RUN apk add --no-cache \
+    libpq \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    bash
 
 # Create non-root user for security
-RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
+RUN addgroup --system --gid 1000 appuser && \
+    adduser --system --uid 1000 --ingroup appuser --shell /bin/bash --home /home/appuser --disabled-password appuser
 
 WORKDIR /app
 
