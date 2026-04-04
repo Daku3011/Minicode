@@ -1,18 +1,14 @@
 import sys
 import os
-from sqlmodel import Session, select, create_engine
+from sqlmodel import Session, select
 from datetime import datetime
 
-# Add the parent directory to sys.path to allow importing from models and auth
+# Add the parent directory to sys.path to allow importing from database and models
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from database import engine
 from models import User, Problem, TestCase
 from auth import get_password_hash
-
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:postgres@db:5432/minicode"
-)
-engine = create_engine(DATABASE_URL)
 
 def seed_database():
     with Session(engine) as session:

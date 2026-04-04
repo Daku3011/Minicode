@@ -1,47 +1,16 @@
 import os
 import sys
-from sqlmodel import create_engine, text, SQLModel
+from sqlmodel import text, SQLModel
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Add current directory to path
-sys.path.append(os.getcwd())
+# Add parent directory to path to allow importing from database
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from database import engine
 from models import User, Problem, Submission, TestCase, NewsItem, Notification
 from models_events import Event, EventParticipant, EventSubmission
-
-def sanitize_database_url(url: str) -> str:
-    if not url:
-        return url
-    if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql://", 1)
-    
-    import re
-    from urllib.parse import quote
-    try:
-        pattern = r"^(?P<prefix>.*?://)(?P<userinfo>.*)@(?P<hostinfo>.*)$"
-        match = re.match(pattern, url)
-        if match:
-            prefix = match.group("prefix")
-            userinfo = match.group("userinfo")
-            hostinfo = match.group("hostinfo")
-            if ":" in userinfo:
-                user, password = userinfo.split(":", 1)
-                if "@" in password and "%40" not in password:
-                    password = quote(password)
-                return f"{prefix}{user}:{password}@{hostinfo}"
-    except Exception:
-        pass
-    return url
-
-DATABASE_URL = sanitize_database_url(os.getenv("DATABASE_URL", "sqlite:///./minicode.db"))
-if DATABASE_URL.startswith("postgresql"):
-    # SQLAlchemy requires postgresql+psycopg2 explicitly for some versions
-    if "+psycopg2" not in DATABASE_URL:
-        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://")
-
-engine = create_engine(DATABASE_URL)
 
 def run_migrations():
     print("Initializing tables...")

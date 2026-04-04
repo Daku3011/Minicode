@@ -2,27 +2,22 @@ import os
 import sys
 import logging
 import asyncio
-from datetime import datetime, timedelta
-from sqlmodel import Session, create_engine, select, func
+from datetime import datetime
+from sqlmodel import Session, select, func
 from dotenv import load_dotenv
 
-# Add current directory to path
-sys.path.append(os.getcwd())
+load_dotenv()
 
+# Add parent directory to path to allow importing from database and models
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from database import engine
 from models import User, Submission
 from email_service import send_engagement_lure_emails, send_faculty_report
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("EngagementWorker")
-
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./minicode.db")
-if DATABASE_URL.startswith("postgresql"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://")
-
-engine = create_engine(DATABASE_URL)
 
 async def run_engagement_cycle():
     logger.info("Starting engagement cycle...")

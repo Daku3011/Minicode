@@ -9,7 +9,7 @@ import logging
 load_dotenv()
 
 from models import Submission, Problem, TestCase, User
-from main import engine
+from database import engine
 from judge import judge_submission
 
 logger = logging.getLogger(__name__)
@@ -26,15 +26,24 @@ if redis_url.startswith("rediss://") and "ssl_cert_reqs" not in redis_url:
     else:
         redis_url += "?ssl_cert_reqs=none"
 
-celery_app = Celery("minicode_worker", broker=redis_url, backend=redis_url)
+# Additional config to silence SSL warnings and ensure secure transport
+celery_config = {
+    "broker_url": redis_url,
+    "result_backend": redis_url,
+    "task_serializer": "json",
+    "accept_content": ["json"],
+    "result_serializer": "json",
+    "timezone": "UTC",
+    "enable_utc": True,
+}
 
-celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="UTC",
-    enable_utc=True,
-)
+if redis_url.startswith("rediss://"):
+    import ssl
+    celery_config["broker_use_ssl"] = {"ssl_cert_reqs": ssl.CERT_NONE}
+    celery_config["redis_backend_use_ssl"] = {"ssl_cert_reqs": ssl.CERT_NONE}
+
+celery_app = Celery("minicode_worker")
+celery_app.conf.update(**celery_config)
 
 @celery_app.task(name="process_submission_task")
 def process_submission_task(submission_id: int):
@@ -45,6 +54,7 @@ def process_submission_task(submission_id: int):
     logger.info(f"Worker picked up submission {submission_id}")
 
     # Spin up its own Database Session to prevent connection issues across threads
+    # Use the centralized engine from database.py
     with Session(engine) as session:
         submission = session.get(Submission, submission_id)
         if not submission:
@@ -76,4 +86,3 @@ def process_submission_task(submission_id: int):
             session.add(submission)
             session.commit()
             return f"Failed submission {submission_id}"
-

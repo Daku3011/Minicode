@@ -6,7 +6,8 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from sqlmodel import Session, select, create_engine
+from sqlmodel import Session, select
+from database import engine, get_session
 from dotenv import load_dotenv
 from passlib.context import CryptContext
 from models import User
@@ -24,19 +25,6 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/minicode"
-)
-
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    engine = create_engine(DATABASE_URL)
-
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")

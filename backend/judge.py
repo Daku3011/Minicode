@@ -8,6 +8,8 @@ from auth import decrypt_token
 from utils_cache import invalidate_leaderboard_cache
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+logger = logging.getLogger(__name__)
+
 
 @retry(
     stop=stop_after_attempt(3),
@@ -147,9 +149,10 @@ async def judge_submission(
         try:
             decrypted_token = decrypt_token(user.github_access_token)
             if not decrypted_token:
-                raise Exception("Invalid GitHub token")
-
-            g = Github(decrypted_token)
+                logger.warning(f"Could not decrypt GitHub token for user {user.username}. Ensure FERNET_KEY is set and consistent.")
+                user_code = "# Error: Could not decrypt GitHub access token. Please re-login."
+            else:
+                g = Github(decrypted_token)
             repo_name = submission.repo_url.rstrip("/").split("/")[-1]
             # GitHub Optimization: Fetch repo by full name instead of hitting /user endpoint first
             repo = g.get_repo(f"{user.username}/{repo_name}")
