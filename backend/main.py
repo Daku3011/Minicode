@@ -50,8 +50,50 @@ from repo_manager import create_student_repo
 from judge import judge_submission
 from ai_generator import generate_problem_content, extract_text_from_file
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/minicode"
+def sanitize_database_url(url: str) -> str:
+    """
+    Cleans and re-encodes the database URL to handle common issues like:
+    1. 'postgres://' vs 'postgresql://' prefixes
+    2. Passwords containing special characters like '@'
+    """
+    if not url:
+        return url
+
+    # 1. Standardize the prefix
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+
+    # 2. Handle passwords with '@' by re-encoding them
+    import re
+    from urllib.parse import quote
+
+    try:
+        # Regex to find the last '@' which separates userinfo from host
+        # [protocol://][userinfo]@[hostinfo]
+        pattern = r"^(?P<prefix>.*?://)(?P<userinfo>.*)@(?P<hostinfo>.*)$"
+        match = re.match(pattern, url)
+
+        if match:
+            prefix = match.group("prefix")
+            userinfo = match.group("userinfo")
+            hostinfo = match.group("hostinfo")
+
+            # Split userinfo at the first ':' to get user and password
+            if ":" in userinfo:
+                user, password = userinfo.split(":", 1)
+                # Re-encode the password if it's not already safe
+                # (SQLAlchemy/psycopg2 expect the password part to be URL-encoded)
+                if "@" in password and "%40" not in password:
+                    password = quote(password)
+                return f"{prefix}{user}:{password}@{hostinfo}"
+    except Exception:
+        pass
+
+    return url
+
+
+DATABASE_URL = sanitize_database_url(
+    os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/minicode")
 )
 
 # Connection pooling for high-traffic production use

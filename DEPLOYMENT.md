@@ -108,6 +108,7 @@ If you want to deploy MiniCode without spending a dime, follow this "Multi-Cloud
 #### 2. Cache & Message Broker: [Upstash](https://upstash.com/) (Redis)
 - Create a **Redis** database.
 - Copy the **Connection URI**. It should look like `rediss://...`.
+- **Note:** Ensure you use the `rediss://` prefix (SSL) if working on Render/Vercel.
 - Use this same URI for **both** `REDIS_URL` and `CELERY_BROKER_URL`.
 
 #### 3. Backend API & Worker: [Render](https://render.com/) (Free Web Service)
@@ -136,6 +137,21 @@ Render's Free Tier spins down after 15 minutes of inactivity. To keep it respons
 1. Use a free monitoring service like [Cron-job.org](https://cron-job.org/) or [Better Stack](https://betterstack.com/).
 2. Set it to ping your backend's `/health` endpoint every **14 minutes**.
 3. Target URL: `https://your-app.onrender.com/health`
+
+#### 5. 🛠 Troubleshooting: Common Errors
+
+> [!IMPORTANT]
+> **Error: "could not translate host name... Name does not resolve"**
+> This happens if your Supabase password contains special characters (like `@` or `!`). You **MUST** URL-encode these characters.
+> - **Wrong**: `postgresql://user:p@ssword!@host...`
+> - **Right**: `postgresql://user:p%40ssword%21@host...`
+> - **Pro-Tip**: Use the "Hide Password" toggle in the Supabase dashboard to get the pre-encoded URI.
+
+> [!IMPORTANT]
+> **Error: "Cannot connect to redis://localhost:6379"**
+> This means your `minicode-worker` is trying to look for a local Redis. Ensure you have set **both** of these in your Render Environment:
+> - `REDIS_URL`: `rediss://...` (from Upstash)
+> - `CELERY_BROKER_URL`: `rediss://...` (same as above)
 
 ### 6️⃣ Advanced: Render Blueprint (Paid)
 If you have a **Render Starter** ($7/mo) or higher plan, you can use the `render.yaml` file in the root directory. This will automate the creation of a managed database and separate worker services with better performance.

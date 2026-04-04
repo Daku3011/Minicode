@@ -15,7 +15,17 @@ from judge import judge_submission
 logger = logging.getLogger(__name__)
 
 # Initialize Celery
-redis_url = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/1")
+# We handle rediss:// (SSL) explicitly for Upstash/Render
+redis_url = os.getenv("CELERY_BROKER_URL", os.getenv("REDIS_URL", "redis://localhost:6379/1"))
+
+if redis_url.startswith("rediss://") and "ssl_cert_reqs" not in redis_url:
+    # Append the required SSL parameters for better security/compatibility
+    # A rediss:// URL must have parameter ssl_cert_reqs=none for many hosted setups
+    if "?" in redis_url:
+        redis_url += "&ssl_cert_reqs=none"
+    else:
+        redis_url += "?ssl_cert_reqs=none"
+
 celery_app = Celery("minicode_worker", broker=redis_url, backend=redis_url)
 
 celery_app.conf.update(
