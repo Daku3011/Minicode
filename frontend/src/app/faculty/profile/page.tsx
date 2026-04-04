@@ -63,24 +63,19 @@ export default function FacultyProfilePage() {
     const fetchFacultyData = async () => {
         setLoading(true);
         try {
-            const [problemsRes, eventsRes] = await Promise.all([
-                api.get("/faculty/problems"),
+            const [statsRes, eventsRes] = await Promise.all([
+                api.get("/faculty/dashboard-stats"),
                 api.get("/events/faculty/my-events").catch(() => ({ data: [] }))
             ]);
             
             setStats({
-                problems_created: problemsRes.data.length,
-                total_students: 124, // Mocked for UI
-                total_submissions: 842, // Mocked for UI
-                avg_pass_rate: 76.5 // Mocked for UI
+                problems_created: statsRes.data.total_problems,
+                total_students: statsRes.data.total_students,
+                total_submissions: statsRes.data.total_submissions,
+                avg_pass_rate: statsRes.data.avg_pass_rate
             });
             setEvents(eventsRes.data);
-            
-            setRecentActivity([
-                { id: 1, type: "join", message: "New student enrolled in Algorithms I", timestamp: "2h ago", user: "jdoe123" },
-                { id: 2, type: "submission", message: "Batch submission completed for 'Binary Search'", timestamp: "5h ago" },
-                { id: 3, type: "event", message: "Event 'Spring Sprint 2026' is now active", timestamp: "1d ago" }
-            ]);
+            setRecentActivity(statsRes.data.recent_activity);
         } catch (error) {
             console.error("Failed to fetch faculty data:", error);
         } finally {
@@ -105,17 +100,18 @@ export default function FacultyProfilePage() {
     return (
         <div className="min-h-[calc(100vh-64px)] bg-[#0a0a0f] text-slate-100 font-display relative overflow-x-hidden">
             {/* Ambient Background */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[140px] animate-pulse" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '3s' }} />
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[140px]" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[120px]" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-[0.03]" />
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 {/* Hero Profile Section */}
                 <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
                     className="glass-card mb-12 p-1 relative overflow-hidden"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-blue-500/10 pointer-events-none" />
@@ -128,7 +124,7 @@ export default function FacultyProfilePage() {
                             <div className="size-44 rounded-[3.5rem] bg-gradient-to-br from-primary to-blue-600 p-1.5 shadow-2xl transition-transform group-hover:scale-105 duration-500">
                                 <div className="w-full h-full rounded-[3.1rem] bg-[#0a0a0f] flex items-center justify-center relative overflow-hidden">
                                      <User className="size-20 text-white" />
-                                     <div className="absolute bottom-0 inset-x-0 h-1/3 bg-primary/20 backdrop-blur-md flex items-center justify-center border-t border-white/10 uppercase font-black text-[8px] tracking-[0.2em] text-white">ID_VERIFIED</div>
+                                     {/* <div className="absolute bottom-0 inset-x-0 h-1/3 bg-primary/20 backdrop-blur-md flex items-center justify-center border-t border-white/10 uppercase font-black text-[8px] tracking-[0.2em] text-white">ID_VERIFIED</div> */}
                                 </div>
                             </div>
                             <div className="absolute -bottom-4 -right-4 size-16 rounded-3xl bg-white text-black flex items-center justify-center border-8 border-[#0a0a0f] shadow-2xl">
@@ -139,30 +135,27 @@ export default function FacultyProfilePage() {
                         <div className="flex-1 text-center md:text-left space-y-4">
                             <div className="space-y-1">
                                 <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none mb-2">Professor <span className="text-primary">{user?.username}</span></h1>
-                                <p className="text-slate-500 font-black text-xs uppercase tracking-[0.4em] inline-flex items-center gap-3">
-                                    Senior Infrastructure Architect <span className="size-1.5 rounded-full bg-primary animate-ping" /> Global Faculty Node
-                                </p>
                             </div>
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-4">
                                 <div className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-slate-300 font-bold text-xs uppercase tracking-widest flex items-center gap-3 shadow-inner">
                                     <Mail className="w-4 h-4 text-primary" /> {user?.email}
                                 </div>
-                                <div className="px-6 py-2.5 rounded-2xl bg-primary/20 border border-primary/30 text-primary font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/10">
+                                {/* <div className="px-6 py-2.5 rounded-2xl bg-primary/20 border border-primary/30 text-primary font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/10">
                                     LEVEL 20 ACADEMIC
-                                </div>
+                                </div> */}
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-4">
-                            <BroadcastAlert />
-                            <MagneticWrapper>
+                            {/* <BroadcastAlert /> */}
+                            {/* <MagneticWrapper>
                                 <button
                                     onClick={() => logout()}
                                     className="w-full px-10 py-5 rounded-3xl bg-white/[0.03] border border-white/10 text-rose-500 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-rose-500/10 hover:border-rose-500/30 transition-all flex items-center justify-center gap-3 group"
                                 >
                                     <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> TERMINATE SESSION
                                 </button>
-                            </MagneticWrapper>
+                            </MagneticWrapper> */}
                         </div>
                     </div>
                 </motion.div>
@@ -188,30 +181,11 @@ export default function FacultyProfilePage() {
                                 >
                                     {item.icon}
                                     {item.label}
-                                    {activeTab === item.id && (
+                                    {/* {activeTab === item.id && (
                                         <div className="absolute right-0 top-0 h-full w-1.5 bg-white/20" />
-                                    )}
+                                    )} */}
                                 </button>
                             ))}
-                        </div>
-
-                        <div className="glass-card p-8 space-y-6 bg-primary/5 border-primary/20">
-                            <h3 className="text-xs font-black text-primary uppercase tracking-[0.3em] flex items-center gap-3">
-                                <TrendingUp className="w-4 h-4" /> Performance Vector
-                            </h3>
-                            <div className="p-6 rounded-2xl bg-[#0a0a0f] border border-primary/20 shadow-inner">
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Global Impact Score</p>
-                                <p className="text-3xl font-black text-white">2.4k<span className="text-primary text-sm ml-1">+12%</span></p>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
-                                    <span>Auth Capacity</span>
-                                    <span>92%</span>
-                                </div>
-                                <div className="h-1.5 w-full bg-primary/10 rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary w-[92%] shadow-[0_0_10px_rgba(137,91,245,1)]" />
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -221,9 +195,10 @@ export default function FacultyProfilePage() {
                             {activeTab === "overview" && (
                                 <motion.div
                                     key="overview"
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.3 }}
                                     className="space-y-10"
                                 >
                                     {/* Stats Grid */}
@@ -259,7 +234,7 @@ export default function FacultyProfilePage() {
                                                     Student Telemetry
                                                 </h3>
                                                 <p className="text-slate-500 font-bold text-sm mt-3 leading-relaxed">
-                                                    Access high-resolution performance diagnostics by entering a candidate's mainframe identifier.
+                                                    Access performance diagnostics by entering a candidate's mainframe identifier.
                                                 </p>
                                             </div>
                                             <div className="flex-1 max-w-sm">
@@ -290,7 +265,7 @@ export default function FacultyProfilePage() {
                                     </div>
 
                                     {/* Activity Feed */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    <div className="">
                                         <div className="glass-card p-10 space-y-8">
                                              <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3">
                                                 <Activity className="w-4 h-4 text-primary" /> Operational Logs
@@ -328,7 +303,7 @@ export default function FacultyProfilePage() {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-8">
+                                        {/* <div className="space-y-8">
                                             <div className="glass-card p-10 bg-white/[0.03] border-white/10">
                                                 <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-3 mb-8">
                                                     <Award className="w-4 h-4 text-amber-500" /> Faculty Milestones
@@ -344,7 +319,7 @@ export default function FacultyProfilePage() {
                                                     ))}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </motion.div>
                             )}
@@ -352,9 +327,10 @@ export default function FacultyProfilePage() {
                             {activeTab === "events" && (
                                 <motion.div
                                     key="events"
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.3 }}
                                     className="space-y-10"
                                 >
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -407,9 +383,10 @@ export default function FacultyProfilePage() {
                             {activeTab === "settings" && (
                                 <motion.div
                                     key="settings"
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.3 }}
                                     className="glass-card p-12 space-y-12"
                                 >
                                     <div className="pb-8 border-b border-white/5">
@@ -418,18 +395,33 @@ export default function FacultyProfilePage() {
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                        <div className="space-y-6">
-                                            <div className="space-y-4">
-                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block ml-1">Assigned Name</label>
-                                                <input disabled type="text" value={user?.username} className="w-full bg-[#0a0a0f] border border-white/10 rounded-2xl px-6 py-4 text-white font-black opacity-50 cursor-not-allowed" />
-                                            </div>
-                                            <div className="space-y-4">
-                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block ml-1">Communication Channel (Email)</label>
-                                                <input type="text" defaultValue={user?.email} className="w-full bg-[#0a0a0f] border border-white/10 rounded-2xl px-6 py-4 text-white font-black focus:ring-2 focus:ring-primary/40 transition-all outline-none" />
-                                            </div>
+    
+                                        {/* First Field */}
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block ml-1">
+                                                Assigned Name
+                                            </label>
+                                            <input
+                                                disabled
+                                                type="text"
+                                                value={user?.username}
+                                                className="w-full bg-[#0a0a0f] border border-white/10 rounded-2xl px-6 py-4 text-white font-black opacity-50 cursor-not-allowed"
+                                            />
+                                        </div>
+
+                                        {/* Second Field */}
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block ml-1">
+                                                Communication Channel (Email)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                defaultValue={user?.email}
+                                                className="w-full bg-[#0a0a0f] border border-white/10 rounded-2xl px-6 py-4 text-white font-black focus:ring-2 focus:ring-primary/40 transition-all outline-none"
+                                            />
                                         </div>
                                         
-                                        <div className="space-y-8">
+                                        {/* <div className="space-y-8">
                                             <div className="flex items-center justify-between p-6 bg-white/[0.03] rounded-3xl border border-white/5">
                                                 <div className="flex items-center gap-4">
                                                     <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -439,7 +431,7 @@ export default function FacultyProfilePage() {
                                                         <p className="text-white font-bold text-sm">Submission Alerts</p>
                                                         <p className="text-xs text-slate-500">Global notifications for class batches</p>
                                                     </div>
-                                                </div>
+                                                </div> 
                                                 <div className="w-12 h-6 bg-primary rounded-full relative p-1 shadow-lg shadow-primary/20">
                                                     <div className="w-4 h-4 bg-white rounded-full ml-auto" />
                                                 </div>
@@ -459,7 +451,7 @@ export default function FacultyProfilePage() {
                                                     <div className="w-4 h-4 bg-white/40 rounded-full" />
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> */}
                                     </div>
 
                                     <div className="pt-8 border-t border-white/5 flex justify-end gap-6">

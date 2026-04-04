@@ -6,7 +6,7 @@
   --background: 0 0% 100%;
   --foreground: 0 0% 3.9%;
   
-  /* High-Definition Antigravity Palette - Lightened for Clarity */
+  /* High-Definition Palette - Lightened for Clarity */
   --color-background: hsl(250 25% 10%); /* Refined Deep Space */
   --color-foreground: hsl(210 40% 98%);
    
@@ -44,7 +44,7 @@
   --animate-pulse-aura: pulse-aura 4s ease-in-out infinite;
 }
 
-/* Premium Antigravity Utilities - Converted to plain CSS */
+/* Premium Utilities - Converted to plain CSS */
 .glass-effect {
   background-color: hsla(250, 40%, 10%, 0.5); /* Lighter bg overlap */
   backdrop-filter: blur(48px); /* slightly reduced blur */

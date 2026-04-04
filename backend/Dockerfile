@@ -57,21 +57,14 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:${PORT}/health || exit 1
 
 # ============================================
-# Run with Gunicorn + Uvicorn workers
-# WEB_CONCURRENCY controls worker count (default: 4)
-# Gunicorn manages worker lifecycle, restarts, and graceful shutdowns
+# Stage 3: Startup
 # ============================================
-ENV WEB_CONCURRENCY=4
+USER root
+COPY start.sh .
+RUN chmod +x start.sh
+USER appuser
+
+ENV WEB_CONCURRENCY=1
 ENV PORT=8000
 
-CMD ["sh", "-c", "gunicorn main:app \
-    --workers ${WEB_CONCURRENCY} \
-    --worker-class uvicorn.workers.UvicornWorker \
-    --bind 0.0.0.0:${PORT} \
-    --timeout 120 \
-    --graceful-timeout 30 \
-    --keep-alive 5 \
-    --max-requests 1000 \
-    --max-requests-jitter 50 \
-    --access-logfile - \
-    --error-logfile -"]
+CMD ["./start.sh"]

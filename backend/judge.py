@@ -5,6 +5,7 @@ from google import genai
 from models import Submission, TestCase, User, Problem
 from github import Github
 from auth import decrypt_token
+from utils_cache import invalidate_leaderboard_cache
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 
@@ -240,15 +241,22 @@ async def judge_submission(
 
         new_score = submission.score
         if new_score > prev_best:
-            xp_diff = new_score - prev_best
-            user.xp += xp_diff
-            session.add(user)
-            logger.info(
-                f"User {user.username} earned {xp_diff} XP (New best: {new_score})"
-            )
+            # Calculate XP based on problem's xp_reward scaled by the score percentage
+            total_bounty = getattr(problem, 'xp_reward', 100)
+            xp_to_add = int((new_score / 100.0) * total_bounty)
+            prev_xp_from_this = int((prev_best / 100.0) * total_bounty)
+            
+            xp_diff = xp_to_add - prev_xp_from_this
+            
+            if xp_diff > 0:
+                if user.xp is None:
+                    user.xp = 0
+                user.xp += xp_diff
+                session.add(user)
+                logger.info(
+                    f"User {user.username} earned {xp_diff} XP (New best: {new_score})"
+                )
             # Invalidate leaderboard cache
-            from main import invalidate_leaderboard_cache
-
             invalidate_leaderboard_cache()
 
     session.add(submission)

@@ -101,11 +101,11 @@ export default function FacultyStudentProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-slate-100 font-display relative overflow-x-hidden">
+        <div className="screen bg-[#0a0a0f] text-slate-100 font-display relative overflow-x-hidden">
             {/* Ambient Background */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[140px] animate-pulse" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '3s' }} />
+                <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-primary/10 rounded-full blur-[140px] opacity-30" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[120px] opacity-20" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5" />
             </div>
 

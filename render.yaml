@@ -1,6 +1,22 @@
 # Render Infrastructure-as-Code Blueprint
 # Deploy: Connect repo to Render, it auto-detects this file
 
+# ================================
+# Persistent Data Stores
+# ================================
+databases:
+  - name: minicode-db
+    databaseName: minicode
+    user: minicode_admin
+    plan: free # Change to 'starter' for production persistence
+    region: oregon
+
+redis:
+  - name: minicode-redis
+    plan: free
+    region: oregon
+    ipAllowList: [] # Allow internal access from all services in this blueprint
+
 services:
   # ================================
   # Backend API (FastAPI + Gunicorn)
@@ -10,14 +26,24 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    plan: starter  # Upgrade to 'standard' or 'pro' for more traffic
+    plan: starter
     region: oregon
     branch: main
     preDeployCommand: "CREATE_TABLES=1 python main.py"
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        sync: false  # Set manually in Render dashboard
+        fromDatabase:
+          name: minicode-db
+          property: connectionString
+      - key: REDIS_URL
+        fromRedis:
+          name: minicode-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromRedis:
+          name: minicode-redis
+          property: connectionString
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
@@ -27,11 +53,53 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: JWT_SECRET
-        generateValue: true  # Render auto-generates a secure value
+        generateValue: true
       - key: CORS_ORIGINS
-        sync: false  # Set to your frontend URL, e.g. https://minicode-web.onrender.com
+        sync: false # Set to your frontend URL, e.g. https://minicode-web.onrender.com
       - key: WEB_CONCURRENCY
         value: "4"
+      - key: SMTP_EMAIL
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+
+  # ================================
+  # Celery Worker (Background Tasks)
+  # ================================
+  - type: worker
+    name: minicode-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerCommand: "celery -A worker.celery_app worker --loglevel=info"
+    plan: starter
+    region: oregon
+    branch: main
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: minicode-db
+          property: connectionString
+      - key: REDIS_URL
+        fromRedis:
+          name: minicode-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromRedis:
+          name: minicode-redis
+          property: connectionString
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SMTP_EMAIL
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
 
   # ================================
   # Frontend (Next.js)
@@ -46,6 +114,6 @@ services:
     branch: main
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        sync: false  # Set to your backend URL, e.g. https://minicode-api.onrender.com
+        sync: false # Set to your minicode-api URL
       - key: NEXT_PUBLIC_GITHUB_CLIENT_ID
         sync: false

@@ -17,6 +17,8 @@ SMTP_CONFIG = {
     "password": os.getenv("SMTP_PASSWORD", ""),
 }
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
 
 def send_email(to_email: str, subject: str, html_content: str):
     if not SMTP_CONFIG["password"]:
@@ -88,48 +90,48 @@ def generate_motivation_email(username, top_activity, leaderboard_top=None, sugg
     <head>
         <meta charset="utf-8">
         <style>
-            body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f1f5f9; }}
-            .container {{ max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }}
-            .header {{ background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 40px 24px; text-align: center; }}
-            .header h1 {{ color: white; margin: 0; font-size: 28px; letter-spacing: -0.025em; }}
-            .header p {{ color: rgba(255,255,255,0.9); margin: 12px 0 0; font-size: 16px; }}
-            .content {{ padding: 32px 24px; }}
-            .content h2 {{ color: #1e293b; font-size: 22px; margin: 0 0 16px; font-weight: 700; }}
-            .content p {{ color: #475569; font-size: 15px; line-height: 1.6; }}
-            .cta {{ display: inline-block; background: #6366f1; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px; margin: 24px 0; transition: background 0.2s; }}
-            .footer {{ background: #f8fafc; padding: 24px; text-align: center; color: #94a3b8; font-size: 12px; }}
-            .badge {{ display: inline-block; padding: 2px 8px; border-radius: 4px; background: #eef2ff; color: #6366f1; font-size: 11px; font-weight: 600; text-transform: uppercase; }}
+            body {{ font-family: 'JetBrains Mono', 'Fira Code', monospace; margin: 0; padding: 0; background: #020617; color: #f8fafc; }}
+            .container {{ max-width: 600px; margin: 20px auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; }}
+            .header {{ background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 48px 24px; text-align: center; }}
+            .header h1 {{ color: white; margin: 0; font-size: 32px; letter-spacing: -0.05em; text-transform: uppercase; }}
+            .header p {{ color: rgba(255,255,255,0.8); margin: 12px 0 0; font-size: 16px; }}
+            .content {{ padding: 40px 24px; }}
+            .content h2 {{ color: #818cf8; font-size: 24px; margin: 0 0 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }}
+            .content p {{ color: #94a3b8; font-size: 15px; line-height: 1.7; }}
+            .cta {{ display: inline-block; background: #6366f1; color: white; padding: 16px 40px; border-radius: 6px; text-decoration: none; font-weight: 800; font-size: 16px; margin: 32px 0; border-bottom: 4px solid #4338ca; text-transform: uppercase; }}
+            .footer {{ background: #020617; padding: 32px; text-align: center; color: #475569; font-size: 12px; border-top: 1px solid #1e293b; }}
+            .badge {{ display: inline-block; padding: 4px 10px; border-radius: 4px; background: #1e1b4b; color: #818cf8; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid #312e81; }}
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>MiniCode</h1>
-                <p>Don't fall behind, {username}!</p>
+                <h1>MNCD // NEURAL LINK</h1>
+                <p>SIGNAL DETECTED: {username}</p>
             </div>
             <div class="content">
-                <h2>The Arena is Heating Up 🔥</h2>
-                <p>Your friends and rivals are making massive progress. While you've been focused elsewhere, the leaderboard has shifted!</p>
+                <h2>THE ARENA CALLS 🔥</h2>
+                <p>Status: <strong>INACTIVE_NODE_DETECTED</strong>. Others are uploading solutions and claiming the leaderboard dominance. Your ranking is currently under threat!</p>
                 
                 {activity_html}
                 
                 {suggestions_html}
-
+ 
                 {leaderboard_html}
-
-                <div style="text-align: center; margin-top: 32px;">
-                    <p style="margin-bottom: 8px; font-weight: 500; color: #64748b;">Ready to reclaim your spot?</p>
-                    <a href="https://minicode.vercel.app" class="cta">Resume Your Journey</a>
+ 
+                <div style="text-align: center; margin-top: 40px;">
+                    <p style="margin-bottom: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Re-sync with the Arena?</p>
+                    <a href="{FRONTEND_URL}" class="cta">INITIALIZE CONNECTION</a>
                 </div>
                 
-                <div style="margin-top: 32px; padding: 20px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px;">
-                    <div style="font-weight: 700; color: #92400e; margin-bottom: 4px;">💡 Did you know?</div>
-                    <div style="color: #b45309; font-size: 14px;">Solving just one "Hard" problem can jump you up to 10 spots on the ranking.</div>
+                <div style="margin-top: 40px; padding: 24px; background: #1e1b4b; border: 1px solid #312e81; border-radius: 8px;">
+                    <div style="font-weight: 800; color: #a5b4fc; margin-bottom: 8px; text-transform: uppercase; font-size: 13px;">[!] Tactical Insight</div>
+                    <div style="color: #818cf8; font-size: 14px;">High-yield targets detected. Solving unsolved problems grants a 1.5x XP multiplier for the next 24 hours of activity.</div>
                 </div>
             </div>
             <div class="footer">
-                <p>© 2026 MiniCode Arena. Bringing out the best in every coder.</p>
-                <p>You received this because your account has been inactive for more than 48 hours.</p>
+                <p>© 2026 MINICODE // TERMINAL OPERATIONS</p>
+                <p>TRANSMISSION_REASON: INACTIVITY_THRESHOLD_EXCEEDED_48H</p>
             </div>
         </div>
     </body>

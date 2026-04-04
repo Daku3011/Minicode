@@ -4,11 +4,12 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { Terminal, Github, ArrowRight, Loader2, Code2, Shield, Sparkles, UserCircle2 } from "lucide-react";
+import { Terminal, Github, ArrowRight, Loader2, Code2, Shield, Sparkles, UserCircle2, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "@/lib/api";
 import { clsx } from "clsx";
 import MagneticWrapper from "@/components/MagneticWrapper";
+import LoginSymbolBackground from "@/components/LoginSymbolBackground";
 
 const containerVars = {
     hidden: { opacity: 0 },
@@ -38,6 +39,7 @@ export default function LoginPage() {
     const [isStaffMode, setIsStaffMode] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
@@ -77,6 +79,8 @@ export default function LoginPage() {
 
     return (
         <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-hidden">
+            <LoginSymbolBackground />
+
             {/* Ambient Background Depth */}
             <div className="absolute top-1/4 -left-20 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[160px] animate-pulse pointer-events-none" />
             <div className="absolute bottom-1/4 -right-20 w-[40rem] h-[40rem] bg-secondary/10 rounded-full blur-[160px] animate-pulse pointer-events-none" style={{ animationDelay: "1s" }} />
@@ -98,9 +102,11 @@ export default function LoginPage() {
                                 <div className="h-px w-12 bg-primary/30 hidden lg:block" />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-[0.85] group-hover:tracking-tight transition-all duration-400">
-                                    CODING <br className="hidden lg:block"/> CLUB
-                                </h2>
+                                <a href="https://scet.ac.in/pages/coding-club" target="_blank" rel="noopener noreferrer">
+                                    <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-[1] group-hover:tracking-tight transition-all duration-400 no-underline hover:underline hover:underline-offset-0.1">
+                                        CODING <br className="hidden lg:block"/> CLUB
+                                    </h2>
+                                </a>
                             </div>
                             <div className="flex flex-col lg:flex-row items-center lg:items-center gap-4 mt-8">
                                 <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
@@ -110,7 +116,7 @@ export default function LoginPage() {
                                     href="https://scet.ac.in/department/computer-engineering" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="text-lg font-black text-slate-300 uppercase tracking-widest lg:border-l border-white/10 lg:pl-6 pl-0 py-1 underline underline-offset-4"
+                                    className="text-lg font-black text-slate-300 uppercase tracking-widest lg:border-l border-white/10 lg:pl-6 pl-0 py-1 no-underline hover:underline hover:underline-offset-0.5"
                                 >
                                     SCET COMPUTER DEPT.
                                 </a>
@@ -151,9 +157,9 @@ export default function LoginPage() {
                                 <h1 className="text-3xl font-black tracking-tighter text-white">
                                     MINICODE
                                 </h1>
-                                <p className="text-slate-500 font-black mt-1 tracking-[0.4em] uppercase text-[9px] opacity-60">
+                                {/* <p className="text-slate-500 font-black mt-1 tracking-[0.4em] uppercase text-[9px] opacity-60">
                                     The Elite Coding Arena
-                                </p>
+                                </p> */}
                             </div>
                         </motion.div>
 
@@ -238,8 +244,8 @@ export default function LoginPage() {
                                     className="space-y-8 relative z-10"
                                 >
                                     <div className="text-center mb-10">
-                                        <div className="inline-flex p-4 rounded-2xl bg-secondary/10 text-secondary mb-6 border border-secondary/20 shadow-lg shadow-secondary/5">
-                                            <UserCircle2 className="w-8 h-8" />
+                                        <div className="inline-flex p-4 rounded-2xl bg-secondary/10 text-secondary mb-6 border border-secondary/20 shadow-lg shadow-secondary/5 text-purple-400">
+                                            <UserCircle2 className="w-8 h-8 text-pink-300" />
                                         </div>
                                         <h2 className="text-3xl font-black text-white tracking-tight">Command Center</h2>
                                         <p className="text-slate-400 mt-2 font-medium">Elevated authorization required for this sector.</p>
@@ -269,14 +275,23 @@ export default function LoginPage() {
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Security Key</label>
-                                            <input
-                                                type="password"
-                                                required
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:ring-secondary/40 placeholder:text-slate-700 transition-all font-bold tracking-tight"
-                                                placeholder="••••••••"
-                                            />
+                                            <div className="relative">
+                                                <input
+                                                    type={showPassword ? "text" : "password"}
+                                                    required
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:ring-secondary/40 placeholder:text-slate-700 transition-all font-bold tracking-tight pr-14"
+                                                    placeholder="••••••••"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-white transition-colors"
+                                                >
+                                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 

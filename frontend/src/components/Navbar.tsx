@@ -142,7 +142,7 @@ export default function Navbar() {
                                                 initial={{ scale: 0, y: 5 }}
                                                 animate={{ scale: 1, y: 0 }}
                                                 exit={{ scale: 0, y: 5 }}
-                                                className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0a0a0f] shadow-lg shadow-primary/40 z-[20]"
+                                                className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[#0a0a0f] shadow-lg shadow-rose-500/40 z-[20]"
                                             >
                                                 {unreadCount > 9 ? "9+" : unreadCount}
                                             </motion.span>

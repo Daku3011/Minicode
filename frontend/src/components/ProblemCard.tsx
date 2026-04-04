@@ -88,7 +88,7 @@ export default function ProblemCard({ problem }: { problem: Problem }) {
                 <div className="absolute -inset-1 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 
                 {/* Main Glass Card */}
-                <div className="relative glass-card rounded-[2.5rem] p-10 h-full flex flex-col justify-between overflow-hidden border border-white/10 group-hover:border-white/20 transition-all duration-700">
+                <div className="relative glass-card rounded-[2.5rem] p-10 h-full min-h-[440px] flex flex-col justify-between overflow-hidden border border-white/10 group-hover:border-white/20 transition-all duration-700">
                     
                     {/* Reflective Surface Mirror (Mouse Follow) */}
                     <motion.div 

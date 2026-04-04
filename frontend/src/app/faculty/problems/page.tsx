@@ -150,7 +150,7 @@ export default function FacultyProblemsPage() {
             <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-blue-500/10 blur-[120px] -z-10 pointer-events-none" />
             <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/10 blur-[150px] -z-10 pointer-events-none" />
             
-            <BroadcastAlert />
+            {/* <BroadcastAlert /> */}
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
                 {/* Header */}
@@ -161,7 +161,7 @@ export default function FacultyProblemsPage() {
                     >
                         <div className="flex items-center gap-3 mb-4">
                             <div className="h-px w-8 bg-primary" />
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary">Command Center</span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Command Center</span>
                         </div>
                         <h1 className="text-5xl font-black text-white mb-4 tracking-tight leading-none">Problem <span className="text-slate-500">Registry</span></h1>
                         <p className="text-slate-400 text-lg font-medium opacity-80">Architect and oversee the matrix of logical challenges</p>
@@ -322,12 +322,12 @@ export default function FacultyProblemsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-10 py-8 text-right">
-                                                <div className="flex items-center justify-end gap-3 opacity-20 group-hover/row:opacity-100 transition-all duration-300">
+                                                <div className="inline-flex items-center justify-end gap-2 rounded-2xl border border-white/10 bg-white/[0.02] px-2 py-1.5 opacity-70 group-hover/row:opacity-100 transition-all duration-300">
                                                     <MagneticWrapper intensity={0.2}>
                                                         <button
                                                             onClick={() => startEdit(problem)}
                                                             className="p-3 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-2xl transition-all border border-transparent hover:border-cyan-500/20"
-                                                            title="Reconfigure"
+                                                            aria-label="Reconfigure"
                                                         >
                                                             <Edit className="w-5 h-5" />
                                                         </button>
@@ -336,7 +336,7 @@ export default function FacultyProblemsPage() {
                                                         <Link
                                                             href={`/problems/${problem.id}`}
                                                             className="p-3 text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-2xl transition-all border border-transparent hover:border-emerald-500/20"
-                                                            title="Inspect"
+                                                            aria-label="Inspect"
                                                         >
                                                             <ChevronRight className="w-5 h-5" />
                                                         </Link>
@@ -345,7 +345,7 @@ export default function FacultyProblemsPage() {
                                                         <button
                                                             onClick={() => setDeleteConfirm(problem.id)}
                                                             className="p-3 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all border border-transparent hover:border-rose-500/20"
-                                                            title="Decommission"
+                                                            aria-label="Decommission"
                                                         >
                                                             <Trash2 className="w-5 h-5" />
                                                         </button>

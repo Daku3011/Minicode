@@ -77,9 +77,9 @@ export default function LeaderboardPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
                     >
-                        <span className="text-primary font-black text-[10px] uppercase tracking-[0.6em] mb-6 block">Status Network</span>
+                        <span className="text-primary font-black text-[10px] uppercase tracking-[0.6em] mb-6 block text-purple-400">Status Network</span>
                         <h1 className="text-7xl font-black text-white tracking-tighter mb-8 leading-[0.9]">
-                            HIERARCHY <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">&</span> RANK
+                            HIERARCHY <span className="text-gray-300 bg-clip-text bg-gradient-to-r from-primary to-secondary">&</span> RANK
                         </h1>
                         <p className="text-slate-400 text-lg max-w-2xl mx-auto font-medium leading-relaxed mb-12">
                             The definitive record of operational excellence. Track real-time performance
@@ -113,7 +113,7 @@ export default function LeaderboardPage() {
                                     <Star className="w-3.5 h-3.5 text-slate-400" />
                                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">RANK 02</span>
                                 </div>
-                                <div className="text-primary font-black text-lg">{topThree[1].score.toLocaleString()} XP</div>
+                                <div className="text-primary font-black text-lg text-gray-500">{topThree[1].score.toLocaleString()} XP</div>
                             </div>
                         </motion.div>
                     )}

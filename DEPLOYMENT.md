@@ -96,41 +96,49 @@ If you are a student, you can run the **Production Tier for FREE** using the [Gi
 1. Open [Google AI Studio](https://aistudio.google.com/apikey).
 2. Generate an API Key. Note: The free tier allows 15 RPM, meaning 15 students can submit code simultaneously every minute.
 
-### 4️⃣ Deploying the Backend
-You can deploy the backend using Render, Railway, or any Docker-compatible host.
+### 4️⃣ The Zero-Cost Stack (100% Free)
+If you want to deploy MiniCode without spending a dime, follow this "Multi-Cloud" approach.
 
-**Option A: Render (Recommended for stability)**
-1. Create a new **Web Service** on Render.
-2. Point it to your GitHub Repo and select the `backend` directory.
-3. Add the following Environment Variables:
-   - `DATABASE_URL` (From Supabase)
-   - `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`
-   - `GEMINI_API_KEY`
-   - `JWT_SECRET` (Generate a secure random string)
-   - `CORS_ORIGINS` (Your frontend URL)
-4. Render automatically runs `CREATE_TABLES=1 python main.py` to migrate the database before booting `uvicorn`.
+#### 1. Database: [Supabase](https://supabase.com/) (PostgreSQL)
+- Create a new project.
+- Go to **Project Settings** -> **Database**.
+- Copy the **Connection String** (Transaction URI) to use as your `DATABASE_URL`.
+- *Note: Unlike Render's free DB, Supabase is persistent and won't expire.*
 
-**Option B: Railway (Recommended for speed)**
-1. Create a new project on [Railway.app](https://railway.app/).
-2. Point it to the `backend` directory.
-3. Import the same environment variables.
-4. Go to the **Variables** tab and set `PORT` to `8000`.
+#### 2. Cache & Message Broker: [Upstash](https://upstash.com/) (Redis)
+- Create a **Redis** database.
+- Copy the **Connection URI**. It should look like `rediss://...`.
+- Use this same URI for **both** `REDIS_URL` and `CELERY_BROKER_URL`.
 
-### 5️⃣ Deploying the Frontend
-1. We highly recommend [Vercel](https://vercel.com/) for deploying the Next.js 15 frontend.
-2. Import the `frontend` folder.
-3. Set the following Build Environment Variables:
-   - `NEXT_PUBLIC_API_URL` (Your deployed backend URL, e.g., `https://minicode-api.onrender.com`)
-   - `NEXT_PUBLIC_GITHUB_CLIENT_ID`
-4. Deploy!
+#### 3. Backend API & Worker: [Render](https://render.com/) (Free Web Service)
+Render's Free Tier only allows one Web Service. We have optimized the code to run both the API and the Celery worker in a single container.
+- Create a new **Web Service**.
+- Set **Runtime** to `Docker`.
+- Add These Environment Variables:
+  - `DATABASE_URL` (From Supabase)
+  - `REDIS_URL` (From Upstash)
+  - `CELERY_BROKER_URL` (From Upstash)
+  - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` / `GITHUB_TOKEN`
+  - `GEMINI_API_KEY`
+  - `SMTP_EMAIL` / `SMTP_PASSWORD`
+  - `PORT`: `8000`
+- **Memory Limit**: Ensure `WEB_CONCURRENCY=1` to stay within the 512MB free RAM limit.
 
-### 6️⃣ Post-Deployment: Seeding
-To initialize the platform with admin roles and sample events:
-1. Open the remote shell (Render Shell or Railway Shell) for your backend service.
-2. Execute:
-   ```bash
-   python seed.py
-   ```
+#### 4. Frontend: [Vercel](https://vercel.com/) (Hobby Tier)
+- Connect your GitHub repo.
+- Point it to the `frontend` directory.
+- Add Build Environment Variables:
+  - `NEXT_PUBLIC_API_URL`: Your Render.com backend URL.
+  - `NEXT_PUBLIC_GITHUB_CLIENT_ID`: Your GitHub Meta-App ID.
+
+### 5️⃣ Keeping the Backend Awake (Anti-Sleep)
+Render's Free Tier spins down after 15 minutes of inactivity. To keep it responsive:
+1. Use a free monitoring service like [Cron-job.org](https://cron-job.org/) or [Better Stack](https://betterstack.com/).
+2. Set it to ping your backend's `/health` endpoint every **14 minutes**.
+3. Target URL: `https://your-app.onrender.com/health`
+
+### 6️⃣ Advanced: Render Blueprint (Paid)
+If you have a **Render Starter** ($7/mo) or higher plan, you can use the `render.yaml` file in the root directory. This will automate the creation of a managed database and separate worker services with better performance.
 3. Your database is now populated and ready for action.
 
 ---
@@ -140,7 +148,7 @@ For full control or utilizing a DigitalOcean student droplet, use the provided `
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/MiniCode.git
+git clone https://github.com/Daku3011/MiniCode.git
 cd MiniCode
 
 # Setup variables

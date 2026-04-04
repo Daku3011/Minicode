@@ -23,6 +23,7 @@ from redis import asyncio as aioredis
 import bleach
 import os
 import redis as sync_redis
+from utils_cache import invalidate_leaderboard_cache, get_redis_sync
 
 load_dotenv()
 
@@ -589,7 +590,6 @@ def get_submission_status(
 
 
 # Leaderboard cache version for manual invalidation
-LEADERBOARD_CACHE_VERSION = 0
 REDIS_CLIENT_SYNC = None
 
 def get_redis_sync():
@@ -603,34 +603,18 @@ def get_redis_sync():
                 logger.error(f"Failed to connect to sync Redis: {e}")
     return REDIS_CLIENT_SYNC
 
-def invalidate_leaderboard_cache():
-    global LEADERBOARD_CACHE_VERSION
-    r = get_redis_sync()
-    if r:
-        try:
-            LEADERBOARD_CACHE_VERSION = r.incr("minicode:leaderboard_version")
-            logger.info(f"Leaderboard cache invalidated in Redis (New version: {LEADERBOARD_CACHE_VERSION})")
-        except Exception as e:
-            logger.error(f"Failed to increment leaderboard version in Redis: {e}")
-            LEADERBOARD_CACHE_VERSION += 1
-    else:
-        LEADERBOARD_CACHE_VERSION += 1
-        logger.info(f"Leaderboard cache invalidated locally (New version: {LEADERBOARD_CACHE_VERSION})")
-
 def leaderboard_cache_key_builder(func, *args, **kwargs):
-    global LEADERBOARD_CACHE_VERSION
     r = get_redis_sync()
+    version = 0
     if r:
         try:
-            # We use a short-lived local version to avoid hitting Redis on every single request
-            # if we really wanted to optimize, but for now we fetch it sync
             v = r.get("minicode:leaderboard_version")
             if v:
-                LEADERBOARD_CACHE_VERSION = int(v)
+                version = int(v)
         except Exception as e:
             logger.error(f"Failed to fetch leaderboard version from Redis: {e}")
     
-    return f"leaderboard:v{LEADERBOARD_CACHE_VERSION}"
+    return f"leaderboard:v{version}:{func.__name__}"
 
 
 # Leaderboard Endpoint
@@ -786,7 +770,7 @@ def get_user_profile(user: User, session: Session):
         ):
             problem_scores[sub.problem_id] = sub.score
 
-    total_score = user.xp
+    total_score = user.xp or 0
     problems_solved = len(problem_scores)
 
     now = datetime.utcnow()
@@ -893,20 +877,151 @@ def get_student_profile(
     return get_user_profile(student, session)
 
 
+class SettingsUpdate(BaseModel):
+    report_email: Optional[str] = None
+
 @app.put("/users/me/settings")
 def update_user_settings(
-    report_email: Optional[str] = None,
+    settings: SettingsUpdate,
     current_user: User = Depends(get_current_user),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ):
-    if report_email:
-        current_user.faculty_report_email = report_email
-    
+    if settings.report_email:
+        current_user.faculty_report_email = settings.report_email
+
     session.add(current_user)
     session.commit()
     session.refresh(current_user)
-    return {"message": "Settings updated", "faculty_report_email": current_user.faculty_report_email}
+    return {
+        "message": "Settings updated",
+        "faculty_report_email": current_user.faculty_report_email,
+    }
 
+
+class AwardXPRequest(BaseModel):
+    amount: int
+    reason: Optional[str] = None
+
+
+@app.post("/faculty/award-xp/{username}")
+def award_student_xp(
+    username: str,
+    data: AwardXPRequest,
+    faculty: User = Depends(require_faculty),
+    session: Session = Depends(get_session),
+):
+    student = session.exec(select(User).where(User.username == username)).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    if student.xp is None:
+        student.xp = 0
+    student.xp += data.amount
+
+    # Create notification for student
+    from models import Notification
+    notification = Notification(
+        user_id=student.id,
+        title="Sovereign Override Awarded",
+        message=f"You have received {data.amount} XP from a faculty member. Reason: {data.reason or 'N/A'}",
+        notification_type="achievement",
+        created_at=datetime.utcnow(),
+    )
+    session.add(notification)
+    session.commit()
+
+    return {"message": "XP awarded successfully", "new_xp": student.xp}
+
+
+class FacultyDashboardStats(BaseModel):
+    total_problems: int
+    total_students: int
+    total_submissions: int
+    avg_pass_rate: float
+    recent_activity: List[dict]
+
+@app.get("/faculty/dashboard-stats")
+def get_faculty_dashboard_stats(
+    faculty: User = Depends(require_faculty),
+    session: Session = Depends(get_session),
+):
+    # Stats Aggregation
+    total_problems = session.exec(select(func.count(Problem.id))).one()
+    total_students = session.exec(select(func.count(User.id)).where(User.role == "student")).one()
+    total_submissions = session.exec(select(func.count(Submission.id))).one()
+    
+    # Calculate Pass Rate
+    accepted_count = session.exec(
+        select(func.count(Submission.id)).where(Submission.status == "Accepted")
+    ).one()
+    avg_pass_rate = (accepted_count / total_submissions * 100) if total_submissions > 0 else 0.0
+
+    # Recent Activity (Operational Logs)
+    # 1. Recent Student Joins
+    recent_joins_raw = session.exec(
+        select(User)
+        .where(User.role == "student")
+        .order_by(User.created_at.desc())
+        .limit(3)
+    ).all()
+    
+    # 2. Recent Submissions
+    recent_submissions_raw = session.exec(
+        select(Submission)
+        .order_by(Submission.timestamp.desc())
+        .limit(3)
+    ).all()
+
+    # Normalize activities
+    activities = []
+    
+    for user in recent_joins_raw:
+        activities.append({
+            "id": f"join-{user.id}",
+            "type": "join",
+            "message": f"New student enrolled: {user.username}",
+            "timestamp": user.created_at,
+            "user": user.username
+        })
+
+    for sub in recent_submissions_raw:
+        # Get problem title
+        problem = session.get(Problem, sub.problem_id)
+        student = session.get(User, sub.user_id)
+        activities.append({
+            "id": f"sub-{sub.id}",
+            "type": "submission",
+            "message": f"Submission received for '{problem.title if problem else 'Unknown'}' from {student.username if student else 'Unknown'}",
+            "timestamp": sub.timestamp,
+            "status": sub.status,
+            "user": student.username if student else None
+        })
+
+    # Sort combined activities by timestamp and pick top 3
+    activities.sort(key=lambda x: x["timestamp"], reverse=True)
+    recent_activity = activities[:3]
+
+    # Convert timestamps to relative human-readable format or just ISO strings for frontend to parse
+    for act in recent_activity:
+        act["timestamp_raw"] = act["timestamp"].isoformat()
+        # Simplistic relative time for now, or let frontend handle it
+        diff = datetime.utcnow() - act["timestamp"]
+        if diff.days > 0:
+            act["timestamp"] = f"{diff.days}d ago"
+        elif diff.seconds > 3600:
+            act["timestamp"] = f"{diff.seconds // 3600}h ago"
+        elif diff.seconds > 60:
+            act["timestamp"] = f"{diff.seconds // 60}m ago"
+        else:
+            act["timestamp"] = "just now"
+
+    return FacultyDashboardStats(
+        total_problems=total_problems,
+        total_students=total_students,
+        total_submissions=total_submissions,
+        avg_pass_rate=round(avg_pass_rate, 1),
+        recent_activity=recent_activity
+    )
 
 # Include Events Router
 from events import router as events_router

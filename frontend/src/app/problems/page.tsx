@@ -112,7 +112,7 @@ function ProblemsContent() {
                                 className="inline-flex items-center gap-3 px-5 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md"
                             >
                                 <div className="relative">
-                                    <Sparkles className="w-4 h-4 text-primary" />
+                                    <Sparkles className="w-4 h-4 text-white text-primary" />
                                 </div>
                                 <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-300">Mission Intelligence</span>
                             </motion.div>
@@ -156,7 +156,7 @@ function ProblemsContent() {
                                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mb-3">Stored Energy</p>
                                         <div className="flex items-end gap-2">
                                             <p className="text-5xl font-black text-white tracking-tighter leading-none">{user?.stats?.xp || 0}</p>
-                                            <span className="text-primary text-sm font-black mb-1">XP</span>
+                                            <span className="text-primary text-sm text-white mb-1">XP</span>
                                         </div>
                                     </div>
                                     <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 min-w-[200px] relative group overflow-hidden">
@@ -305,7 +305,7 @@ function ProblemsContent() {
                         {loading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
                                 {[1, 2, 3, 4, 5, 6].map(i => (
-                                    <div key={i} className="h-[420px] w-full bg-white/[0.03] animate-pulse rounded-[3rem] border border-white/5 overflow-hidden" />
+                                    <div key={i} className="h-[440px] w-full bg-white/[0.03] animate-pulse rounded-[3rem] border border-white/5 overflow-hidden" />
                                 ))}
                             </div>
                         ) : filteredProblems.length > 0 ? (

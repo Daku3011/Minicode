@@ -137,7 +137,7 @@ export default function EventsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <span className="text-primary font-black text-[10px] uppercase tracking-[0.6em] mb-6 block">Operations Matrix</span>
+                        <span className="text-primary font-black text-[10px] uppercase tracking-[0.6em] mb-6 block text-white">Operations Matrix</span>
                         <h1 className="text-7xl font-black text-white tracking-tighter mb-8 leading-[0.9]">
                             PROTOCOLS <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">&</span> EVENTS
                         </h1>
@@ -180,7 +180,7 @@ export default function EventsPage() {
                         { label: "Active Nodes", val: upcomingEvents.length, icon: Activity, color: "text-emerald-400", bg: "bg-emerald-500/10" },
                         { label: "Operators", val: (events.reduce((acc, e) => acc + e.current_participants, 0)).toLocaleString(), icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
                         { label: "Challenges", val: events.filter(e => e.event_type === "weekly_challenge").length, icon: Trophy, color: "text-amber-400", bg: "bg-amber-500/10" },
-                        { label: "Clearance", val: events.filter(e => e.is_joined).length, icon: ShieldCheck, color: "text-primary", bg: "bg-primary/10" },
+                        { label: "Clearance", val: events.filter(e => e.is_joined).length, icon: ShieldCheck, color: "text-purple-400", bg: "bg-purple-400/10" },
                     ].map((stat, i) => (
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
@@ -243,7 +243,7 @@ export default function EventsPage() {
                             placeholder="LOCATE PROTOCOL..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-xs text-white placeholder-slate-700 font-bold tracking-widest focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary/40 transition-all shadow-2xl"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-xs font-medium text-white placeholder-slate-700 tracking-widest focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary/40 transition-all shadow-2xl"
                         />
                     </div>
                 </div>
