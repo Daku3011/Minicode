@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import InteractiveBackground from "@/components/InteractiveBackground";
 import PageLoader from "@/components/PageLoader";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,6 +38,7 @@ export default function RootLayout({
             </Suspense>
           </main>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
