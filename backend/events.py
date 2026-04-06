@@ -5,6 +5,7 @@ from typing import List, Optional
 from datetime import datetime, UTC
 from pydantic import BaseModel
 import json
+import logging
 from jose import JWTError, jwt
 
 from models import User, NewsItem
@@ -13,6 +14,7 @@ from auth import get_current_user, require_faculty, get_session, JWT_SECRET, ALG
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+logger = logging.getLogger(__name__)
 security = HTTPBearer(auto_error=False)
 
 
@@ -418,7 +420,7 @@ async def join_event(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """Join an event."""
+    """Join an event. For team events, can join existing team or create new one."""
     event = session.get(Event, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -446,24 +448,114 @@ async def join_event(
         if current_count >= event.max_participants:
             raise HTTPException(status_code=400, detail="Event is full")
 
-    # Create participant
-    team_members_json = (
-        json.dumps(join_data.team_members)
-        if join_data and join_data.team_members
-        else None
-    )
+    team_name = join_data.team_name if join_data else None
+
+    # If joining existing team
+    if team_name and join_data and join_data.team_name:
+        # Find existing team with same name
+        existing_team = session.exec(
+            select(EventParticipant).where(
+                EventParticipant.event_id == event_id,
+                EventParticipant.team_name == team_name,
+            )
+        ).first()
+
+        if existing_team:
+            # Add user to existing team's member list
+            current_members = []
+            if existing_team.team_members:
+                current_members = json.loads(existing_team.team_members)
+
+            if user.id not in current_members:
+                current_members.append(user.id)
+                existing_team.team_members = json.dumps(current_members)
+                session.add(existing_team)
+                session.commit()
+
+            return {
+                "message": f"Successfully joined team '{team_name}'",
+                "team_name": team_name,
+            }
+
+    # Create new participant entry
+    team_members_json = None
+    if join_data and join_data.team_members:
+        team_members_json = json.dumps(join_data.team_members)
+        # Also add self to team members
+        members_list = join_data.team_members.copy()
+        if user.id not in members_list:
+            members_list.append(user.id)
+        team_members_json = json.dumps(members_list)
+    elif team_name:
+        # Create team with self as first member
+        team_members_json = json.dumps([user.id])
 
     participant = EventParticipant(
         event_id=event_id,
         user_id=user.id,
-        team_name=join_data.team_name if join_data else None,
+        team_name=team_name,
         team_members=team_members_json,
     )
 
     session.add(participant)
     session.commit()
 
+    if team_name:
+        return {
+            "message": f"Successfully created team '{team_name}'",
+            "team_name": team_name,
+        }
     return {"message": "Successfully joined the event"}
+
+
+@router.get("/{event_id}/teams")
+async def get_event_teams(
+    event_id: int,
+    session: Session = Depends(get_session),
+):
+    """Get all teams for an event (for team events)."""
+    event = session.get(Event, event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Get all participants with team_name
+    participants = session.exec(
+        select(EventParticipant).where(
+            EventParticipant.event_id == event_id,
+            EventParticipant.team_name.isnot(None),
+        )
+    ).all()
+
+    # Group by team_name
+    teams_dict = {}
+    for p in participants:
+        if p.team_name:
+            if p.team_name not in teams_dict:
+                teams_dict[p.team_name] = {
+                    "team_name": p.team_name,
+                    "member_count": 0,
+                    "members": [],
+                    "leader": None,
+                }
+
+            user = session.get(User, p.user_id)
+            if user:
+                teams_dict[p.team_name]["member_count"] += 1
+                teams_dict[p.team_name]["members"].append(
+                    {
+                        "id": user.id,
+                        "username": user.username,
+                        "full_name": user.full_name,
+                        "avatar_url": user.avatar_url,
+                    }
+                )
+                if not teams_dict[p.team_name]["leader"]:
+                    teams_dict[p.team_name]["leader"] = {
+                        "id": user.id,
+                        "username": user.username,
+                    }
+
+    return {"teams": list(teams_dict.values())}
 
 
 @router.post("/{event_id}/leave")
@@ -490,33 +582,94 @@ async def leave_event(
 
 @router.get("/{event_id}/leaderboard")
 async def get_event_leaderboard(event_id: int, session: Session = Depends(get_session)):
-    """Get event leaderboard."""
+    """Get event leaderboard with team rankings based on xp_awarded."""
     event = session.get(Event, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # Get submissions for this event, ordered by score
-    submissions = session.exec(
-        select(EventSubmission)
-        .where(EventSubmission.event_id == event_id)
-        .order_by(EventSubmission.score.desc())
+    participants = session.exec(
+        select(EventParticipant)
+        .where(EventParticipant.event_id == event_id)
+        .order_by(EventParticipant.xp_awarded.desc())
     ).all()
 
     leaderboard = []
-    for i, sub in enumerate(submissions):
-        user = session.get(User, sub.user_id)
-        if user:
-            leaderboard.append(
-                {
-                    "rank": i + 1,
-                    "user_id": user.id,
-                    "username": user.username,
-                    "full_name": user.full_name,
-                    "avatar_url": user.avatar_url,
-                    "score": sub.score,
-                    "submitted_at": sub.submitted_at.isoformat(),
-                }
-            )
+    seen_teams = set()
+    processed_users = set()
+
+    for p in participants:
+        user = session.get(User, p.user_id)
+        if not user or p.user_id in processed_users:
+            continue
+
+        if p.team_name:
+            team_key = p.team_name
+            if team_key in seen_teams:
+                continue
+
+            seen_teams.add(team_key)
+            processed_users.add(p.user_id)
+
+            # Collect ALL team members from ALL participants with same team_name
+            team_member_ids = set()
+            for tp in participants:
+                if tp.team_name == team_key:
+                    team_member_ids.add(tp.user_id)
+                    if tp.team_members:
+                        member_ids = (
+                            json.loads(tp.team_members)
+                            if isinstance(tp.team_members, str)
+                            else tp.team_members
+                        )
+                        team_member_ids.update(member_ids)
+
+            team_xp = 0
+            team_feedback = None
+            for tp in participants:
+                if tp.team_name == team_key:
+                    team_xp = max(team_xp, tp.xp_awarded)
+                    if tp.feedback:
+                        team_feedback = tp.feedback
+
+            entry = {
+                "rank": len(leaderboard) + 1,
+                "team_name": team_key,
+                "is_team": True,
+                "xp_awarded": team_xp,
+                "feedback": team_feedback,
+                "member_count": len(team_member_ids),
+                "members": [
+                    {
+                        "id": mid,
+                        "username": session.get(User, mid).username
+                        if session.get(User, mid)
+                        else "Unknown",
+                        "full_name": session.get(User, mid).full_name
+                        if session.get(User, mid)
+                        else None,
+                        "avatar_url": session.get(User, mid).avatar_url
+                        if session.get(User, mid)
+                        else None,
+                    }
+                    for mid in team_member_ids
+                    if session.get(User, mid)
+                ],
+            }
+            leaderboard.append(entry)
+        else:
+            processed_users.add(p.user_id)
+            entry = {
+                "rank": len(leaderboard) + 1,
+                "user_id": user.id,
+                "username": user.username,
+                "full_name": user.full_name,
+                "avatar_url": user.avatar_url,
+                "xp_awarded": p.xp_awarded,
+                "status": p.status,
+                "feedback": p.feedback,
+                "is_team": False,
+            }
+            leaderboard.append(entry)
 
     return leaderboard
 
@@ -620,7 +773,9 @@ async def get_event_participants(
     user: User = Depends(require_faculty),
     session: Session = Depends(get_session),
 ):
-    """Get all participants and their submissions for an event (faculty only)."""
+    """Get all participants and their submissions for an event (faculty only).
+    Groups team members together as a single team entry.
+    """
     event = session.get(Event, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -634,47 +789,132 @@ async def get_event_participants(
         .order_by(EventParticipant.joined_at.desc())
     ).all()
 
-    result = []
+    teams_dict = {}
+    individual_participants = []
+
     for p in participants:
         participant_user = session.get(User, p.user_id)
         if not participant_user:
             continue
 
-        submissions = session.exec(
+        if p.team_name:
+            team_key = p.team_name
+            if team_key not in teams_dict:
+                teams_dict[team_key] = {
+                    "team_id": p.team_name,
+                    "team_name": p.team_name,
+                    "leader": {
+                        "id": participant_user.id,
+                        "username": participant_user.username,
+                        "full_name": participant_user.full_name,
+                        "avatar_url": participant_user.avatar_url,
+                    },
+                    "members": [],
+                    "all_user_ids": set(),
+                    "xp_awarded": p.xp_awarded,
+                    "status": p.status,
+                    "feedback": p.feedback,
+                    "joined_at": p.joined_at.isoformat() if p.joined_at else None,
+                    "submissions": [],
+                    "participant_id": p.id,
+                }
+
+            teams_dict[team_key]["all_user_ids"].add(p.user_id)
+
+            if p.team_members:
+                if isinstance(p.team_members, str):
+                    member_ids = json.loads(p.team_members)
+                else:
+                    member_ids = p.team_members
+                for mid in member_ids:
+                    teams_dict[team_key]["all_user_ids"].add(mid)
+
+            if p.xp_awarded > teams_dict[team_key]["xp_awarded"]:
+                teams_dict[team_key]["xp_awarded"] = p.xp_awarded
+                teams_dict[team_key]["feedback"] = p.feedback
+                teams_dict[team_key]["status"] = p.status
+                teams_dict[team_key]["leader"] = {
+                    "id": participant_user.id,
+                    "username": participant_user.username,
+                    "full_name": participant_user.full_name,
+                    "avatar_url": participant_user.avatar_url,
+                }
+        else:
+            submissions = session.exec(
+                select(EventSubmission).where(
+                    EventSubmission.event_id == event_id,
+                    EventSubmission.user_id == p.user_id,
+                )
+            ).all()
+
+            individual_participants.append(
+                {
+                    "id": p.id,
+                    "user_id": p.user_id,
+                    "username": participant_user.username,
+                    "full_name": participant_user.full_name,
+                    "avatar_url": participant_user.avatar_url,
+                    "team_name": None,
+                    "is_team": False,
+                    "team_members": [],
+                    "status": p.status,
+                    "xp_awarded": p.xp_awarded,
+                    "feedback": p.feedback,
+                    "joined_at": p.joined_at.isoformat() if p.joined_at else None,
+                    "submissions": [
+                        {
+                            "id": s.id,
+                            "repo_url": s.repo_url,
+                            "submission_notes": s.submission_notes,
+                            "score": s.score,
+                            "feedback": s.feedback,
+                            "rank": s.rank,
+                            "submitted_at": s.submitted_at.isoformat()
+                            if s.submitted_at
+                            else None,
+                        }
+                        for s in submissions
+                    ],
+                }
+            )
+
+    # Convert teams to list format
+    teams_list = []
+    for team_key, team_data in teams_dict.items():
+        all_user_ids = list(team_data["all_user_ids"])
+        team_submissions = session.exec(
             select(EventSubmission).where(
                 EventSubmission.event_id == event_id,
-                EventSubmission.user_id == p.user_id,
+                EventSubmission.user_id.in_(all_user_ids),
             )
         ).all()
 
-        team_members = []
-        if p.team_members:
-            member_ids = json.loads(p.team_members)
-            for mid in member_ids:
-                member = session.get(User, mid)
-                if member:
-                    team_members.append(
-                        {
-                            "id": member.id,
-                            "username": member.username,
-                            "full_name": member.full_name,
-                            "avatar_url": member.avatar_url,
-                        }
-                    )
+        members = []
+        for mid in all_user_ids:
+            member = session.get(User, mid)
+            if member:
+                members.append(
+                    {
+                        "id": member.id,
+                        "username": member.username,
+                        "full_name": member.full_name,
+                        "avatar_url": member.avatar_url,
+                    }
+                )
 
-        result.append(
+        teams_list.append(
             {
-                "id": p.id,
-                "user_id": p.user_id,
-                "username": participant_user.username,
-                "full_name": participant_user.full_name,
-                "avatar_url": participant_user.avatar_url,
-                "team_name": p.team_name,
-                "team_members": team_members,
-                "status": p.status,
-                "xp_awarded": p.xp_awarded,
-                "feedback": p.feedback,
-                "joined_at": p.joined_at.isoformat(),
+                "id": team_data["participant_id"],
+                "team_id": team_data["team_id"],
+                "team_name": team_data["team_name"],
+                "leader": team_data["leader"],
+                "members": members,
+                "member_count": len(all_user_ids),
+                "is_team": True,
+                "status": team_data["status"],
+                "xp_awarded": team_data["xp_awarded"],
+                "feedback": team_data["feedback"],
+                "joined_at": team_data["joined_at"],
                 "submissions": [
                     {
                         "id": s.id,
@@ -683,14 +923,24 @@ async def get_event_participants(
                         "score": s.score,
                         "feedback": s.feedback,
                         "rank": s.rank,
-                        "submitted_at": s.submitted_at.isoformat(),
+                        "submitted_by": session.get(User, s.user_id).username
+                        if session.get(User, s.user_id)
+                        else "Unknown",
+                        "submitted_at": s.submitted_at.isoformat()
+                        if s.submitted_at
+                        else None,
                     }
-                    for s in submissions
+                    for s in team_submissions
                 ],
             }
         )
 
-    return result
+    return {
+        "teams": teams_list,
+        "individuals": individual_participants,
+        "total_teams": len(teams_list),
+        "total_individuals": len(individual_participants),
+    }
 
 
 # Faculty: Award XP and feedback to a participant
@@ -702,7 +952,9 @@ async def award_participant(
     user: User = Depends(require_faculty),
     session: Session = Depends(get_session),
 ):
-    """Award XP and feedback to a participant (faculty only)."""
+    """Award XP and feedback to a participant or team (faculty only).
+    For teams, XP is distributed equally among all members.
+    """
     event = session.get(Event, event_id)
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
@@ -714,38 +966,93 @@ async def award_participant(
     if not participant or participant.event_id != event_id:
         raise HTTPException(status_code=404, detail="Participant not found")
 
-    # Calculate XP difference to add/subtract from user
+    # Calculate XP difference
     old_xp = participant.xp_awarded
     new_xp = reward_data.get("xp_awarded", old_xp)
     xp_diff = new_xp - old_xp
 
-    if "xp_awarded" in reward_data:
-        participant.xp_awarded = new_xp
-    if "feedback" in reward_data:
-        participant.feedback = reward_data["feedback"]
-    if "status" in reward_data:
-        participant.status = reward_data["status"]
+    # Get all team members by looking at ALL participants with same team_name
+    if participant.team_name:
+        all_team_participants = session.exec(
+            select(EventParticipant).where(
+                EventParticipant.event_id == event_id,
+                EventParticipant.team_name == participant.team_name,
+            )
+        ).all()
 
-    # Update user's total XP
-    participant_user = session.get(User, participant.user_id)
-    if participant_user:
-        # Atomic update within the session
-        participant_user.xp = max(0, participant_user.xp + xp_diff)
-        session.add(participant_user)
-        # Invalidate leaderboard cache
-        from utils_cache import invalidate_leaderboard_cache
+        # Collect all unique user IDs from all team participants
+        team_member_ids = set()
+        for tp in all_team_participants:
+            team_member_ids.add(tp.user_id)
+            if tp.team_members:
+                member_ids = (
+                    json.loads(tp.team_members)
+                    if isinstance(tp.team_members, str)
+                    else tp.team_members
+                )
+                team_member_ids.update(member_ids)
 
-        invalidate_leaderboard_cache()
+        team_member_ids = list(team_member_ids)
 
-    session.add(participant)
+        # Update all team participants with same xp_awarded
+        for tp in all_team_participants:
+            tp.xp_awarded = new_xp
+            if "feedback" in reward_data:
+                tp.feedback = reward_data["feedback"]
+            if "status" in reward_data:
+                tp.status = reward_data["status"]
+            session.add(tp)
+    else:
+        # Individual participant
+        team_member_ids = [participant.user_id]
+        if "xp_awarded" in reward_data:
+            participant.xp_awarded = new_xp
+        if "feedback" in reward_data:
+            participant.feedback = reward_data["feedback"]
+        if "status" in reward_data:
+            participant.status = reward_data["status"]
+        session.add(participant)
+
+    # Update XP for all team members
+    affected_users = []
+    xp_per_member = xp_diff // len(team_member_ids) if team_member_ids else xp_diff
+    remainder = xp_diff % len(team_member_ids) if team_member_ids else xp_diff
+
+    for i, member_id in enumerate(team_member_ids):
+        member_user = session.get(User, member_id)
+        if member_user:
+            actual_xp = xp_per_member + (remainder if i == 0 else 0)
+            member_user.xp = max(0, member_user.xp + actual_xp)
+            session.add(member_user)
+            affected_users.append(
+                {
+                    "id": member_user.id,
+                    "username": member_user.username,
+                    "xp_added": actual_xp,
+                    "total_xp": member_user.xp,
+                }
+            )
+
     session.commit()
+
+    # Invalidate leaderboard cache
+    from utils_cache import invalidate_leaderboard_cache
+
+    invalidate_leaderboard_cache()
+
+    session.commit()
+
+    # Refresh participant
     session.refresh(participant)
-    session.refresh(participant_user)
 
     return {
         "message": "Reward updated successfully",
-        "xp_awarded": participant.xp_awarded,
-        "user_total_xp": participant_user.xp,
+        "xp_awarded": new_xp,
+        "is_team": bool(participant.team_name),
+        "team_name": participant.team_name,
+        "member_count": len(team_member_ids),
+        "xp_per_member": xp_per_member,
+        "affected_users": affected_users,
     }
 
 

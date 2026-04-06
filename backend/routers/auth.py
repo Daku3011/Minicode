@@ -18,9 +18,10 @@ from auth import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.get("/auth/github/callback")
+
+@router.get("/github/callback")
 async def github_callback(
     request: Request,
     code: str,

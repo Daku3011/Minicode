@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, Filter, X, Plus, Sparkles, Terminal, Layers, Zap, Target } from "lucide-react";
+import { Search, Filter, Plus, Terminal, Layers, Target } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import ProblemCard from "@/components/ProblemCard";
@@ -38,9 +38,9 @@ function ProblemsContent() {
     const [selectedSubject, setSelectedSubject] = useState("");
     const [selectedDifficulty, setSelectedDifficulty] = useState("");
     const [showFilters, setShowFilters] = useState(false);
-    const searchParams = useSearchParams();
 
     const isFaculty = user?.role === "faculty" || user?.role === "admin";
+    const userUnlockedLevel = user?.unlocked_level || 1;
 
     useEffect(() => {
         const fetchProblems = async () => {
@@ -243,7 +243,12 @@ function ProblemsContent() {
                         ) : filteredProblems.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
                                 {filteredProblems.map((problem) => (
-                                    <ProblemCard key={problem.id} problem={problem} />
+                                    <ProblemCard 
+                                        key={problem.id} 
+                                        problem={problem} 
+                                        userUnlockedLevel={userUnlockedLevel}
+                                        isFaculty={isFaculty}
+                                    />
                                 ))}
                             </div>
                         ) : (

@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["leaderboard"])
 
+
 @router.get("/leaderboard")
-@cache(expire=3600, key_builder=leaderboard_cache_key_builder)
+@cache(expire=60, key_builder=leaderboard_cache_key_builder)
 def get_leaderboard(session: Session = Depends(get_session)):
     # Simple and fast: Order by User.xp and filter out admins/faculty if needed
     # We also show count of accepted problems for context

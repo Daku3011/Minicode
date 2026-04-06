@@ -41,12 +41,23 @@ interface EventDetail {
 
 interface LeaderboardEntry {
     rank: number;
-    user_id: number;
-    username: string;
-    full_name: string | null;
-    avatar_url: string | null;
-    score: number;
-    submitted_at: string;
+    user_id?: number;
+    username?: string;
+    full_name?: string | null;
+    avatar_url?: string | null;
+    score?: number;
+    submitted_at?: string;
+    xp_awarded?: number;
+    feedback?: string | null;
+    is_team?: boolean;
+    team_name?: string;
+    member_count?: number;
+    members?: Array<{
+        id: number;
+        username: string;
+        full_name?: string | null;
+        avatar_url?: string | null;
+    }>;
 }
 
 interface Invitation {
@@ -578,7 +589,7 @@ export default function EventDetailPage() {
                         ) : (
                             <div className="divide-y divide-white/10">
                                 {leaderboard.map((entry, index) => (
-                                    <div key={entry.user_id} className={clsx(
+                                    <div key={entry.is_team ? entry.team_name : entry.user_id} className={clsx(
                                         "p-4 flex items-center gap-4",
                                         index === 0 && "bg-amber-500/5",
                                         index === 1 && "bg-slate-400/5",
@@ -593,21 +604,40 @@ export default function EventDetailPage() {
                                         )}>
                                             {entry.rank}
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold overflow-hidden">
-                                            {entry.avatar_url ? (
-                                                <img src={entry.avatar_url} alt="" className="w-full h-full object-cover" />
-                                            ) : (
-                                                entry.username.slice(0, 2).toUpperCase()
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-white font-medium">{entry.full_name || entry.username}</p>
-                                            <p className="text-sm text-slate-400">@{entry.username}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xl font-bold text-white">{entry.score} XP</p>
-                                            <p className="text-xs text-slate-500">{new Date(entry.submitted_at).toLocaleDateString()}</p>
-                                        </div>
+                                        {entry.is_team ? (
+                                            <>
+                                                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">
+                                                    <Users className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-white font-medium">{entry.team_name}</p>
+                                                    <p className="text-sm text-slate-400">
+                                                        {entry.member_count} member{entry.member_count !== 1 ? 's' : ''}
+                                                        {entry.members && ` • ${entry.members.map(m => m.username).join(', ')}`}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-xl font-bold text-white">{entry.xp_awarded} XP</p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold overflow-hidden">
+                                                    {entry.avatar_url ? (
+                                                        <img src={entry.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        entry.username?.slice(0, 2).toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-white font-medium">{entry.full_name || entry.username}</p>
+                                                    <p className="text-sm text-slate-400">@{entry.username}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-xl font-bold text-white">{entry.score || entry.xp_awarded || 0} XP</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 ))}
                             </div>

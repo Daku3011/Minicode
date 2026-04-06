@@ -12,6 +12,7 @@ from database import engine
 from models import User, Problem, Submission, TestCase, NewsItem, Notification
 from models_events import Event, EventParticipant, EventSubmission
 
+
 def run_migrations():
     print("Initializing tables...")
     SQLModel.metadata.create_all(engine)
@@ -19,48 +20,83 @@ def run_migrations():
 
     with engine.connect() as conn:
         print("Running column migrations...")
-        
+
         # Check dialect
         dialect = engine.dialect.name
-        
+
         if dialect == "sqlite":
             # For SQLite
             res = conn.execute(text("PRAGMA table_info(users);")).fetchall()
             cols = [r[1] for r in res]
-            
-            if 'last_login' not in cols:
+
+            if "last_login" not in cols:
                 conn.execute(text("ALTER TABLE users ADD COLUMN last_login DATETIME;"))
                 print("Added last_login to users (SQLite)")
-            
-            if 'faculty_report_email' not in cols:
-                conn.execute(text("ALTER TABLE users ADD COLUMN faculty_report_email TEXT;"))
+
+            if "faculty_report_email" not in cols:
+                conn.execute(
+                    text("ALTER TABLE users ADD COLUMN faculty_report_email TEXT;")
+                )
                 print("Added faculty_report_email to users (SQLite)")
-            
-            if 'last_news_viewed_at' not in cols:
-                conn.execute(text("ALTER TABLE users ADD COLUMN last_news_viewed_at DATETIME;"))
+
+            if "last_news_viewed_at" not in cols:
+                conn.execute(
+                    text("ALTER TABLE users ADD COLUMN last_news_viewed_at DATETIME;")
+                )
                 print("Added last_news_viewed_at to users (SQLite)")
+
+            if "unlocked_level" not in cols:
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD COLUMN unlocked_level INTEGER DEFAULT 1;"
+                    )
+                )
+                print("Added unlocked_level to users (SQLite)")
         else:
             # For PostgreSQL (supports IF NOT EXISTS in 9.6+)
             try:
-                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;"
+                    )
+                )
                 print("Applied last_login migration (Postgres)")
             except Exception as e:
                 print(f"Postgres migration error (last_login): {e}")
 
             try:
-                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS faculty_report_email TEXT;"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS faculty_report_email TEXT;"
+                    )
+                )
                 print("Applied faculty_report_email migration (Postgres)")
             except Exception as e:
                 print(f"Postgres migration error (faculty_report_email): {e}")
 
             try:
-                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_news_viewed_at TIMESTAMP;"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_news_viewed_at TIMESTAMP;"
+                    )
+                )
                 print("Applied last_news_viewed_at migration (Postgres)")
             except Exception as e:
                 print(f"Postgres migration error (last_news_viewed_at): {e}")
-        
+
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS unlocked_level INTEGER DEFAULT 1;"
+                    )
+                )
+                print("Applied unlocked_level migration (Postgres)")
+            except Exception as e:
+                print(f"Postgres migration error (unlocked_level): {e}")
+
         conn.commit()
         print("Migrations completed.")
+
 
 if __name__ == "__main__":
     run_migrations()

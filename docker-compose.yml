@@ -16,7 +16,8 @@ services:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
-      - CORS_ORIGINS=http://localhost:3000
+      - FERNET_KEY=${FERNET_KEY}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
       - WEB_CONCURRENCY=2
       - SMTP_EMAIL=${SMTP_EMAIL}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
@@ -58,7 +59,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: ["celery", "-A", "worker.celery_app", "beat", "--loglevel=info", "-s", "/tmp/celerybeat-schedule"]
+    command: ["./start.sh", "celery-beat"]
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-minicode}}
       - REDIS_URL=redis://redis:6379/0
@@ -107,10 +108,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:8000
+        - NEXT_PUBLIC_API_URL=${FRONTEND_API_URL:-http://localhost:8000}
         - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
     ports:
       - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=${FRONTEND_API_URL:-http://localhost:8000}
     # volumes:
     #   - ./frontend:/app
     #   - /app/node_modules

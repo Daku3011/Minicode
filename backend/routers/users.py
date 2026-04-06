@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["users"])
 
+
 def get_user_profile_logic(user: User, session: Session):
     # Batch fetch all problems once to avoid N+1 queries
     all_problems = session.exec(select(Problem)).all()
@@ -113,9 +114,11 @@ def get_user_profile_logic(user: User, session: Session):
             "level_name": level_name,
             "streak": streak,
         },
+        "unlocked_level": user.unlocked_level,
         "contribution_data": submission_counts,
         "recentSubmissions": recent_submissions,
     }
+
 
 @router.get("/auth/me")
 def get_me(
@@ -126,6 +129,7 @@ def get_me(
 
 class SettingsUpdate(BaseModel):
     report_email: Optional[str] = None
+
 
 @router.put("/users/me/settings")
 def update_user_settings(

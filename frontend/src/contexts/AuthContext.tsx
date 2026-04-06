@@ -13,6 +13,7 @@ export interface User {
     role: "student" | "admin" | "faculty";
     github_id: number | null;
     created_at: string;
+    unlocked_level?: number;
     stats?: {
         solved: number;
         rank: number;

@@ -15,10 +15,13 @@ class User(SQLModel, table=True):
     hashed_password: Optional[str] = None
     role: str = Field(default="student")  # student, faculty, admin
     xp: int = Field(default=0)  # Total XP earned
+    unlocked_level: int = Field(default=1)  # Current unlocked level
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login: Optional[datetime] = Field(default=None)  # For inactivity tracking
     faculty_report_email: Optional[str] = Field(default=None)  # For faculty reports
-    last_news_viewed_at: Optional[datetime] = Field(default=None)  # For unread news tracking
+    last_news_viewed_at: Optional[datetime] = Field(
+        default=None
+    )  # For unread news tracking
 
     submissions: List["Submission"] = Relationship(back_populates="user")
     created_problems: List["Problem"] = Relationship(back_populates="author")

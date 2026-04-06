@@ -20,13 +20,15 @@ import {
     Timer,
     FileCode,
     Settings,
-    ArrowRight
+    ArrowRight,
+    Lock
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
 import dynamic from 'next/dynamic';
 import { clsx } from "clsx";
 import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import remarkGfm from 'remark-gfm';
 
 // Dynamically import ReactMarkdown for performance
@@ -43,6 +45,7 @@ interface TestCaseExample {
 function ProblemDetailContent() {
     const { id } = useParams();
     const router = useRouter();
+    const { user } = useAuth();
     const [problem, setProblem] = useState<any>(null);
     const [testCases, setTestCases] = useState<TestCaseExample[]>([]);
     const [repoUrl, setRepoUrl] = useState<string | null>(null);
@@ -56,6 +59,9 @@ function ProblemDetailContent() {
     const isProvisioned = !!repoUrl;
     const isLoading = isStarting;
     const isEvaluating = isSubmitting;
+    const isFaculty = user?.role === "faculty" || user?.role === "admin";
+    const userUnlockedLevel = user?.unlocked_level || 1;
+    const isLocked = problem && !isFaculty && problem.level > userUnlockedLevel;
 
     useEffect(() => {
         const fetchProblem = async () => {
@@ -161,6 +167,43 @@ function ProblemDetailContent() {
         );
     }
 
+    // Lock screen for locked problems
+    if (isLocked) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[calc(100vh-64px)] bg-[#05050a] p-8">
+                <div className="max-w-md text-center space-y-8">
+                    <div className="w-32 h-32 bg-white/5 rounded-full border border-white/10 mx-auto flex items-center justify-center">
+                        <Lock className="w-16 h-16 text-slate-500" />
+                    </div>
+                    <div className="space-y-4">
+                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Access Denied</p>
+                        <h2 className="text-4xl font-black text-white uppercase tracking-tighter">{problem?.title}</h2>
+                        <p className="text-slate-500 font-bold text-sm uppercase tracking-tight">
+                            This mission requires Level {problem?.level} clearance.
+                            <br />
+                            Your current level: <span className="text-primary">Level {userUnlockedLevel}</span>
+                        </p>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="bg-white/5 rounded-2xl border border-white/10 p-6">
+                            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] mb-3">How to Unlock</p>
+                            <p className="text-slate-400 font-bold text-xs uppercase tracking-tight">
+                                Complete previous missions to unlock this level and earn more XP rewards.
+                            </p>
+                        </div>
+                        <Link 
+                            href="/problems"
+                            className="flex items-center justify-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                            Return to Mission Catalog
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] bg-[#05050a] font-black text-white overflow-hidden relative">
             {/* Minimal Background Elements */}
@@ -247,7 +290,7 @@ function ProblemDetailContent() {
                                     </div>
                                     <div className="space-y-3">
                                         {problem?.constraints?.split('\n').filter(Boolean).map((constraint: string, i: number) => (
-                                            <div key={i} className="flex gap-3 text-[11px] font-bold text-slate-500 uppercase tracking-tighter">
+                                            <div key={i} className="flex gap-3 text-[15px] font-bold text-slate-500 uppercase tracking-tighter">
                                                 <span className="text-primary">•</span>
                                                 {constraint}
                                             </div>
