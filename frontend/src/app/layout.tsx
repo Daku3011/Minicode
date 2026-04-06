@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import InteractiveBackground from "@/components/InteractiveBackground";
+import PageLoader from "@/components/PageLoader";
 import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,9 +26,16 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen`}>
         <AuthProvider>
+          <Suspense fallback={null}>
+            <PageLoader />
+          </Suspense>
           <InteractiveBackground />
           <Navbar/>
-          <main>{children}</main>
+          <main>
+            <Suspense fallback={null}>
+              {children}
+            </Suspense>
+          </main>
         </AuthProvider>
       </body>
     </html>

@@ -45,6 +45,29 @@ if redis_url.startswith("rediss://"):
 celery_app = Celery("minicode_worker")
 celery_app.conf.update(**celery_config)
 
+@celery_app.task(name="sync_xp_task")
+def sync_xp_task():
+    """
+    Periodic task to synchronize XP for all users.
+    """
+    from .sync_xp import sync_all_users_xp
+    logger.info("Starting automated XP synchronization task...")
+    try:
+        updated_count = sync_all_users_xp()
+        logger.info(f"Automated XP sync completed. Updated {updated_count} users.")
+        return f"Sync complete. Updated {updated_count} users."
+    except Exception as e:
+        logger.error(f"Error during automated XP sync: {e}")
+        return "Sync failed"
+
+# Configure Beat Schedule
+celery_app.conf.beat_schedule = {
+    "sync-xp-every-5-minutes": {
+        "task": "sync_xp_task",
+        "schedule": 300.0,  # 5 minutes in seconds
+    },
+}
+
 @celery_app.task(name="process_submission_task")
 def process_submission_task(submission_id: int):
     """

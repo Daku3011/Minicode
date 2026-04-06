@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, UTC
 from pydantic import BaseModel
 import json
 from jose import JWTError, jwt
@@ -379,7 +379,7 @@ async def update_event(
         else:
             setattr(event, key, value)
 
-    event.updated_at = datetime.utcnow()
+    event.updated_at = datetime.now(UTC)
     session.add(event)
     session.commit()
 
@@ -402,7 +402,7 @@ async def delete_event(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     event.status = "cancelled"
-    event.updated_at = datetime.utcnow()
+    event.updated_at = datetime.now(UTC)
     session.add(event)
     session.commit()
 
@@ -559,7 +559,7 @@ async def submit_to_event(
         # Update existing submission
         existing.repo_url = submission_data.repo_url
         existing.submission_notes = submission_data.submission_notes
-        existing.submitted_at = datetime.utcnow()
+        existing.submitted_at = datetime.now(UTC)
         session.add(existing)
     else:
         # Create new submission
@@ -733,7 +733,7 @@ async def award_participant(
         participant_user.xp = max(0, participant_user.xp + xp_diff)
         session.add(participant_user)
         # Invalidate leaderboard cache
-        from main import invalidate_leaderboard_cache
+        from utils_cache import invalidate_leaderboard_cache
 
         invalidate_leaderboard_cache()
 
@@ -825,7 +825,7 @@ async def respond_to_invitation(
         raise HTTPException(status_code=400, detail="Invalid action")
 
     invitation.status = "accepted" if action == "accept" else "rejected"
-    invitation.responded_at = datetime.utcnow()
+    invitation.responded_at = datetime.now(UTC)
     session.add(invitation)
 
     if action == "accept":

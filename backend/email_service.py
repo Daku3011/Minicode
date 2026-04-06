@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
+from datetime import datetime, UTC, timedelta
 from sqlmodel import Session, select, func
 from typing import List, Dict, Any
 from models import User, Problem, Submission
@@ -140,7 +140,7 @@ def generate_motivation_email(username, top_activity, leaderboard_top=None, sugg
 
 
 def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
-    cutoff_date = datetime.utcnow() - timedelta(days=days_inactive)
+    cutoff_date = datetime.now(UTC) - timedelta(days=days_inactive)
 
     # Find users who haven't logged in OR haven't submitted in days_inactive
     inactive_users = session.exec(

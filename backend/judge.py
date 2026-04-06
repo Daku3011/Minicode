@@ -103,9 +103,7 @@ async def run_ai_judge(
         # Inject warning if AI probability is high
         ai_prob = result.get("ai_probability", 0)
         if isinstance(ai_prob, (int, float)) and ai_prob > 60:
-            warning_msg = f"""<div style="background-color: #ffebee; color: #c62828; padding: 12px; border-radius: 6px; border: 1px solid #ef5350; margin-bottom: 16px; font-weight: bold;">
-⚠️ WARNING: This submission has a high likelihood ({ai_prob}%) of being AI-generated based on code patterns and commit history.
-</div>\n\n"""
+            warning_msg = f"""⚠️ WARNING: This submission has a high likelihood ({ai_prob}%) of being AI-generated based on code patterns and commit history.\n\n"""
             result["feedback"] = warning_msg + result.get("feedback", "")
 
         return result, None
@@ -147,51 +145,53 @@ async def judge_submission(
 
     if user.github_access_token and submission.repo_url:
         try:
+            g = None
+            repo = None
             decrypted_token = decrypt_token(user.github_access_token)
             if not decrypted_token:
                 logger.warning(f"Could not decrypt GitHub token for user {user.username}. Ensure FERNET_KEY is set and consistent.")
                 user_code = "# Error: Could not decrypt GitHub access token. Please re-login."
             else:
                 g = Github(decrypted_token)
-            repo_name = submission.repo_url.rstrip("/").split("/")[-1]
-            # GitHub Optimization: Fetch repo by full name instead of hitting /user endpoint first
-            repo = g.get_repo(f"{user.username}/{repo_name}")
+                repo_name = submission.repo_url.rstrip("/").split("/")[-1]
+                # GitHub Optimization: Fetch repo by full name instead of hitting /user endpoint first
+                repo = g.get_repo(f"{user.username}/{repo_name}")
 
-            # Helper to try multiple branches and extensions
-            content_file = None
-            branches_to_try = [repo.default_branch, "main", "master"]
+                # Helper to try multiple branches and extensions
+                content_file = None
+                branches_to_try = [repo.default_branch, "main", "master"]
 
-            for branch in branches_to_try:
-                try:
-                    root_files = repo.get_contents("", ref=branch)
-                    if not isinstance(root_files, list):
-                        root_files = [root_files]
+                for branch in branches_to_try:
+                    try:
+                        root_files = repo.get_contents("", ref=branch)
+                        if not isinstance(root_files, list):
+                            root_files = [root_files]
 
-                    for f in root_files:
-                        if f.name.lower().startswith("solution."):
-                            # It's better to fetch explicitly if the file is large, but root_files objects have content if small.
-                            # We'll just fetch by name to be safe
-                            content_file = repo.get_contents(f.name, ref=branch)
+                        for f in root_files:
+                            if f.name.lower().startswith("solution."):
+                                # It's better to fetch explicitly if the file is large, but root_files objects have content if small.
+                                # We'll just fetch by name to be safe
+                                content_file = repo.get_contents(f.name, ref=branch)
+                                break
+
+                        if content_file:
                             break
+                    except Exception:
+                        continue
 
-                    if content_file:
-                        break
-                except Exception:
-                    continue
+                if content_file:
+                    user_code = content_file.decoded_content.decode("utf-8")
+                else:
+                    user_code = f"# Error fetching code: A file named 'solution.*' was not found in repository {repo_name}."
 
-            if content_file:
-                user_code = content_file.decoded_content.decode("utf-8")
-            else:
-                user_code = f"# Error fetching code: A file named 'solution.*' was not found in repository {repo_name}."
-
-            # Fetch recent commits
-            commit_history_info = "Recent Commits:\n"
-            try:
-                commits = repo.get_commits()
-                for i, c in enumerate(commits[:5]):
-                    commit_history_info += f"- [{c.commit.author.date}] {c.commit.author.name}: {c.commit.message}\n"
-            except Exception as e:
-                commit_history_info += f"Could not fetch commits: {str(e)}\n"
+                # Fetch recent commits
+                commit_history_info = "Recent Commits:\n"
+                try:
+                    commits = repo.get_commits()
+                    for i, c in enumerate(commits[:5]):
+                        commit_history_info += f"- [{c.commit.author.date}] {c.commit.author.name}: {c.commit.message}\n"
+                except Exception as e:
+                    commit_history_info += f"Could not fetch commits: {str(e)}\n"
 
         except Exception as e:
             logger.error(f"Error fetching code from GitHub: {e}")

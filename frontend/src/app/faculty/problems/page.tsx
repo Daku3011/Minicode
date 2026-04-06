@@ -2,13 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit, Trash2, Search, Filter, X, BookOpen, ChevronRight, Loader2, CheckCircle, AlertCircle, Bell } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Filter, X, BookOpen, ChevronRight, Loader2, CheckCircle, AlertCircle, Bell, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
-import MagneticWrapper from "@/components/MagneticWrapper";
-import BroadcastAlert from "@/components/BroadcastAlert";
 
 interface Problem {
     id: number;
@@ -64,11 +61,11 @@ export default function FacultyProblemsPage() {
 
     useEffect(() => {
         fetchData();
-        
+
         const handleOpenNews = () => {
-             // BroadcastAlert handles its own visibility via the event
+            // BroadcastAlert handles its own visibility via the event
         };
-        
+
         window.addEventListener('minicode:openNews', handleOpenNews);
         return () => window.removeEventListener('minicode:openNews', handleOpenNews);
     }, []);
@@ -145,43 +142,33 @@ export default function FacultyProblemsPage() {
     };
 
     return (
-        <div className="min-h-screen relative overflow-hidden bg-[#0a0a0f]">
-            {/* Ambient Page Glow */}
-            <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-blue-500/10 blur-[120px] -z-10 pointer-events-none" />
-            <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/10 blur-[150px] -z-10 pointer-events-none" />
-            
-            {/* <BroadcastAlert /> */}
+        <div className="min-h-screen bg-[#0a0a0f] text-slate-100">
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+            <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                    >
+                    <div>
                         <div className="flex items-center gap-3 mb-4">
                             <div className="h-px w-8 bg-primary" />
                             <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Command Center</span>
                         </div>
                         <h1 className="text-5xl font-black text-white mb-4 tracking-tight leading-none">Problem <span className="text-slate-500">Registry</span></h1>
                         <p className="text-slate-400 text-lg font-medium opacity-80">Architect and oversee the matrix of logical challenges</p>
-                    </motion.div>
-                    
-                    <motion.div 
-                        className="flex items-center gap-4"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                    >
-                    </motion.div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/problems/create"
+                            className="premium-btn px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-2xl shadow-primary/20"
+                        >
+                            <Plus className="w-5 h-5" />
+                            New Problem
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Search & Filters */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="flex flex-col sm:flex-row gap-4 mb-8"
-                >
+                <div className="flex flex-col sm:flex-row gap-4 mb-8">
                     <div className="relative flex-1 group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-primary transition-colors" />
                         <input
@@ -192,72 +179,58 @@ export default function FacultyProblemsPage() {
                             className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all text-lg font-medium"
                         />
                     </div>
-                    <MagneticWrapper>
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className={clsx(
-                                "flex items-center gap-3 px-8 h-full rounded-2xl border text-sm font-black uppercase tracking-wider transition-all",
-                                showFilters ? "bg-primary/20 border-primary/30 text-white" : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
-                            )}
-                        >
-                            <Filter className="w-4 h-4" /> 
-                            <span>Logic Filter</span>
-                        </button>
-                    </MagneticWrapper>
-                </motion.div>
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={clsx(
+                            "flex items-center p-5 gap-3 px-8 h-full rounded-2xl border text-sm font-black uppercase tracking-wider transition-all",
+                            showFilters ? "bg-primary/20 border-primary/30 text-white" : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+                        )}
+                    >
+                        <Filter className="w-4 h-4" />
+                        <span>Logic Filter</span>
+                    </button>
+                </div>
 
-                <AnimatePresence>
-                    {showFilters && (
-                        <motion.div 
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden mb-8"
-                        >
-                            <div className="glass-card border border-white/10 rounded-3xl p-8 space-y-8">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-xl bg-primary/10 text-primary">
-                                            <Filter className="w-4 h-4" />
-                                        </div>
-                                        <h3 className="text-lg font-black text-white uppercase tracking-wider">Refine Operations</h3>
+                {showFilters && (
+                    <div className="overflow-hidden mb-8">
+                        <div className="glass-card border border-white/10 rounded-3xl p-8 space-y-8">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                        <Filter className="w-4 h-4" />
                                     </div>
-                                    <button onClick={() => { setSelectedDifficulty(""); setSelectedLevel(""); }} className="text-xs font-black text-slate-500 hover:text-rose-500 flex items-center gap-2 transition-colors uppercase tracking-[0.2em]">
-                                        <X className="w-4 h-4" /> Reset Identity
-                                    </button>
+                                    <h3 className="text-lg font-black text-white uppercase tracking-wider">Refine Operations</h3>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Intensity Level</label>
-                                        <div className="grid grid-cols-4 gap-2">
-                                            <button onClick={() => setSelectedDifficulty("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedDifficulty ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
-                                            {["Easy", "Medium", "Hard"].map((d) => (
-                                                <button key={d} onClick={() => setSelectedDifficulty(d)} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedDifficulty === d ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{d}</button>
-                                            ))}
-                                        </div>
+                                <button onClick={() => { setSelectedDifficulty(""); setSelectedLevel(""); }} className="text-xs font-black text-slate-500 hover:text-rose-500 flex items-center gap-2 transition-colors uppercase tracking-[0.2em]">
+                                    <X className="w-4 h-4" /> Reset Identity
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Intensity Level</label>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        <button onClick={() => setSelectedDifficulty("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedDifficulty ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
+                                        {["Easy", "Medium", "Hard"].map((d) => (
+                                            <button key={d} onClick={() => setSelectedDifficulty(d)} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedDifficulty === d ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{d}</button>
+                                        ))}
                                     </div>
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Access Clearance</label>
-                                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                                            <button onClick={() => setSelectedLevel("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedLevel ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
-                                            {LEVELS.map((l) => (
-                                                <button key={l.level} onClick={() => setSelectedLevel(String(l.level))} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedLevel === String(l.level) ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{l.level}</button>
-                                            ))}
-                                        </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Access Clearance</label>
+                                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                                        <button onClick={() => setSelectedLevel("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedLevel ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
+                                        {LEVELS.map((l) => (
+                                            <button key={l.level} onClick={() => setSelectedLevel(String(l.level))} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedLevel === String(l.level) ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{l.level}</button>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                        </div>
+                    </div>
+                )}
 
                 {/* Problems Table */}
-                <motion.div 
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="glass-card border border-white/10 rounded-[2.5rem] overflow-hidden"
-                >
+                <div className="glass-card border border-white/10 rounded-[2.5rem] overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
@@ -301,8 +274,8 @@ export default function FacultyProblemsPage() {
                                                 <span className={clsx(
                                                     "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
                                                     problem.difficulty === "Easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                                                    problem.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                                                    "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                                        problem.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                                                            "bg-rose-500/10 text-rose-400 border-rose-500/20"
                                                 )}>
                                                     {problem.difficulty}
                                                 </span>
@@ -323,33 +296,27 @@ export default function FacultyProblemsPage() {
                                             </td>
                                             <td className="px-10 py-8 text-right">
                                                 <div className="inline-flex items-center justify-end gap-2 rounded-2xl border border-white/10 bg-white/[0.02] px-2 py-1.5 opacity-70 group-hover/row:opacity-100 transition-all duration-300">
-                                                    <MagneticWrapper intensity={0.2}>
-                                                        <button
-                                                            onClick={() => startEdit(problem)}
-                                                            className="p-3 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-2xl transition-all border border-transparent hover:border-cyan-500/20"
-                                                            aria-label="Reconfigure"
-                                                        >
-                                                            <Edit className="w-5 h-5" />
-                                                        </button>
-                                                    </MagneticWrapper>
-                                                    <MagneticWrapper intensity={0.2}>
-                                                        <Link
-                                                            href={`/problems/${problem.id}`}
-                                                            className="p-3 text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-2xl transition-all border border-transparent hover:border-emerald-500/20"
-                                                            aria-label="Inspect"
-                                                        >
-                                                            <ChevronRight className="w-5 h-5" />
-                                                        </Link>
-                                                    </MagneticWrapper>
-                                                    <MagneticWrapper intensity={0.2}>
-                                                        <button
-                                                            onClick={() => setDeleteConfirm(problem.id)}
-                                                            className="p-3 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all border border-transparent hover:border-rose-500/20"
-                                                            aria-label="Decommission"
-                                                        >
-                                                            <Trash2 className="w-5 h-5" />
-                                                        </button>
-                                                    </MagneticWrapper>
+                                                    <button
+                                                        onClick={() => startEdit(problem)}
+                                                        className="p-3 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-2xl transition-all border border-transparent hover:border-cyan-500/20"
+                                                        aria-label="Reconfigure"
+                                                    >
+                                                        <Edit className="w-5 h-5" />
+                                                    </button>
+                                                    <Link
+                                                        href={`/problems/${problem.id}`}
+                                                        className="p-3 text-slate-200 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-2xl transition-all border border-transparent hover:border-emerald-500/20"
+                                                        aria-label="Inspect"
+                                                    >
+                                                        <ChevronRight className="w-5 h-5" />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => setDeleteConfirm(problem.id)}
+                                                        className="p-3 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-2xl transition-all border border-transparent hover:border-rose-500/20"
+                                                        aria-label="Decommission"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -373,165 +340,145 @@ export default function FacultyProblemsPage() {
                             </tbody>
                         </table>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* Edit Modal */}
-                <AnimatePresence>
-                    {editingProblem && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                            <motion.div 
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setEditingProblem(null)}
-                                className="absolute inset-0 bg-black/80 backdrop-blur-md"
-                            />
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                className="glass-card border border-white/10 rounded-[3rem] p-10 w-full max-w-2xl relative z-10 shadow-2xl"
-                            >
-                                <div className="flex items-center justify-between mb-10">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
-                                            <Edit className="w-6 h-6" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-2xl font-black text-white tracking-tight">Reconfigure Problem</h3>
-                                            <p className="text-slate-500 text-sm font-medium">Updating logic sector: {editingProblem?.id}</p>
-                                        </div>
+                {editingProblem && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <div
+                            onClick={() => setEditingProblem(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <div className="glass-card border border-white/10 rounded-[3rem] p-10 w-full max-w-2xl relative z-10 shadow-2xl">
+                            <div className="flex items-center justify-between mb-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                                        <Edit className="w-6 h-6" />
                                     </div>
-                                    <button onClick={() => setEditingProblem(null)} className="p-3 text-slate-500 hover:text-white transition-colors">
-                                        <X className="w-6 h-6" />
-                                    </button>
+                                    <div>
+                                        <h3 className="text-2xl font-black text-white tracking-tight">Reconfigure Problem</h3>
+                                        <p className="text-slate-500 text-sm font-medium">Updating logic sector: {editingProblem?.id}</p>
+                                    </div>
                                 </div>
-                                
-                                <div className="space-y-8">
+                                <button onClick={() => setEditingProblem(null)} className="p-3 text-slate-500 hover:text-white transition-colors">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Display Alias</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.title}
+                                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+                                        placeholder="Enter problem title..."
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Display Alias</label>
-                                        <input
-                                            type="text"
-                                            value={editForm.title}
-                                            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
-                                            placeholder="Enter problem title..."
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-8">
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Logic Tier</label>
-                                            <select
-                                                value={editForm.difficulty}
-                                                onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
-                                            >
-                                                <option className="bg-[#0a0a14]" value="Easy">Easy</option>
-                                                <option className="bg-[#0a0a14]" value="Medium">Medium</option>
-                                                <option className="bg-[#0a0a14]" value="Hard">Hard</option>
-                                            </select>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Access Level</label>
-                                            <select
-                                                value={editForm.level}
-                                                onChange={(e) => setEditForm({ ...editForm, level: parseInt(e.target.value) })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
-                                            >
-                                                {LEVELS.map((l) => (
-                                                    <option className="bg-[#0a0a14]" key={l.level} value={l.level}>Lvl {l.level}: {l.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Domain Sector</label>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Logic Tier</label>
                                         <select
-                                            value={editForm.subject}
-                                            onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })}
+                                            value={editForm.difficulty}
+                                            onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
                                         >
-                                            <option className="bg-[#0a0a14]" value="">Not Set</option>
-                                            {SUBJECTS.map((s) => (
-                                                <option className="bg-[#0a0a14]" key={s.id} value={s.id}>{s.icon} {s.name}</option>
-                                            ))}
+                                            <option className="bg-[#0a0a14]" value="Easy">Easy</option>
+                                            <option className="bg-[#0a0a14]" value="Medium">Medium</option>
+                                            <option className="bg-[#0a0a14]" value="Hard">Hard</option>
                                         </select>
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Problem Schematics</label>
-                                        <textarea
-                                            value={editForm.description}
-                                            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                                            rows={6}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
-                                            placeholder="Define technical requirements..."
-                                        />
-                                    </div>
-                                    <div className="flex gap-4 justify-end pt-6">
-                                        <button
-                                            onClick={() => setEditingProblem(null)}
-                                            className="px-8 py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-widest"
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Access Level</label>
+                                        <select
+                                            value={editForm.level}
+                                            onChange={(e) => setEditForm({ ...editForm, level: parseInt(e.target.value) })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
                                         >
-                                            Abort
-                                        </button>
-                                        <button
-                                            onClick={saveEdit}
-                                            disabled={saving}
-                                            className="premium-btn py-4 px-10 rounded-2xl disabled:opacity-50"
-                                        >
-                                            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
-                                            <span>{saving ? "Commiting..." : "Confirm Protocol"}</span>
-                                        </button>
+                                            {LEVELS.map((l) => (
+                                                <option className="bg-[#0a0a14]" key={l.level} value={l.level}>Lvl {l.level}: {l.name}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
-                            </motion.div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Domain Sector</label>
+                                    <select
+                                        value={editForm.subject}
+                                        onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
+                                    >
+                                        <option className="bg-[#0a0a14]" value="">Not Set</option>
+                                        {SUBJECTS.map((s) => (
+                                            <option className="bg-[#0a0a14]" key={s.id} value={s.id}>{s.icon} {s.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Problem Schematics</label>
+                                    <textarea
+                                        value={editForm.description}
+                                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                                        rows={6}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
+                                        placeholder="Define technical requirements..."
+                                    />
+                                </div>
+                                <div className="flex gap-4 justify-end pt-6">
+                                    <button
+                                        onClick={() => setEditingProblem(null)}
+                                        className="px-8 py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-widest"
+                                    >
+                                        Abort
+                                    </button>
+                                    <button
+                                        onClick={saveEdit}
+                                        disabled={saving}
+                                        className="premium-btn py-4 px-10 rounded-2xl disabled:opacity-50"
+                                    >
+                                        {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+                                        <span>{saving ? "Commiting..." : "Confirm Protocol"}</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    )}
-                </AnimatePresence>
+                    </div>
+                )}
 
                 {/* Delete Confirmation */}
-                <AnimatePresence>
-                    {deleteConfirm && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                            <motion.div 
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setDeleteConfirm(null)}
-                                className="absolute inset-0 bg-black/80 backdrop-blur-md"
-                            />
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                className="glass-card border border-rose-500/20 rounded-[2.5rem] p-10 w-full max-w-md relative z-10 shadow-2xl"
-                            >
-                                <div className="flex flex-col items-center text-center">
-                                    <div className="h-20 w-20 rounded-full bg-rose-500/10 flex items-center justify-center mb-6">
-                                        <AlertCircle className="w-10 h-10 text-rose-500" />
-                                    </div>
-                                    <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Decommission Entry?</h3>
-                                    <p className="text-slate-500 font-medium mb-10 leading-relaxed">This action will permanently erase the logical challenge from the registry. This is irreversible.</p>
-                                    
-                                    <div className="flex flex-col w-full gap-3">
-                                        <button
-                                            onClick={() => deleteConfirm && deleteProblem(deleteConfirm)}
-                                            className="w-full py-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white transition-all text-sm font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-900/20"
-                                        >
-                                            Confirm Deletion
-                                        </button>
-                                        <button
-                                            onClick={() => setDeleteConfirm(null)}
-                                            className="w-full py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-[0.2em]"
-                                        >
-                                            Abort Operation
-                                        </button>
-                                    </div>
+                {deleteConfirm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <div
+                            onClick={() => setDeleteConfirm(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <div className="glass-card border border-rose-500/20 rounded-[2.5rem] p-10 w-full max-w-md relative z-10 shadow-2xl">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="h-20 w-20 rounded-full bg-rose-500/10 flex items-center justify-center mb-6">
+                                    <AlertCircle className="w-10 h-10 text-rose-500" />
                                 </div>
-                            </motion.div>
+                                <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Decommission Entry?</h3>
+                                <p className="text-slate-500 font-medium mb-10 leading-relaxed">This action will permanently erase the logical challenge from the registry. This is irreversible.</p>
+
+                                <div className="flex flex-col w-full gap-3">
+                                    <button
+                                        onClick={() => deleteConfirm && deleteProblem(deleteConfirm)}
+                                        className="w-full py-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white transition-all text-sm font-black uppercase tracking-[0.2em] shadow-lg shadow-rose-900/20"
+                                    >
+                                        Confirm Deletion
+                                    </button>
+                                    <button
+                                        onClick={() => setDeleteConfirm(null)}
+                                        className="w-full py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-[0.2em]"
+                                    >
+                                        Abort Operation
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    )}
-                </AnimatePresence>
+                    </div>
+                )}
             </div>
         </div>
     );

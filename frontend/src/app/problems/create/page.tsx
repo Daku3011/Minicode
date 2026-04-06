@@ -2,9 +2,9 @@
 
 import { useState, useRef } from "react";
 import { 
-    ChevronLeft, Save, Send, Plus, Trash2, Sparkles, BookOpen, 
-    Tag, Lock, Loader2, FileText, Code2, Eye, PenLine, 
-    ChevronRight, Target, AlertCircle 
+    ChevronLeft, Send, Sparkles, BookOpen, 
+    Lock, Loader2, FileText, Code2, Eye, PenLine, 
+    Upload, Search, RotateCcw
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,9 +12,6 @@ import { clsx } from "clsx";
 import api from "@/lib/api";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { motion, AnimatePresence } from "framer-motion";
-import MagneticWrapper from "@/components/MagneticWrapper";
-import BroadcastAlert from "@/components/BroadcastAlert";
 
 const subjects = [
     { id: "data-structures", name: "Data Structures", icon: "🌳" },
@@ -41,7 +38,9 @@ const levels = [
 
 export default function CreateProblemPage() {
     const router = useRouter();
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [isPublishing, setIsPublishing] = useState(false);
+    const [isAiGenerating, setIsAiGenerating] = useState(false);
     const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
     const [formData, setFormData] = useState({
         title: "",
@@ -64,7 +63,7 @@ export default function CreateProblemPage() {
             setShowSuccess(true);
             setTimeout(() => {
                 router.push("/faculty/problems");
-            }, 1500);
+            }, 1000);
         } catch (error) {
             console.error("Failed to create problem:", error);
             alert("Failed to create problem. Please try again.");
@@ -73,238 +72,224 @@ export default function CreateProblemPage() {
         }
     };
 
-    const selectedSubject = subjects.find(s => s.id === formData.subject);
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formDataAI = new FormData();
+        formDataAI.append("file", file);
+
+        setIsAiGenerating(true);
+        try {
+            const res = await api.post("/problems/generate-ai", formDataAI, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            
+            if (res.data) {
+                setFormData(prev => ({
+                    ...prev,
+                    title: res.data.title || prev.title,
+                    description: res.data.description || prev.description,
+                }));
+                setActiveTab('editor');
+            }
+        } catch (error) {
+            console.error("AI Generation failed:", error);
+            alert("AI Generation failed. Ensure API key is configured.");
+        } finally {
+            setIsAiGenerating(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
     const selectedLevel = levels.find(l => l.level === formData.level);
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#0a0a0f] text-slate-100 font-display relative overflow-x-hidden">
-            {/* Ambient Background Elements */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-500/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5" />
-            </div>
+        <div className="min-h-[calc(100vh-64px)] bg-[#05050a] text-white font-black overflow-x-hidden relative">
+            {/* Minimal Grid - High Performance */}
+            <div className="fixed inset-0 pointer-events-none opacity-[0.02] bg-[url('/grid.svg')]" />
             
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
                 {/* Header Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16"
-                >
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
                     <div className="space-y-4">
-                        <Link href="/faculty/problems" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-all text-xs font-black uppercase tracking-widest group">
-                            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                            Return to Registry
+                        <Link href="/faculty/problems" className="inline-flex items-center gap-2 text-slate-700 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">
+                            <ChevronLeft className="w-4 h-4" />
+                            Registry
                         </Link>
-                        <h1 className="text-5xl font-black text-white tracking-tight leading-none">C-LEVEL CHALLENGE <span className="text-primary">FORGE</span></h1>
-                        <p className="text-slate-500 text-lg font-medium tracking-wide">Architecting the next generation of logical barriers</p>
+                        <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none uppercase">Forge Task</h1>
+                        <p className="text-slate-700 font-black text-[10px] uppercase tracking-widest leading-none">Architect logical challenges for the elite core</p>
                     </div>
+
                     <div className="flex items-center gap-4">
-                        <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/10 backdrop-blur-xl">
+                        <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
                             <button 
                                 onClick={() => setActiveTab('editor')}
                                 className={clsx(
-                                    "flex items-center gap-2.5 px-6 py-2.5 rounded-xl transition-all font-black text-xs uppercase tracking-widest",
-                                    activeTab === 'editor' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-500 hover:text-slate-300"
+                                    "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-black text-[10px] uppercase tracking-widest",
+                                    activeTab === 'editor' ? "bg-primary text-white" : "text-slate-600 hover:text-slate-400"
                                 )}
                             >
                                 <PenLine className="w-4 h-4" />
-                                Constructor
+                                Editor
                             </button>
                             <button 
                                 onClick={() => setActiveTab('preview')}
                                 className={clsx(
-                                    "flex items-center gap-2.5 px-6 py-2.5 rounded-xl transition-all font-black text-xs uppercase tracking-widest",
-                                    activeTab === 'preview' ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-500 hover:text-slate-300"
+                                    "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-black text-[10px] uppercase tracking-widest",
+                                    activeTab === 'preview' ? "bg-primary text-white" : "text-slate-600 hover:text-slate-400"
                                 )}
                             >
                                 <Eye className="w-4 h-4" />
-                                Render
+                                Preview
                             </button>
                         </div>
-                        <MagneticWrapper>
-                            <button
-                                onClick={handlePublish}
-                                disabled={isPublishing || !formData.title || !formData.description}
-                                className="premium-btn px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-all shadow-2xl hover:shadow-primary/30 disabled:opacity-50"
-                            >
-                                {isPublishing ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        SYNCING...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="w-5 h-5" />
-                                        DECODE & FORGE
-                                    </>
-                                )}
-                            </button>
-                        </MagneticWrapper>
-                    </div>
-                </motion.div>
-
-                <AnimatePresence>
-                    {showSuccess && (
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="glass-card mb-12 p-8 border-emerald-500/30 flex items-center gap-6 text-emerald-400 font-black tracking-wide"
+                        <button
+                            onClick={handlePublish}
+                            disabled={isPublishing || !formData.title || !formData.description}
+                            className="bg-primary text-white hover:bg-primary/90 px-10 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 transition-opacity disabled:opacity-50"
                         >
-                            <div className="size-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                                <Sparkles className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <p className="text-lg uppercase tracking-widest">Protocol Accepted</p>
-                                <p className="text-emerald-500/60 font-bold">Challenge has been integrated into the global matrix. Redirecting...</p>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            {isPublishing ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                            <span>{isPublishing ? "Syncing" : "Publish"}</span>
+                        </button>
+                    </div>
+                </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    {/* Left Column: Form Content */}
-                    <div className="lg:col-span-8 space-y-10">
+                {showSuccess && (
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 mb-10 p-6 rounded-2xl flex items-center gap-6 text-emerald-500 font-black uppercase tracking-widest">
+                        <Sparkles className="w-5 h-5" />
+                        <p className="text-[10px]">Challenge integrated successfully. Redirecting...</p>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-20">
+                    {/* Left Column */}
+                    <div className="lg:col-span-8 space-y-8">
                         {activeTab === 'editor' ? (
-                            <>
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="glass-card p-10 space-y-10 relative overflow-hidden group"
-                                >
-                                    <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-                                        <Code2 className="w-48 h-48 text-white" />
-                                    </div>
+                            <div className="bg-white/[0.02] border border-white/5 p-10 space-y-12 rounded-3xl">
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] block ml-1 leading-none">Task Identifier</label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-2xl font-black text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-900 uppercase tracking-tighter"
+                                        placeholder="Enter Mission Label..."
+                                    />
+                                </div>
 
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] block ml-1">Challenge Designation *</label>
-                                        <input
-                                            type="text"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] px-8 py-6 text-2xl font-black text-white focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder-slate-800"
-                                            placeholder="IDENTIFIER: TWO_SUM_OPTIMIZED"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between ml-1">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Logical Schematics (Markdown) *</label>
-                                            <span className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">GFM Protocol Enabled</span>
-                                        </div>
-                                        <div className="relative group">
-                                            <textarea
-                                                value={formData.description}
-                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                                rows={15}
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] p-10 text-slate-300 font-mono text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder-slate-900 resize-none"
-                                                placeholder="# MISSION OBJECTIVE: Determine the sum of..."
-                                            />
-                                            <div className="absolute bottom-6 right-6 opacity-20 pointer-events-none font-mono text-[10px] text-white">READY_FOR_INPUT</div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="p-10 bg-white/[0.02] border border-white/5 rounded-[3rem] flex items-center justify-between"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                            <Save className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Auto-save buffer active</p>
-                                    </div>
-                                    <div className="flex gap-4">
-                                        <button className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 font-black text-[10px] uppercase tracking-widest transition-all">Clear Memory</button>
-                                        <button className="px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-black text-[10px] uppercase tracking-widest transition-all">Import Schema</button>
-                                    </div>
-                                </motion.div>
-                            </>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] block ml-1 leading-none">Logical Stream (Markdown)</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={15}
+                                        className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-8 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-900 resize-none uppercase tracking-tight"
+                                        placeholder="# Specifications: Given an array of signals..."
+                                    />
+                                </div>
+                            </div>
                         ) : (
-                            <motion.div 
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="glass-card p-12 min-h-[600px] prose prose-invert prose-slate max-w-none prose-headings:font-black prose-headings:tracking-tighter prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none"
-                            >
+                            <div className="bg-white/[0.02] border border-white/5 p-10 min-h-[600px] rounded-3xl">
                                 {formData.description ? (
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.description}</ReactMarkdown>
+                                    <div className="prose prose-invert prose-slate max-w-none prose-p:text-slate-400 prose-p:font-bold prose-p:uppercase prose-p:tracking-tight prose-headings:uppercase prose-headings:font-black prose-headings:tracking-tighter prose-strong:text-primary prose-code:text-primary prose-code:bg-primary/5 prose-pre:bg-black prose-pre:border prose-pre:border-white/5">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.description}</ReactMarkdown>
+                                    </div>
                                 ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-slate-700 py-24">
-                                        <FileText className="w-16 h-16 mb-6 opacity-20" />
-                                        <p className="text-xl font-black uppercase tracking-widest opacity-20">No data generated for rendering</p>
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-900 py-32 space-y-4">
+                                        <FileText className="w-16 h-16 opacity-30" />
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em]">Signal Expected</p>
                                     </div>
                                 )}
-                            </motion.div>
+                            </div>
                         )}
                     </div>
 
-                    {/* Right Column: Sidebar Attributes */}
-                    <div className="lg:col-span-4 space-y-10">
+                    {/* Right Column */}
+                    <div className="lg:col-span-4 space-y-8">
+                        {/* AI Blueprinter - Minimalist Fix */}
+                        <div className="bg-white/[0.03] border border-primary/20 p-8 space-y-8 rounded-3xl">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
+                                    <Sparkles className="w-4 h-4 text-primary" />
+                                    AI Architect
+                                </h3>
+                                {isAiGenerating && (
+                                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] leading-none">Syncing</span>
+                                )}
+                            </div>
+                            
+                            <p className="text-[9px] text-slate-700 font-black leading-relaxed uppercase tracking-widest">Upload logic documentation (PDF/TXT) to automatically forge a mission blueprint.</p>
+                            
+                            {isAiGenerating ? (
+                                <div className="space-y-4">
+                                    <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
+                                        <div className="h-full bg-primary " style={{ width: '100%', animation: 'linear-loader 2s infinite' }} />
+                                    </div>
+                                    <p className="text-center text-[9px] font-black text-primary uppercase tracking-widest leading-none">Analyzing Spectrum</p>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-primary/5 text-slate-600 hover:text-primary p-10 rounded-2xl flex flex-col items-center gap-4 transition-all"
+                                >
+                                    <Upload className="w-8 h-8" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Inject Blueprint</span>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef}
+                                        onChange={handleFileUpload}
+                                        className="hidden" 
+                                        accept=".pdf,.txt"
+                                    />
+                                </button>
+                            )}
+                        </div>
+
                         {/* Subject Selection */}
-                        <motion.div 
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="glass-card p-8 space-y-8"
-                        >
-                            <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-2">
+                        <div className="bg-white/[0.02] border border-white/5 p-8 space-y-8 rounded-3xl">
+                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
                                 <BookOpen className="w-4 h-4 text-primary" />
-                                Field Intelligence
+                                Classification
                             </h3>
-                            <div className="grid grid-cols-1 gap-3">
+                            <div className="grid grid-cols-1 gap-1.5">
                                 {subjects.map((sub) => (
                                     <button
                                         key={sub.id}
                                         onClick={() => setFormData({ ...formData, subject: sub.id })}
                                         className={clsx(
-                                            "flex items-center justify-between p-4 rounded-2xl border-2 transition-all group/sub",
+                                            "flex items-center justify-between p-4 rounded-xl border transition-all",
                                             formData.subject === sub.id
-                                                ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
-                                                : "border-white/5 bg-white/5 hover:border-white/10"
+                                                ? "border-primary bg-primary/10 text-white"
+                                                : "border-white/5 bg-white/5 text-slate-700 hover:text-slate-500"
                                         )}
                                     >
                                         <div className="flex items-center gap-4">
-                                            <span className="text-2xl group-hover/sub:scale-110 transition-transform">{sub.icon}</span>
-                                            <span className={clsx(
-                                                "font-black text-xs uppercase tracking-wider",
-                                                formData.subject === sub.id ? "text-white" : "text-slate-500"
-                                            )}>{sub.name}</span>
+                                            <span className="text-lg grayscale group-hover:grayscale-0">{sub.icon}</span>
+                                            <span className="font-black text-[10px] uppercase tracking-widest">{sub.name}</span>
                                         </div>
-                                        {formData.subject === sub.id && (
-                                            <div className="size-2 rounded-full bg-primary shadow-[0_0_10px_rgba(137,91,245,0.8)]" />
-                                        )}
+                                        {formData.subject === sub.id && <div className="size-1.5 rounded-full bg-primary" />}
                                     </button>
                                 ))}
                             </div>
-                        </motion.div>
+                        </div>
 
-                        {/* Intensity Configuration */}
-                        <motion.div 
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="glass-card p-8 space-y-8"
-                        >
-                            <h3 className="text-xs font-black text-white uppercase tracking-[0.3em] flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-primary" />
-                                Operational Intensity
+                        {/* Complexity Toggle */}
+                        <div className="bg-white/[0.02] border border-white/5 p-8 space-y-8 rounded-3xl">
+                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
+                                <Search className="w-4 h-4 text-primary" />
+                                Severity
                             </h3>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-3 gap-2">
                                 {["Easy", "Medium", "Hard"].map((diff) => (
                                     <button
                                         key={diff}
                                         onClick={() => setFormData({ ...formData, difficulty: diff })}
                                         className={clsx(
-                                            "py-4 rounded-2xl border-2 transition-all font-black text-[10px] uppercase tracking-[0.2em]",
+                                            "py-4 rounded-xl border transition-all font-black text-[10px] uppercase tracking-widest",
                                             formData.difficulty === diff
-                                                ? (diff === "Easy" ? "border-emerald-500 bg-emerald-500/10 text-emerald-400" :
-                                                   diff === "Medium" ? "border-amber-500 bg-amber-500/10 text-amber-400" :
-                                                   "border-rose-500 bg-rose-500/10 text-rose-400")
-                                                : "border-white/5 bg-white/5 text-slate-600 hover:border-white/10 hover:text-slate-400"
+                                                ? "border-primary bg-primary/10 text-primary"
+                                                : "border-white/5 bg-white/5 text-slate-700 hover:text-slate-500"
                                         )}
                                     >
                                         {diff}
@@ -312,64 +297,46 @@ export default function CreateProblemPage() {
                                 ))}
                             </div>
 
-                            <div className="pt-6 border-t border-white/5 space-y-6">
+                            <div className="pt-8 border-t border-white/5 space-y-8">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Candidate Access Level</p>
-                                    <span className="text-primary font-black text-xs">LVL {formData.level}</span>
+                                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Clearance Gate</p>
+                                    <span className="text-primary font-black text-xl leading-none">0{formData.level}</span>
                                 </div>
-                                <div className="grid grid-cols-6 gap-2">
+                                <div className="grid grid-cols-6 gap-1.5">
                                     {levels.map((lvl) => (
                                         <button
                                             key={lvl.level}
                                             onClick={() => setFormData({ ...formData, level: lvl.level })}
                                             className={clsx(
-                                                "aspect-square rounded-xl flex items-center justify-center text-xs font-black transition-all",
+                                                "aspect-square rounded-lg flex items-center justify-center text-[10px] font-black transition-all",
                                                 formData.level === lvl.level
-                                                    ? "bg-primary text-white shadow-lg shadow-primary/20 scale-110"
-                                                    : "bg-white/5 text-slate-700 hover:text-slate-500"
+                                                    ? "bg-primary text-white"
+                                                    : "bg-white/5 text-slate-800 hover:text-slate-600"
                                             )}
                                         >
                                             {lvl.level}
                                         </button>
                                     ))}
                                 </div>
-                                <div className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/10 rounded-2xl">
-                                    <Lock className="w-4 h-4 text-primary" />
-                                    <p className="text-[10px] text-slate-500 font-bold leading-tight">Minimum clearance required: <span className="text-white uppercase">{selectedLevel?.name}</span></p>
+                                <div className="p-4 bg-white/5 border border-white/5 rounded-xl flex items-center gap-4">
+                                    <Lock className="w-4 h-4 text-slate-800" />
+                                    <p className="text-[9px] text-slate-600 font-black uppercase tracking-widest leading-none">Min Requirement: {selectedLevel?.name}</p>
                                 </div>
                             </div>
-                        </motion.div>
-
-                        <motion.div 
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="bg-primary p-1 rounded-[2.5rem] relative group"
-                        >
-                            <div className="bg-[#0a0a0f] rounded-[2.3rem] p-10 relative overflow-hidden">
-                                <div className="relative z-10 space-y-6">
-                                    <div className="size-14 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30">
-                                        <Target className="w-7 h-7 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-2xl font-black text-white tracking-tighter uppercase">Finalization</h4>
-                                        <p className="text-slate-600 font-bold text-xs mt-2 leading-relaxed">By committing this schema, you authorize its broadcast to all active student terminals.</p>
-                                    </div>
-                                    <div className="pt-4 flex items-center gap-4">
-                                        <div className="flex -space-x-4">
-                                            {[1,2,3].map(i => <div key={i} className="size-10 rounded-full border-4 border-[#0a0a0f] bg-slate-800" />)}
-                                        </div>
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">3 Nodes Online</span>
-                                    </div>
-                                </div>
-                                <div className="absolute top-0 right-0 p-4 opacity-10">
-                                    <div className="size-2 rounded-full bg-primary animate-ping" />
-                                </div>
-                            </div>
-                        </motion.div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <style jsx global>{`
+                @keyframes linear-loader {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(100%); }
+                }
+                .linear-loader {
+                    animation: linear-loader 1.5s infinite;
+                }
+            `}</style>
         </div>
     );
 }

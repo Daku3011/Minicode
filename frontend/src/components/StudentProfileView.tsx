@@ -39,8 +39,6 @@ import {
 } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
-import { motion, AnimatePresence } from "framer-motion";
-import MagneticWrapper from "./MagneticWrapper";
 
 interface RecentSubmission {
     id: number;
@@ -149,9 +147,9 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
     const levelColors = [
         "bg-white/5",
         "bg-primary/20",
-        "bg-primary/40 shadow-[0_0_10px_rgba(137,91,245,0.1)]",
-        "bg-primary/60 shadow-[0_0_15px_rgba(137,91,245,0.2)]",
-        "bg-primary shadow-[0_0_20px_rgba(137,91,245,0.3)]",
+        "bg-white/40 shadow-[0_0_10px_rgba(137,91,245,0.1)]",
+        "bg-white/60 shadow-[0_0_15px_rgba(137,91,245,0.2)]",
+        "bg-white shadow-[0_0_20px_rgba(137,91,245,0.3)]",
     ];
 
     return (
@@ -160,7 +158,7 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
 
             <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
                 <div className="flex items-center gap-6">
-                    <div className="h-12 w-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(137,91,245,0.3)]" />
+                    {/* <div className="h-12 w-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(137,91,245,0.3)]" /> */}
                     <div>
                         <h3 className="text-2xl font-black text-white tracking-tight">Execution History</h3>
                         <p className="text-slate-500 text-[10px] uppercase font-black tracking-[0.3em] mt-1.5">Temporal logic sample distribution</p>
@@ -173,27 +171,18 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
             </div>
 
             <div className="h-12 mb-8 flex items-center justify-center border-b border-dashed border-white/10">
-                <AnimatePresence mode="wait">
-                    {hoveredDay ? (
-                        <motion.div
-                            key="hovered"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex items-center gap-4"
-                        >
-                            <div className="h-1.5 w-1.5 bg-primary rounded-full" />
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                                {new Date(hoveredDay.date).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' })}
-                            </span>
-                            <span className="text-[11px] font-black text-primary uppercase tracking-widest">
-                                {hoveredDay.count} SUCCESSFUL OPS
-                            </span>
-                        </motion.div>
-                    ) : (
-                        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.5em] italic">Scan matrix tiles for authority data</p>
-                    )}
-                </AnimatePresence>
+                {hoveredDay ? (
+                    <div className="flex items-center gap-4">
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                            {new Date(hoveredDay.date).toLocaleDateString("en-US", { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </span>
+                        <span className="text-[11px] font-black text-primary uppercase tracking-widest">
+                            {hoveredDay.count} SUCCESSFUL OPS
+                        </span>
+                    </div>
+                ) : (
+                    <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.5em] italic">Scan matrix tiles for authority data</p>
+                )}
             </div>
 
             <div className="flex flex-col min-w-0">
@@ -242,7 +231,7 @@ const MetricTile = memo(({ icon: Icon, label, value, trend }: any) => (
             <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10">
                 <Icon className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg">{trend}</span>
+            {/* <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg">{trend}</span> */}
         </div>
         <div>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mb-2">{label}</p>
@@ -280,18 +269,14 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
 
     return (
         <div className="min-h-screen bg-black text-slate-300 font-sans selection:bg-primary/30 selection:text-white pt-24 pb-12 overflow-x-hidden">
-            <div className="container mx-auto px-6 relative">
+            <div className="max-w-[1800px] mx-auto px-6 relative">
                 <div className="fixed inset-0 pointer-events-none overflow-hidden">
                     <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary/5 blur-[120px] rounded-full" />
                     <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-indigo-500/5 blur-[120px] rounded-full" />
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-12 relative z-10">
-                    <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }}
-                        className="w-full lg:w-96 shrink-0 space-y-8"
-                    >
+                    <div className="w-full lg:w-96 shrink-0 space-y-8">
                         <div className="glass-card p-6 rounded-[2.5rem] border border-white/10 shadow-xl text-center relative overflow-hidden group">
                             <div className="relative z-10">
                                 <div className="relative inline-block mb-6">
@@ -323,20 +308,10 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
                                 </button>
                             ))}
                         </nav>
-                    </motion.div>
+                    </div>
 
                     <main className="flex-1 min-w-0">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {renderContent()}
-                            </motion.div>
-                        </AnimatePresence>
+                        {renderContent()}
                     </main>
                 </div>
             </div>
@@ -346,15 +321,15 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
 
 const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
     return (
-        <div className="space-y-12 animate-in fade-in duration-500 pb-12">
+        <div className="space-y-12 pb-12">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-                <MetricTile icon={Trophy} label="SOLVED_REPOS" value={data.stats.solved} trend="+12%" />
-                <MetricTile icon={Zap} label="CURRENT_XP" value={data.stats.xp.toLocaleString()} trend="TOP 2%" />
-                <MetricTile icon={Activity} label="WORLD_RANK" value={`#${data.stats.rank}`} trend="↑ 45" />
-                <MetricTile icon={Code2} label="BURN_STREAK" value={data.stats.streak} trend="Days" />
+                <MetricTile icon={Trophy} label="SOLVED_REPOS" value={data.stats.solved} trend="" />
+                <MetricTile icon={Zap} label="CURRENT_XP" value={data.stats.xp.toLocaleString()} trend="" />
+                <MetricTile icon={Activity} label="WORLD_RANK" value={`#${data.stats.rank}`} trend="" />
+                <MetricTile icon={Code2} label="BURN_STREAK" value={data.stats.streak} trend="" />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 xl:grid-cols-1">
                 <div className="xl:col-span-2 space-y-12">
                     <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg relative overflow-hidden group">
                         <div className="relative z-10">
@@ -363,10 +338,10 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                                     <Activity className="w-6 h-6 text-primary" />
                                     Activity History
                                 </h3>
-                                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                                {/* <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
                                     <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
                                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">Live Telemetry</span>
-                                </div>
+                                </div> */}
                             </div>
                             <ContributionGraph contributionData={Object.entries(data.contribution_data).map(([date, count]) => ({ date, count, level: count > 10 ? 4 : count > 5 ? 3 : count > 2 ? 2 : count > 0 ? 1 : 0 }))} contributionDataRaw={data.contribution_data} stats={data.stats} />
                         </div>
@@ -382,7 +357,7 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                                 {data.recentSubmissions.slice(0, 5).map((sub, i) => (
                                     <div key={sub.id} className="group/item flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer">
                                         <div className="flex items-center gap-6">
-                                            <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center font-black text-[10px]", statusColor(sub.status))}>
+                                            <div className={clsx("w-15 h-15 rounded-xl flex items-center justify-center font-black text-[9px]", statusColor(sub.status))}>
                                                 {statusLabel(sub.status)}
                                             </div>
                                             <div>
@@ -447,7 +422,7 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
 });
 
 const SubmissionsTab = memo(({ data }: StudentProfileViewProps) => (
-    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg animate-in fade-in duration-500">
+    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg">
         <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Submission History</h3>
         <div className="space-y-6">
             {data.recentSubmissions.map((sub) => (
@@ -473,7 +448,7 @@ const SubmissionsTab = memo(({ data }: StudentProfileViewProps) => (
 ));
 
 const AchievementsTab = memo((_props: StudentProfileViewProps) => (
-    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg animate-in fade-in duration-500">
+    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg">
         <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Honor Logs</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {[
@@ -494,7 +469,7 @@ const AchievementsTab = memo((_props: StudentProfileViewProps) => (
 ));
 
 const InsightsTab = memo((_props: StudentProfileViewProps) => (
-    <div className="space-y-12 animate-in fade-in duration-500">
+    <div className="space-y-12">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
             <div className="xl:col-span-2 glass-card p-8 rounded-[2.5rem] border border-white/10 text-white relative overflow-hidden bg-slate-950">
                 <h3 className="text-xl font-black mb-8 flex items-center gap-3 uppercase tracking-tight">
@@ -566,7 +541,7 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
     };
 
     return (
-        <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-xl animate-in fade-in duration-700">
+        <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-xl">
             <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Settings</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <div className="space-y-12">
@@ -603,21 +578,19 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                                             className="w-full bg-white/[0.03] px-6 py-4 rounded-2xl border-2 border-white/5 focus:border-primary focus:ring-8 focus:ring-primary/10 outline-none transition-all font-black text-white placeholder-slate-700 tracking-wider"
                                         />
                                     </div>
-                                    <MagneticWrapper>
-                                        <button
-                                            onClick={handleSaveSettings}
-                                            disabled={isSaving}
-                                            className={clsx(
-                                                "group relative px-10 py-5 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] transition-all overflow-hidden shadow-2xl",
-                                                saveStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-primary text-white"
-                                            )}
-                                        >
-                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            {isSaving ? "SYNCING..." : (
-                                                saveStatus === "success" ? <><Check className="w-5 h-5 inline mr-2" /> UPLINK_SYNCED</> : <><Save className="w-5 h-5 inline mr-2" /> Establish Link</>
-                                            )}
-                                        </button>
-                                    </MagneticWrapper>
+                                    <button
+                                        onClick={handleSaveSettings}
+                                        disabled={isSaving}
+                                        className={clsx(
+                                            "group relative px-10 py-5 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] transition-all overflow-hidden shadow-2xl",
+                                            saveStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-primary text-white"
+                                        )}
+                                    >
+                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        {isSaving ? "SYNCING..." : (
+                                            saveStatus === "success" ? <><Check className="w-5 h-5 inline mr-2" /> UPLINK_SYNCED</> : <><Save className="w-5 h-5 inline mr-2" /> Establish Link</>
+                                        )}
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -663,22 +636,20 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
 };
 
 const HelpTab = memo((_props: StudentProfileViewProps) => (
-    <div className="space-y-12 animate-in fade-in duration-500 pb-12">
+    <div className="space-y-12 pb-12">
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-12">
             <div className="flex items-center gap-6">
-                <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.3)]" />
+                {/* <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.3)]" /> */}
                 <div>
                     <h1 className="text-3xl font-black text-white tracking-tight uppercase">Help Center</h1>
                     <p className="text-slate-500 font-medium text-base mt-2 uppercase tracking-wide">Documentation and support access</p>
                 </div>
             </div>
-            <MagneticWrapper>
-                <a href="https://discord.gg/minicode" target="_blank" className="flex items-center gap-4 bg-[#5865F2] text-white px-10 py-5 rounded-[2.5rem] font-black text-sm hover:shadow-[#5865F2]/20 transition-all shadow-xl relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <MessageSquare className="w-5 h-5 pr-1" />
-                    JOIN_HQ_SERVER
-                </a>
-            </MagneticWrapper>
+            <a href="https://discord.gg/minicode" target="_blank" className="flex items-center gap-4 bg-[#5865F2] text-white px-10 py-5 rounded-[2.5rem] font-black text-sm hover:shadow-[#5865F2]/20 transition-all shadow-xl relative overflow-hidden group">
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <MessageSquare className="w-5 h-5 pr-1" />
+                JOIN_HQ_SERVER
+            </a>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -723,7 +694,7 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
     };
 
     return (
-        <div className="space-y-12 animate-in fade-in duration-700 pb-12">
+        <div className="space-y-12 pb-12">
             <div className="flex items-center gap-6">
                 <div>
                     <h1 className="text-3xl font-black text-white tracking-tight uppercase">Sovereign Override</h1>
@@ -768,22 +739,20 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                         />
                     </div>
 
-                    <MagneticWrapper>
-                        <button
-                            onClick={handleAward}
-                            disabled={isAwarding || amount <= 0}
-                            className={clsx(
-                                "w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-widest transition-all relative overflow-hidden shadow-2xl",
-                                awardStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/40" : "bg-primary text-white hover:shadow-primary/40"
+                    <button
+                        onClick={handleAward}
+                        disabled={isAwarding || amount <= 0}
+                        className={clsx(
+                            "w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-widest transition-all relative overflow-hidden shadow-2xl",
+                            awardStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/40" : "bg-primary text-white hover:shadow-primary/40"
+                        )}
+                    >
+                        <span className="relative z-10 flex items-center justify-center gap-3">
+                            {isAwarding ? "INITIALIZING INFUSION..." : (
+                                awardStatus === "success" ? <><CheckCircle className="w-5 h-5" /> OVERRIDE_SUCCESSFUL</> : <><Zap className="w-5 h-5" /> Execute Sovereign Override</>
                             )}
-                        >
-                            <span className="relative z-10 flex items-center justify-center gap-3">
-                                {isAwarding ? "INITIALIZING INFUSION..." : (
-                                    awardStatus === "success" ? <><CheckCircle className="w-5 h-5" /> OVERRIDE_SUCCESSFUL</> : <><Zap className="w-5 h-5" /> Execute Sovereign Override</>
-                                )}
-                            </span>
-                        </button>
-                    </MagneticWrapper>
+                        </span>
+                    </button>
                 </div>
 
                 <div className="space-y-8">

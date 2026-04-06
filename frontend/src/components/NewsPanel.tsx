@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ExternalLink, Megaphone, Code, Calendar, Link as LinkIcon, X, Plus, Trash2, Bell } from "lucide-react";
+import { ExternalLink, Megaphone, Code, Calendar, Link as LinkIcon, X, Plus, Trash2 } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import api from "@/lib/api";
@@ -85,7 +84,6 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                 const res = await api.get("/news");
                 setNews(res.data);
                 
-                // Also mark personal notifications as read when panel is opened
                 if (user) {
                     await api.post("/notifications/mark-all-read");
                     await api.post("/notifications/mark-news-read");
@@ -143,169 +141,171 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
         }
     };
 
-    if (!isOpen) return null;
-
     return (
-        <>
-            {/* Backdrop Overlay */}
-            <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+        <div 
+            className={clsx(
+                "fixed inset-0 z-[100] transition-all duration-200 ease-in-out",
+                isOpen ? "visible pointer-events-auto" : "invisible pointer-events-none"
+            )}
+        >
+            {/* Backdrop Overlay - Pure CSS transition */}
+            <div 
                 onClick={onClose}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+                className={clsx(
+                    "fixed inset-0 bg-black/60",
+                    isOpen ? "opacity-100 backdrop-blur-sm" : "opacity-0"
+                )}
             />
 
-            {/* Sidebar Panel */}
-            <motion.div 
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed top-0 right-0 w-80 md:w-96 h-full border-l border-white/10 bg-[#0a0a14]/90 backdrop-blur-2xl flex flex-col z-[101] shadow-2xl"
+            {/* Sidebar Panel - Pure CSS slide */}
+            <div 
+                className={clsx(
+                    "fixed top-0 right-0 w-80 md:w-96 h-full border-l border-white/10 bg-[#0a0a14] flex flex-col z-[101] shadow-2xl transition-transform duration-75 ease-out",
+                    isOpen ? "translate-x-0" : "translate-x-full"
+                )}
             >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Megaphone className="w-4 h-4 text-primary" />
-                    News & Updates
-                </h2>
-                <div className="flex items-center gap-1">
-                    {isFaculty && (
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                    <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Megaphone className="w-4 h-4 text-primary" />
+                        News & Updates
+                    </h2>
+                    <div className="flex items-center gap-1">
+                        {isFaculty && (
+                            <button
+                                onClick={() => setShowCreate(!showCreate)}
+                                className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                                title="Add news item"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        )}
                         <button
-                            onClick={() => setShowCreate(!showCreate)}
+                            onClick={onClose}
                             className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-                            title="Add news item"
                         >
-                            <Plus className="w-4 h-4" />
+                            <X className="w-4 h-4" />
                         </button>
-                    )}
-                    <button
-                        onClick={onClose}
-                        className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
+                    </div>
                 </div>
-            </div>
 
-            {/* Create Form */}
-            {showCreate && isFaculty && (
-                <div className="px-4 py-3 border-b border-white/10 space-y-3 bg-white/5">
-                    <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        placeholder="Title"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                    />
-                    <textarea
-                        value={newContent}
-                        onChange={(e) => setNewContent(e.target.value)}
-                        placeholder="Content"
-                        rows={2}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
-                    />
-                    <div className="flex gap-2">
-                        <select
-                            value={newType}
-                            onChange={(e) => setNewType(e.target.value)}
-                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
-                        >
-                            <option value="announcement" className="bg-slate-800">Announcement</option>
-                            <option value="link" className="bg-slate-800">Useful Link</option>
-                            <option value="event" className="bg-slate-800">Event</option>
-                        </select>
+                {/* Create Form */}
+                {showCreate && isFaculty && (
+                    <div className="px-4 py-3 border-b border-white/10 space-y-3 bg-white/5">
                         <input
                             type="text"
-                            value={newLink}
-                            onChange={(e) => setNewLink(e.target.value)}
-                            placeholder="Link (optional)"
-                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                            value={newTitle}
+                            onChange={(e) => setNewTitle(e.target.value)}
+                            placeholder="Title"
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50"
                         />
+                        <textarea
+                            value={newContent}
+                            onChange={(e) => setNewContent(e.target.value)}
+                            placeholder="Content"
+                            rows={2}
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none"
+                        />
+                        <div className="flex gap-2">
+                            <select
+                                value={newType}
+                                onChange={(e) => setNewType(e.target.value)}
+                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/50"
+                            >
+                                <option value="announcement" className="bg-slate-800">Announcement</option>
+                                <option value="link" className="bg-slate-800">Useful Link</option>
+                                <option value="event" className="bg-slate-800">Event</option>
+                            </select>
+                            <input
+                                type="text"
+                                value={newLink}
+                                onChange={(e) => setNewLink(e.target.value)}
+                                placeholder="Link (optional)"
+                                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                            />
+                        </div>
+                        <button
+                            onClick={handleCreate}
+                            disabled={creating || !newTitle.trim() || !newContent.trim()}
+                            className={clsx(
+                                "w-full py-2 rounded-lg text-sm font-semibold transition-all",
+                                creating || !newTitle.trim() || !newContent.trim()
+                                    ? "bg-white/5 text-slate-500 cursor-not-allowed"
+                                    : "bg-primary text-white"
+                            )}
+                        >
+                            {creating ? "Posting..." : "Post News"}
+                        </button>
                     </div>
-                    <button
-                        onClick={handleCreate}
-                        disabled={creating || !newTitle.trim() || !newContent.trim()}
-                        className={clsx(
-                            "w-full py-2 rounded-lg text-sm font-semibold transition-all",
-                            creating || !newTitle.trim() || !newContent.trim()
-                                ? "bg-white/5 text-slate-500 cursor-not-allowed"
-                                : "bg-primary text-white hover:bg-primary/90"
-                        )}
-                    >
-                        {creating ? "Posting..." : "Post News"}
-                    </button>
-                </div>
-            )}
-
-            {/* News List */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-hide">
-                {loading ? (
-                    [1, 2, 3].map((i) => (
-                        <div key={i} className="h-24 bg-white/5 animate-pulse rounded-xl border border-white/5" />
-                    ))
-                ) : news.length === 0 ? (
-                    <div className="text-center py-10">
-                        <Megaphone className="w-8 h-8 text-slate-600 mx-auto mb-3" />
-                        <p className="text-xs text-slate-500">No news yet</p>
-                        {isFaculty && (
-                            <p className="text-[10px] text-slate-600 mt-1">Click + to add one</p>
-                        )}
-                    </div>
-                ) : (
-                    news.map((item) => {
-                        const config = typeConfig[item.news_type] || typeConfig.announcement;
-                        const content = (
-                            <div className="group/item bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer">
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                    <div className={clsx(
-                                        "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider",
-                                        config.bg, config.color
-                                    )}>
-                                        {config.icon}
-                                        {config.label}
-                                    </div>
-                                    <span className="text-[10px] text-slate-500 shrink-0">{timeAgo(item.created_at)}</span>
-                                </div>
-                                <h3 className="text-sm font-bold text-white mb-1 line-clamp-2">{item.title}</h3>
-                                <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">{item.content}</p>
-                                {item.link && (
-                                    <div className="mt-2 flex items-center gap-1 text-[10px] text-primary font-medium">
-                                        <ExternalLink className="w-3 h-3" />
-                                        Open link
-                                    </div>
-                                )}
-                            </div>
-                        );
-
-                        return (
-                            <div key={item.id} className="relative">
-                                {item.link ? (
-                                    <Link href={item.link} target="_blank" rel="noopener noreferrer">
-                                        {content}
-                                    </Link>
-                                ) : (
-                                    content
-                                )}
-                                {isFaculty && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleDelete(item.id);
-                                        }}
-                                        className="absolute top-2 right-2 p-1 rounded-md bg-rose-500/10 text-rose-500 opacity-0 group-hover/item:opacity-100 hover:bg-rose-500/20 transition-all"
-                                    >
-                                        <Trash2 className="w-3 h-3" />
-                                    </button>
-                                )}
-                            </div>
-                        );
-                    })
                 )}
+
+                {/* News List */}
+                <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-hide">
+                    {loading ? (
+                        [1, 2, 3].map((i) => (
+                            <div key={i} className="h-24 bg-white/5 rounded-xl border border-white/5" />
+                        ))
+                    ) : news.length === 0 ? (
+                        <div className="text-center py-10">
+                            <Megaphone className="w-8 h-8 text-slate-600 mx-auto mb-3" />
+                            <p className="text-xs text-slate-500">No news yet</p>
+                            {isFaculty && (
+                                <p className="text-[10px] text-slate-600 mt-1">Click + to add one</p>
+                            )}
+                        </div>
+                    ) : (
+                        news.map((item) => {
+                            const config = typeConfig[item.news_type] || typeConfig.announcement;
+                            const content = (
+                                <div className="group/item bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 hover:border-white/20 cursor-pointer transition-colors duration-75">
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                        <div className={clsx(
+                                            "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider",
+                                            config.bg, config.color
+                                        )}>
+                                            {config.icon}
+                                            {config.label}
+                                        </div>
+                                        <span className="text-[10px] text-slate-500 shrink-0">{timeAgo(item.created_at)}</span>
+                                    </div>
+                                    <h3 className="text-sm font-bold text-white mb-1 line-clamp-2">{item.title}</h3>
+                                    <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">{item.content}</p>
+                                    {item.link && (
+                                        <div className="mt-2 flex items-center gap-1 text-[10px] text-white font-medium">
+                                            <ExternalLink className="w-3 h-3" />
+                                            Open link
+                                        </div>
+                                    )}
+                                </div>
+                            );
+
+                            return (
+                                <div key={item.id} className="relative">
+                                    {item.link ? (
+                                        <Link href={item.link} target="_blank" rel="noopener noreferrer">
+                                            {content}
+                                        </Link>
+                                    ) : (
+                                        content
+                                    )}
+                                    {isFaculty && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleDelete(item.id);
+                                            }}
+                                            className="absolute top-2 right-2 p-1 rounded-md bg-rose-500/10 text-rose-500 opacity-0 group-hover/item:opacity-100 transition-all"
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </button>
+                                    )}
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
             </div>
-            </motion.div>
-        </>
+        </div>
     );
 }

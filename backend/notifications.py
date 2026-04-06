@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, UTC
 from pydantic import BaseModel
 
 from models import User, Notification, NewsItem
@@ -126,7 +126,7 @@ def mark_news_as_read(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    user.last_news_viewed_at = datetime.utcnow()
+    user.last_news_viewed_at = datetime.now(UTC)
     session.add(user)
     session.commit()
     return {"message": "News marked as read"}

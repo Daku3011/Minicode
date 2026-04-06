@@ -27,104 +27,108 @@ Rather than restricting students to a tiny browser code editor, **MiniCode deman
 
 ---
 
-## ✨ System Features
+## 🚀 Live Environment (Staging)
 
-### 🚀 Massive Scale: Enterprise Grade Architecture
-We have completely overhauled the legacy backend infrastructure to effortlessly sustain high-traffic concurrency, such as during heavily active, 48-hour global hackathons.
-* **Elastic Asynchronous Judging:** AI code evaluations are strictly handled by a detached **Celery Worker Group**, scaled horizontally through a **Redis Broker**. The core API logic remains non-blocking.
-* **Enterprise DB Backend:** Complete transition to a production-ready **PostgreSQL 15** database, guaranteeing atomic multi-student transactions.
-* **Aggressive Redis Caching:** Heavy analytical queries (Leaderboards, Profiles, Repositories) are actively cached utilizing `FastAPICache2` linked directly to Redis.
-
-### 🕵️‍♂️ Anti-Plagiarism & AI Generation Protection
-We integrated powerful anti-cheating heuristic metrics directly into the core AI Judge evaluation pipeline:
-* **Iterative Commit Telemetry:** The AI Judge actively inspects the commit history and git timestamps of the connected repository. A massive code drop in a single commit immediately triggers a manual review alert.
-* **Direct Prompt Injection Protection:** The AI scrutinizes code for hallmark generative AI boilerplate formatting, suspiciously over-explanatory comments, and generic variable nomenclature indicating ChatGPT/Claude output.
-* **Red Flag Dashboard:** Faculty receives blatant visual red flags via a unique `AI Confidence Score`, enabling robust academic integrity validation.
-
-### 🧠 Gemini 2.5 Flash Evaluation Engine
-* **Structured Multi-Phase Evaluation:** Real-world execution testing against dynamic input/output edge cases combined with an abstract semantic logic review.
-* **Markdown-Rich Analysis:**
-  - ✅ **Correctness**: Real-time pass/fail validation.
-  - 📊 **Big O Complexity**: Granular Time (`O(N)`) and Space (`O(1)`) memory usage footprint validation.
-  - 💡 **Clean Code Practices**: Meaningful structural architecture feedback.
-
-### 🐙 True GitHub-Native Workflow
-
-```text
-Student Selects "Provision Repository"
-       ↓
-Private GitHub repo created dynamically via GitHub Graph APIs
-       ↓
-Student git clones code locally → Commits logic natively → Pushes to `main` branch
-       ↓
-Student executes "Sync & Evaluate" → Submits evaluation job to Celery Worker Hash
-       ↓
-Gemini AI Judge processes logic and commit history from GitHub cache
-       ↓
-Score + 10x Engineer Feedback displayed instantly on Frontend
-```
+| Component | Status | URL |
+|-----------|--------|-----|
+| **Frontend** | 🟢 Live | [https://minicode-scet.vercel.app](https://minicode-scet.vercel.app) |
+| **API Docs** | 🟢 Live | [https://minicode-backend.onrender.com/docs](https://minicode-backend.onrender.com/docs) |
+| **Source Code** | 🛠️ Dev | [https://github.com/Daku3011/Minicode](https://github.com/Daku3011/Minicode) |
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Getting Started
 
-```text
-┌──────────────────────────────────────────────────┐
-│                   Frontend                       │
-│           Next.js 15 + TailwindCSS 4             │
-│        Framer Motion UI · React Server           │
-└────────────────────┬─────────────────────────────┘
-                     │ HTTPS / JWT
-                     ▼
-┌─────────────────────────────────────────────────┐
-│                   Backend                       │
-│           FastAPI + Uvicorn + SQLAlchemy        │
-│                                                 │
-│  Auth     ── GitHub OAuth + Password (bcrypt)   │
-│  Cache    ── FastAPICache + Redis Server        │
-│  Repos    ── PyGithub Native Repository Engine  │
-│  DB       ── Supabase PostgreSQL Pooler         │
-└────────────────────┬─────────────────────────────┘
-                     │ Message Broker (AMQP/Redis)
-                     ▼
-┌─────────────────────────────────────────────────┐
-│           Celery Async AI Workers               │
-│                                                 │
-│  Engine   ── Google Gemini 2.5 Logic Assessment │
-│  Queue    ── Distributed Job Dispatcher         │
-└─────────────────────────────────────────────────┘
-```
-
----
-
-## 🚀 Deployment & Installation
-
-Want to deploy MiniCode globally for your institution? View the [DEPLOYMENT.md](DEPLOYMENT.md) guide for a transparent cost analysis spanning **$0/month Free Tier** deployment using Supabase, Vercel, and Render, scaling up to high-traffic paid tiers.
-
-### Setting Up Locally via Docker
-
-A complete `docker-compose.yml` environment is included for instant, zero-friction spinning up.
+### 🌌 Option 1: The Zero-Friction Way (Docker)
+Ensure you have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
 
 ```bash
-# 1. Clone & Env Setup
-git clone https://github.com/your-username/MiniCode.git
-cd MiniCode
+# 1. Clone the repository
+git clone https://github.com/Daku3011/Minicode.git
+cd Minicode
+
+# 2. Configure Environment
 cp .env.example .env
+# Edit .env with your GITHUB_CLIENT_ID, SECRET and GEMINI_API_KEY
 
-# 2. Add your GitHub OAuth IDs and Gemini API Keys in .env
-
-# 3. Pull Images & Launch
+# 3. Spin up the entire ecosystem
 docker-compose up -d --build
 ```
-> **Backend**: [http://localhost:8000/docs](http://localhost:8000/docs) (OpenAPI UI)
-> **Frontend**: [http://localhost:3000](http://localhost:3000)
+> **Backend**: http://localhost:8000/docs  
+> **Frontend**: http://localhost:3000
+
+---
+
+### 💻 Option 2: The Manual Way (Developer Mode)
+
+#### 1. Backend Setup (FastAPI)
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Create .env and configure DATABASE_URL, REDIS_URL, etc.
+python -m uvicorn main:app --reload --port 8000
+```
+
+#### 2. Async Worker Setup (Celery + Beat)
+Requires a running **Redis** server.
+```bash
+cd backend
+# With venv active
+# Starts both the task worker and the periodic scheduler (beat)
+celery -A worker.celery_app worker --beat --loglevel=info
+```
+> **Note**: In production, it's recommended to run `worker` and `beat` as two separate processes.
+
+#### 3. Frontend Setup (Next.js)
+```bash
+cd frontend
+npm install
+# Create .env.local with NEXT_PUBLIC_API_URL=http://localhost:8000
+npm run dev
+```
+
+---
+
+## ⚙️ Environment Configuration
+
+| Variable | Description | Source |
+|----------|-------------|--------|
+| `GITHUB_CLIENT_ID` | OAuth App Client ID | [GitHub Dev Settings](https://github.com/settings/developers) |
+| `GITHUB_CLIENT_SECRET` | OAuth App Secret | [GitHub Dev Settings](https://github.com/settings/developers) |
+| `GEMINI_API_KEY` | AI Evaluation Engine Key | [Google AI Studio](https://aistudio.google.com/) |
+| `DATABASE_URL` | PostgreSQL or SQLite URI | Supabase / Local Postgres |
+| `REDIS_URL` | Cache and Task Broker URI | Local Redis / Upstash |
+
+---
+
+## ❓ FAQ
+
+### 1. Why is my code evaluation stuck on "Pending"?
+This almost always means the **Celery Worker** is not running. Check the logs of the `minicode-worker` container or manually run the celery command in the backend directory.
+
+### 2. GitHub Login redirects to an error page?
+Ensure your **OAuth Callback URL** in GitHub Settings perfectly matches your frontend URL.  
+- Development: `http://localhost:3000/auth/github/callback`  
+- Production: `https://your-domain.com/auth/github/callback`
+
+### 3. My Gemini AI score is 0 or "Error"?
+Verify your `GEMINI_API_KEY` in the `.env`. If you are using the Free Tier, ensure you aren't hitting the rate limit (15 RPM).
+
+### 4. How do I clear the cached leaderboard?
+Restart the Redis instance or use the backend endpoint `/admin/cache/clear` (Admin only).
+
+---
 
 ## 🎨 UI/UX Design Philosophies
 The UI/UX is built to break away from traditional "intimidating" dark-mode coding arenas. We utilize an aesthetic of approachability, incorporating fluid micro-animations, glassmorphism components, and neon-purple highlights. Take a closer look at the [DESIGN_VISION.md](DESIGN_VISION.md) for UX philosophies.
 
-Admin: admin / admin123
-Faculty: faculty / faculty123
-Student: student / student123
+## 👤 Default Credentials (Development)
+- **Admin**: `admin` / `admin123`
+- **Faculty**: `faculty` / `faculty123`
+- **Student**: `student` / `student123`
 
 ---
 *Elevate competitive programming to the modern enterprise level.* 🚀

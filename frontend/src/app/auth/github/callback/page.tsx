@@ -47,7 +47,7 @@ function GithubCallbackContent() {
         return (
             <div className="flex h-screen items-center justify-center p-4 text-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-rose-500 mb-4">Authentication Error</h2>
+                    <h2 className="text-2xl font-bold text-rose-500 mb-4 text-white">Authentication Error</h2>
                     <p className="text-muted-foreground">{error}</p>
                     <button
                         onClick={() => router.push("/login")}
@@ -64,7 +64,7 @@ function GithubCallbackContent() {
         <div className="flex h-screen flex-col items-center justify-center space-y-4">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
             <h2 className="text-xl font-bold text-white">Authenticating with GitHub...</h2>
-            <p className="text-muted-foreground">Please wait while we set up your session.</p>
+            <p className="text-muted-foreground text-white">Please wait while we set up your session.</p>
         </div>
     );
 }

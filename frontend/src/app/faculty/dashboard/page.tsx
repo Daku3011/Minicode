@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Download, Terminal, CheckCircle2, TrendingUp, AlertTriangle, List, MoreHorizontal, Lightbulb, Search, Settings, MoreVertical, Edit, Trash, BarChart3, Bell } from "lucide-react";
+import { Plus, Download, Terminal, CheckCircle2, TrendingUp, AlertTriangle, List, MoreHorizontal, Link as LinkIcon, Edit, Trash, BarChart3, Bell } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import api from "@/lib/api";
-import { motion, AnimatePresence } from "framer-motion";
-import MagneticWrapper from "@/components/MagneticWrapper";
 import BroadcastAlert from "@/components/BroadcastAlert";
 
 interface FacultyAnalytics {
@@ -63,114 +61,98 @@ export default function FacultyDashboard() {
     const overallPassRate = totalSubmissions > 0 ? (totalAccepted / totalSubmissions) * 100 : 0;
 
     return (
-        <div className="bg-[#0f0a1e] text-slate-100 min-h-[calc(100vh-64px)] font-display relative overflow-x-hidden">
-            {/* Ambient Background Elements */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-[#22d3ee]/10 rounded-full blur-[120px]" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5" />
+        <div className="bg-[#0a0a0f] text-slate-100 min-h-[calc(100vh-64px)] font-display relative">
+            {/* Minimal Grid Background */}
+            <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
+                <div className="absolute inset-0 bg-[url('/grid.svg')]" />
             </div>
 
             {/* Inner Top Nav for Faculty specifically */}
             <div className="sticky top-0 z-40 w-full mb-8">
-                <div className="flex items-center gap-8 border-b border-primary/10 bg-[#1a142e]/40 backdrop-blur-xl px-6 py-3 w-full">
+                <div className="flex items-center gap-8 border-b border-white/5 bg-[#0a0a14]/80 backdrop-blur-md px-6 py-3 w-full">
                     <nav className="flex items-center gap-8 overflow-x-auto no-scrollbar">
                         <button className="text-primary text-sm font-bold border-b-2 border-primary pb-2 whitespace-nowrap">Dashboard</button>
-                        <button className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Curriculum</button>
-                        <Link href="/faculty/students" className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Student Roster</Link>
-                        <button className="text-slate-400 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Reports</button>
+                        <button className="text-slate-500 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Curriculum</button>
+                        <Link href="/faculty/students" className="text-slate-500 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2 text-link">Student Roster</Link>
+                        <button className="text-slate-500 hover:text-slate-100 text-sm font-medium transition-colors whitespace-nowrap pb-2">Reports</button>
                     </nav>
                 </div>
             </div>
 
-            <main className="flex-1 px-6 lg:px-10 max-w-7xl mx-auto w-full space-y-10 relative z-10 mb-20">
+            <div className="max-w-[1600px] mx-auto space-y-12 relative z-10 px-4 md:px-8 mb-20">
                 {/* Header & Stats Overview */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pt-4"
-                >
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pt-4">
                     <div className="space-y-1">
                         <div className="flex items-center gap-3 mb-1">
                             <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-wider">Faculty Portal</span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tight">Faculty Overview</h1>
-                        <p className="text-slate-400 text-lg">Real-time performance analytics for CS101: Data Structures</p>
+                        <h1 className="text-5xl font-black text-white tracking-tight leading-none">Faculty Overview</h1>
+                        <p className="text-slate-500 text-lg mt-2 font-medium">Real-time performance analytics for CS101: Data Structures</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <BroadcastAlert />
-                        <MagneticWrapper>
-                            <button className="glass-card border-primary/20 text-slate-100 px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 hover:bg-primary/10 transition-all">
-                                <Download className="w-4 h-4" /> Export Data
-                            </button>
-                        </MagneticWrapper>
-                        <MagneticWrapper>
-                            <Link href="/faculty/problems" className="premium-btn px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 transition-all">
-                                <Plus className="w-4 h-4" /> New Assignment
-                            </Link>
-                        </MagneticWrapper>
+                        <button className="bg-white/5 border border-white/10 text-slate-100 px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 hover:bg-white/10 transition-all">
+                            <Download className="w-4 h-4" /> Export
+                        </button>
+                        <Link href="/faculty/problems" className="bg-primary text-white hover:bg-primary/90 px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 transition-all">
+                            <Plus className="w-4 h-4" /> New Assignment
+                        </Link>
                     </div>
-                </motion.div>
+                </div>
 
                 {/* High-Level Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-[#1a142e]/60 backdrop-blur-md border border-primary/10 p-6 rounded-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Terminal className="text-primary w-16 h-16" />
+                    <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl relative overflow-hidden group">
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Total Submissions</p>
+                        <div className="flex items-baseline gap-3 mt-3">
+                            <h3 className="text-4xl font-black text-slate-100 tracking-tight leading-none">{totalSubmissions.toLocaleString()}</h3>
+                            <span className="text-emerald-500 text-[10px] font-black tracking-widest flex items-center uppercase"><TrendingUp className="w-3 h-3 mr-1" /> +12.5%</span>
                         </div>
-                        <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Total Submissions</p>
-                        <div className="flex items-baseline gap-3 mt-2">
-                            <h3 className="text-3xl font-bold text-slate-100">{totalSubmissions.toLocaleString()}</h3>
-                            <span className="text-[#22d3ee] text-sm font-bold flex items-center"><TrendingUp className="w-3 h-3 mr-1" /> +12.5%</span>
-                        </div>
-                        <div className="mt-4 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-primary w-3/4 rounded-full shadow-[0_0_15px_rgba(137,91,245,0.5)]"></div>
+                        <div className="mt-6 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary w-3/4 rounded-full"></div>
                         </div>
                     </div>
-                    <div className="bg-[#1a142e]/60 backdrop-blur-md border border-primary/10 p-6 rounded-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <CheckCircle2 className="text-[#22d3ee] w-16 h-16" />
+                    <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl relative overflow-hidden group">
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Avg Pass Rate</p>
+                        <div className="flex items-baseline gap-3 mt-3">
+                            <h3 className="text-4xl font-black text-slate-100 tracking-tight leading-none">{overallPassRate.toFixed(1)}%</h3>
+                            <span className="text-emerald-500 text-[10px] font-black tracking-widest flex items-center uppercase"><TrendingUp className="w-3 h-3 mr-1" /> +3.2%</span>
                         </div>
-                        <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Avg Pass Rate</p>
-                        <div className="flex items-baseline gap-3 mt-2">
-                            <h3 className="text-3xl font-bold text-slate-100">{overallPassRate.toFixed(1)}%</h3>
-                            <span className="text-[#22d3ee] text-sm font-bold flex items-center"><TrendingUp className="w-3 h-3 mr-1" /> +3.2%</span>
-                        </div>
-                        <div className="mt-4 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-[#22d3ee] rounded-full shadow-[0_0_15px_rgba(34,211,238,0.5)]" style={{ width: `${overallPassRate}%` }}></div>
+                        <div className="mt-6 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full bg-primary rounded-full" style={{ width: `${overallPassRate}%` }}></div>
                         </div>
                     </div>
-                    <div className="bg-[#1a142e]/60 backdrop-blur-md border border-primary/10 p-6 rounded-xl relative overflow-hidden group border-l-4 border-l-orange-500/50">
-                        <p className="text-slate-400 text-sm font-medium uppercase tracking-wider">Most Struggled Problem</p>
-                        <div className="flex items-baseline gap-3 mt-2">
-                            <h3 className="text-xl font-bold text-slate-100 truncate">
-                                {problems.length > 0 ? problems[0].title : "N/A"}
+                    <div className="bg-white/[0.02] border border-orange-500/20 p-6 rounded-2xl relative overflow-hidden group">
+                        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">Priority Focus Area</p>
+                        <div className="flex items-baseline gap-3 mt-3">
+                            <h3 className="text-xl font-bold text-slate-100 truncate uppercase tracking-tight">
+                                {problems.length > 0 ? problems[0].title : "Initializing..."}
                             </h3>
                         </div>
-                        <p className="text-orange-400 text-xs font-bold mt-2 flex items-center gap-1">
-                            <AlertTriangle className="w-4 h-4" /> Flagged for review
+                        <p className="text-orange-400 text-[10px] font-black mt-3 flex items-center gap-2 uppercase tracking-widest">
+                            <AlertTriangle className="w-3.5 h-3.5" /> Sector Flagged
                         </p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Problem Manager Table */}
-                    <div className="lg:col-span-2 space-y-4">
+                    <div className="lg:col-span-8 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                                <List className="w-5 h-5 text-primary" /> Problem Manager
+                            <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-3">
+                                <List className="w-4 h-4 text-primary" /> Logic Registry
                             </h2>
-                            <button className="text-primary text-sm font-semibold hover:underline">View All</button>
+                            <button className="text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:text-white transition-colors">Audit All</button>
                         </div>
-                        <div className="glass-card rounded-2xl overflow-hidden shadow-2xl border-white/5">
+                        <div className="bg-white/[0.01] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
                             <div className="overflow-x-auto no-scrollbar">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-white/[0.02] border-b border-white/5">
-                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Problem Name</th>
-                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Difficulty</th>
-                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Success</th>
-                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">Action</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Subject Identity</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Complexity</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Success Factor</th>
+                                            <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 text-right">System Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
@@ -181,35 +163,29 @@ export default function FacultyDashboard() {
                                                 : 0; 
 
                                             return (
-                                                <tr key={problem.id} className="hover:bg-primary/5 transition-colors">
-                                                    <td className="px-6 py-4 font-medium text-slate-200">
-                                                        <Link href={`/problems/${problem.id}`} className="hover:text-primary transition-colors">
+                                                <tr key={problem.id} className="hover:bg-white/[0.02] transition-colors group">
+                                                    <td className="px-8 py-6 font-bold text-slate-200">
+                                                        <Link href={`/problems/${problem.id}`} className="hover:text-primary transition-colors text-link">
                                                             {problem.title}
                                                         </Link>
                                                     </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={clsx("px-2 py-0.5 rounded text-[10px] font-bold uppercase",
-                                                            problem.difficulty === "Easy" ? "bg-green-500/10 text-green-500" :
-                                                                problem.difficulty === "Medium" ? "bg-yellow-500/10 text-yellow-500" :
-                                                                    "bg-red-500/10 text-red-500"
+                                                    <td className="px-8 py-6">
+                                                        <span className={clsx("px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest",
+                                                            problem.difficulty === "Easy" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                                                                problem.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                                                    "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                                                         )}>{problem.difficulty}</span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-slate-400">{successRate}%</td>
-                                                    {/* <td className="px-6 py-4">
-                                                        <div className={clsx("flex items-center gap-2", problem.status === "Active" ? "text-[#22d3ee]" : "text-slate-500")}>
-                                                            <span className={clsx("size-2 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.5)]", problem.status === "Active" ? "bg-[#22d3ee] animate-pulse" : "bg-slate-600 shadow-none")}></span>
-                                                            {problem.status || "Active"}
-                                                        </div>
-                                                    </td> */}
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button className="text-slate-500 hover:text-primary transition-colors p-1 rounded hover:bg-white/5">
-                                                            <MoreHorizontal className="w-5 h-5" />
+                                                    <td className="px-8 py-6 text-sm font-black text-slate-400">{successRate}%</td>
+                                                    <td className="px-8 py-6 text-right">
+                                                        <button className="text-slate-600 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5">
+                                                            <MoreHorizontal className="w-4 h-4" />
                                                         </button>
                                                     </td>
                                                 </tr>
                                             );
                                         }) : (
-                                            <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-500">No problems created yet.</td></tr>
+                                            <tr><td colSpan={4} className="px-8 py-16 text-center text-slate-600 text-[10px] font-black uppercase tracking-widest">Awaiting System Deployment</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -218,30 +194,27 @@ export default function FacultyDashboard() {
                     </div>
 
                     {/* Student Insights View */}
-                    <div className="space-y-4">
+                    <div className="lg:col-span-4 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                                <BarChart3 className="w-5 h-5 text-[#22d3ee]" /> Student Insights
+                            <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-3">
+                                <BarChart3 className="w-4 h-4 text-primary" /> Intelligence
                             </h2>
                         </div>
-                        <div className="glass-card p-10 rounded-2xl flex flex-col items-center justify-center min-h-[350px] text-center relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-                            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 mb-6 group-hover:scale-110 transition-transform duration-500">
-                                <BarChart3 className="w-14 h-14 text-slate-600" />
+                        <div className="bg-white/[0.02] border border-white/5 p-10 rounded-2xl flex flex-col items-center justify-center min-h-[350px] text-center relative overflow-hidden group">
+                            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 mb-6 opacity-20">
+                                <BarChart3 className="w-12 h-12 text-slate-400" />
                             </div>
-                            <h3 className="text-2xl font-black text-white">Awaiting Submissions</h3>
-                            <p className="text-slate-500 mt-4 max-w-xs text-sm font-medium leading-relaxed">
-                                Student insights and activity charts will populate automatically once assignments are submitted.
+                            <h3 className="text-xl font-black text-white uppercase tracking-tight">Void Sector</h3>
+                            <p className="text-slate-500 mt-4 max-w-xs text-[10px] font-black uppercase tracking-widest leading-relaxed">
+                                Intelligence feeds will materialize as cohorts interact with the curriculum.
                             </p>
-                            <MagneticWrapper>
-                                <button className="mt-8 px-6 py-2.5 rounded-xl border border-white/10 text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-white/5 hover:text-white transition-all">
-                                    Refresh Data
-                                </button>
-                            </MagneticWrapper>
+                            <button className="mt-10 px-8 py-2.5 rounded-xl border border-white/10 text-slate-500 text-[10px] font-black uppercase tracking-widest hover:border-white/30 hover:text-white transition-all">
+                                Sync Manual
+                            </button>
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 }

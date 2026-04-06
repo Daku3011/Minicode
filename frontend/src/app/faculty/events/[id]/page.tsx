@@ -78,10 +78,10 @@ export default function FacultyEventDetailPage() {
     const activeCount = participants.filter(p => p.status === "active").length;
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#0f0a1e]">
+        <div className="min-h-[calc(100vh-64px)] bg-[#05003]">
             <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-blue-500/10 via-transparent to-transparent pointer-events-none" />
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
                 <Link href="/faculty/events" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6">
                     <ChevronLeft className="w-4 h-4" />
                     Back to Event Management
@@ -178,7 +178,7 @@ export default function FacultyEventDetailPage() {
                                                 <div className="flex items-center gap-2">
                                                     <h3 className="text-lg font-bold text-white">{p.full_name || p.username}</h3>
                                                     <span className={clsx(
-                                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase border",
+                                                        "px-2 py-0.5 rounded text-[10px] font-bold uppercase border ",
                                                         p.status === "active" ? "bg-green-500/10 text-green-400 border-green-500/20" :
                                                         p.status === "disqualified" ? "bg-red-500/10 text-red-400 border-red-500/20" :
                                                         "bg-slate-500/10 text-slate-400 border-slate-500/20"
@@ -251,7 +251,7 @@ export default function FacultyEventDetailPage() {
                                                     <select
                                                         value={editStatus}
                                                         onChange={(e) => setEditStatus(e.target.value)}
-                                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                                                     >
                                                         <option value="active">Active</option>
                                                         <option value="withdrawn">Withdrawn</option>

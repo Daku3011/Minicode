@@ -4,10 +4,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    command: ["gunicorn", "main:app", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/minicode
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-minicode}}
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/1
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
@@ -20,8 +21,6 @@ services:
       - SMTP_EMAIL=${SMTP_EMAIL}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
     restart: unless-stopped
-    security_opt:
-      - apparmor:unconfined
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 30s
@@ -39,7 +38,7 @@ services:
       dockerfile: Dockerfile
     command: ["celery", "-A", "worker.celery_app", "worker", "--loglevel=info"]
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/minicode
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-minicode}}
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/1
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
@@ -48,8 +47,29 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - SMTP_EMAIL=${SMTP_EMAIL}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-    security_opt:
-      - apparmor:unconfined
+    # removed apparmor
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ["celery", "-A", "worker.celery_app", "beat", "--loglevel=info", "-s", "/tmp/celerybeat-schedule"]
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-minicode}}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SMTP_EMAIL=${SMTP_EMAIL}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    # removed apparmor
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,9 +79,9 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=minicode
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-minicode}
     ports:
       - "5433:5432"
     volumes:
@@ -91,6 +111,9 @@ services:
         - NEXT_PUBLIC_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
     ports:
       - "3000:3000"
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
     depends_on:
       backend:
         condition: service_healthy

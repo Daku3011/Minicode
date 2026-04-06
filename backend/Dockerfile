@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Build dependencies
 # ============================================
-FROM python:3.12-alpine AS builder
+FROM python:3.12-alpine3.21 AS builder
 
 WORKDIR /build
 
@@ -22,7 +22,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # ============================================
 # Stage 2: Production image
 # ============================================
-FROM python:3.12-alpine AS production
+FROM python:3.12-alpine3.21 AS production
 
 # Install runtime dependencies only (libpq for psycopg2)
 RUN apk add --no-cache \

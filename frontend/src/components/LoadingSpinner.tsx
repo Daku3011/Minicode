@@ -25,7 +25,7 @@ export default function LoadingSpinner({ size = 'md', label, className = "" }: L
         }}
       />
       {label && (
-        <p className="text-sm font-medium text-slate-400 animate-pulse">
+        <p className="text-sm font-medium text-slate-400">
           {label}
         </p>
       )}

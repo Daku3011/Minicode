@@ -38,10 +38,37 @@
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
   --radius-sm: 0.75rem;
-   
-  /* Precision Motion */
-  --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-aura: pulse-aura 4s ease-in-out infinite;
+
+  /* Minimalist Loader */
+  --loader-duration: 2s;
+}
+
+@keyframes linear-loader {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+.top-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, hsl(263 90% 66%), transparent);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.top-loader::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  animation: linear-loader var(--loader-duration) infinite linear;
 }
 
 /* Premium Utilities - Converted to plain CSS */
@@ -66,10 +93,9 @@
 }
 
 .glass-card:hover {
-  border-color: hsla(263, 90%, 66%, 0.25);
-  background-color: hsla(250, 40%, 12%, 0.6); 
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12), 0 30px 60px -15px rgba(168, 85, 247, 0.12);
-  transform: translateY(-2px); /* Reduced lift, removed scale */
+  border-color: hsla(263, 90%, 66%, 0.2);
+  background-color: hsla(250, 40%, 10%, 0.6); 
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
 .magnetic-item {

@@ -1,36 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { Terminal, Github, ArrowRight, Loader2, Code2, Shield, Sparkles, UserCircle2, Eye, EyeOff } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Terminal, Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart } from "lucide-react";
 import api from "@/lib/api";
 import { clsx } from "clsx";
-import MagneticWrapper from "@/components/MagneticWrapper";
 import LoginSymbolBackground from "@/components/LoginSymbolBackground";
-
-const containerVars = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2,
-        },
-    },
-} as const;
-
-const itemVars = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { type: "spring", stiffness: 300, damping: 24 }
-    },
-} as const;
-
 
 export default function LoginPage() {
     const { user, loading, login } = useAuth();
@@ -78,267 +55,215 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 overflow-hidden">
+        <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#05050a] text-white font-black overflow-hidden select-none">
+            {/* Interactive Background */}
             <LoginSymbolBackground />
 
-            {/* Ambient Background Depth */}
-            <div className="absolute top-1/4 -left-20 w-[40rem] h-[40rem] bg-primary/10 rounded-full blur-[160px] animate-pulse pointer-events-none" />
-            <div className="absolute bottom-1/4 -right-20 w-[40rem] h-[40rem] bg-secondary/10 rounded-full blur-[160px] animate-pulse pointer-events-none" style={{ animationDelay: "1s" }} />
+            {/* Background Aesthetics */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] opacity-[0.03] mix-blend-overlay" />
+                <div className="absolute top-1/4 -left-20 w-[60rem] h-[60rem] bg-primary/10 rounded-full blur-[180px] animate-pulse" />
+                <div className="absolute bottom-1/4 -right-20 w-[60rem] h-[60rem] bg-secondary/10 rounded-full blur-[200px] animate-pulse delay-1000" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-gradient-to-tr from-primary/5 via-transparent to-secondary/5 opacity-50" />
+            </div>
 
-            <main className="w-full max-w-7xl z-10">
-                <motion.div
-                    variants={containerVars}
-                    initial="hidden"
-                    animate="visible"
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center"
-                >
-                    {/* Left Column: Platform Origin & Credits */}
-                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-12 order-1">
-                        {/* Elite Partnership Badge */}
-                        <div className="flex flex-col items-center lg:items-start group">
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="h-px w-3 bg-primary/30" />
-                                <span className="text-[13px] text-purple-400 text-primary uppercase tracking-[0.5em]">Powered by</span>
-                                <div className="h-px w-12 bg-primary/30 hidden lg:block" />
+            <main className="w-full max-w-[90rem] z-10 flex flex-col min-h-screen pt-12 scale-[0.9] origin-top">
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                    {/* Left Column: Branding */}
+                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-12">
+                        <div className="flex flex-col items-center lg:items-start">
+                            <div className="flex items-center gap-3 mb-8 group cursor-default">
+                                <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
+                                <span className="text-[15px] text-primary uppercase font-black group-hover:tracking-[0.1em] transition-all duration-500">
+                                    Continuous Integration & Continuous Devlopement
+                                </span>
                             </div>
-                            <div className="space-y-2">
-                                <a href="https://scet.ac.in/pages/coding-club" target="_blank" rel="noopener noreferrer">
-                                    <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter uppercase leading-[1] group-hover:tracking-tight transition-all duration-400 no-underline hover:underline hover:underline-offset-0.1">
-                                        CODING <br className="hidden lg:block"/> CLUB
-                                    </h2>
-                                </a>
+                            <div className="space-y-4">
+                                <h2 className="text-8xl md:text-[10rem] font-black text-white tracking-tighter leading-[0.81] drop-shadow-2xl">
+                                    Coding <br className="hidden lg:block" />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400/40 italic pr-6">Club</span>
+                                </h2>
                             </div>
-                            <div className="flex flex-col lg:flex-row items-center lg:items-center gap-4 mt-8">
-                                <div className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                                    <span className="text-[10px] text-purple-400 text-secondary uppercase tracking-[0.4em]">In Collaboration with</span>
+                            <div className="flex items-center gap-1 mt-12 bg-white/[0.03] p-2 pr-6 rounded-xl border border-white/5 backdrop-blur-sm">
+                                <div className="px-4 py-3 rounded-xl bg-primary shadow-lg shadow-primary/20">
+                                    <span className="text-[9px] text-white uppercase tracking-[0.2em]">Co-Powered by</span>
                                 </div>
-                                <a 
-                                    href="https://scet.ac.in/department/computer-engineering" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-lg font-black text-slate-300 uppercase tracking-widest lg:border-l border-white/10 lg:pl-6 pl-0 py-1 no-underline hover:underline hover:underline-offset-0.5"
-                                >
-                                    SCET COMPUTER DEPT.
-                                </a>
+                                <span className="text-xl font-black text-slate-300 uppercase tracking-tighter italic">
+                                    SCET COMPUTER DEPT
+                                </span>
                             </div>
                         </div>
 
-                        {/* Signature Credits */}
-                        <div className="flex flex-col items-center lg:items-start mt-1 py-8 lg:py-7 lg:px-14 px-12 rounded-[2rem] bg-white/[0.04] border border-white/10 backdrop-blur-xl relative overflow-hidden group/team shadow-2xl">
-                            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover/team:opacity-100 transition-opacity duration-1000" />
-                            <div className="flex items-center gap-2 mb-3 relative z-10">
-                                {/* <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" /> */}
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em]">Architected & Developed by</span>
+                        {/* Team Credits */}
+                        <div className="flex flex-col items-center lg:items-start p-10 lg:px-14 rounded-[3rem] bg-white/[0.03] border border-white/10 relative group cursor-default hover:bg-white/[0.05] transition-all duration-500 backdrop-blur-md">
+                            <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
+                                {/* <Shield className="w-6 h-6 text-primary" /> */}
                             </div>
-                            <span className="relative text-3xl font-black text-white tracking-tight italic relative z-10 drop-shadow-sm"><a href="https://github.com/Daku3011" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Dwarkesh Ramani </a>& <a href="https://github.com/jenilgajera18" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Jenil Gajera</a></span>
-                            <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover/team:bg-primary/20 transition-colors" />
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.8em] mb-4">Devloped by</span>
+                            <span className="text-4xl font-black text-white tracking-tighter italic leading-none">
+                                Dwarkesh Ramani <span className="text-primary">&</span> Jenil Gajera
+                            </span>
                         </div>
-
-                        {/* Visual Connector for Desktop */}
-                        {/* <div className="hidden lg:block relative mt-16 ml-2">
-                            <div className="w-40 h-px bg-gradient-to-r from-primary/40 via-white/10 to-transparent" />
-                            <div className="absolute -left-1 -top-1 w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" />
-                        </div> */}
                     </div>
 
-                    {/* Right Column: Branding & Authentication Card */}
-                    <div className="flex flex-col items-center space-y-12 order-2">
-                        {/* Auth-Linked Branding */}
-                        <motion.div variants={itemVars} className="flex flex-col items-center gap-4 mb-4">
-                            <MagneticWrapper>
-                                <motion.div
-                                    whileHover={{ rotate: 10, scale: 1.15 }}
-                                    className="bg-primary p-4 rounded-2xl shadow-2xl shadow-primary/20 ring-1 ring-white/10"
-                                >
-                                    <Terminal className="text-white w-10 h-10" />
-                                </motion.div>
-                            </MagneticWrapper>
-                            <div className="text-center">
-                                <h1 className="text-3xl font-black tracking-tighter text-white">
-                                    MINICODE
-                                </h1>
-                                {/* <p className="text-slate-500 font-black mt-1 tracking-[0.4em] uppercase text-[9px] opacity-60">
-                                    The Elite Coding Arena
-                                </p> */}
+                    {/* Right Column: Auth Card */}
+                    <div className="flex flex-col items-center w-full max-w-xl mx-auto">
+                        <div className="flex flex-col items-center gap-6 mb-12">
+                            <div className="relative group">
+                                <div className="absolute inset-0 bg-primary/40 blur-3xl group-hover:blur-[60px] transition-all duration-700" />
+                                <div className="relative bg-primary p-7 rounded-[2.5rem] shadow-2xl border-4 border-white/20 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                                    <Terminal className="text-white w-12 h-12" />
+                                </div>
                             </div>
-                        </motion.div>
+                            <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic mt-4">
+                                Minicode
+                            </h1>
+                        </div>
 
-                    {/* Main Content Card (Weightless Glass) */}
-                    <motion.div
-                        variants={itemVars}
-                        className={clsx(
-                            "glass-card rounded-[3rem] p-10 md:p-14 shadow-antigravity border border-white/10 relative overflow-hidden group",
-                            "hover:border-primary/20 transition-all duration-700"
-                        )}
-                    >
-                        {/* Reflective Highlight Overlay */}
-                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                        <div className="w-full bg-white/[0.02] border border-white/10 rounded-[4.5rem] p-10 md:p-16 shadow-[0_0_100px_rgba(0,0,0,0.5)] relative overflow-hidden backdrop-blur-2xl">
+                            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-                        <AnimatePresence mode="wait">
                             {!isStaffMode ? (
-                                <motion.div
-                                    key="student"
-                                    initial={{ opacity: 0, x: -30 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 30 }}
-                                    transition={{ duration: 0.5, ease: "anticipate" }}
-                                    className="space-y-10 relative z-10"
-                                >
-                                    <div className="text-center space-y-3">
-                                        <h2 className="text-3xl font-black text-white tracking-tight text-center">Level Up Your Code</h2>
-                                        <p className="text-slate-400 font-medium">Join the next generation of engineers solving high-stakes challenges.</p>
+                                <div className="space-y-12">
+                                    <div className="text-center space-y-4">
+                                        <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic">Get Started</h2>
+                                        <p className="text-slate-500 text-sm font-black uppercase tracking-widest opacity-60">Continue with your account</p>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <MagneticWrapper>
-                                            <button
-                                                onClick={handleGithubLogin}
-                                                className="flex w-full items-center justify-center gap-4 rounded-2xl bg-white px-6 py-6 text-slate-950"
-                                            >
-                                                <Github className="w-7 h-7" />
-                                                <span className="text-xl font-black uppercase tracking-tight">Authorize via GitHub</span>
-                                            </button>
-                                        </MagneticWrapper>
+                                    <div className="space-y-5">
+                                        <button
+                                            onClick={handleGithubLogin}
+                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                                        >
+                                            <div className="absolute inset-0 bg-primary/10 rounded-[2rem] scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500" />
+                                            <Github className="w-10 h-10 relative z-10" />
+                                            <span className="text-2xl font-black uppercase tracking-tighter relative z-10">Authorize GitHub</span>
+                                            <ArrowRight className="w-8 h-8 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500" />
+                                        </button>
 
-                                        <div className="flex items-center gap-4 text-slate-500 py-2">
-                                            <div className="h-px flex-1 bg-white/5" />
-                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Proprietary Access</span>
-                                            <div className="h-px flex-1 bg-white/5" />
+                                        <div className="flex items-center gap-6 text-slate-800 py-6">
+                                            <div className="h-[1px] flex-1 bg-white/10" />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.6em] whitespace-nowrap">Access Protocols</span>
+                                            <div className="h-[1px] flex-1 bg-white/10" />
                                         </div>
 
                                         <button
                                             onClick={() => setIsStaffMode(true)}
-                                            className="w-full py-5 rounded-2xl border border-white/5 text-slate-400 font-black hover:bg-white/5 hover:text-secondary transition-all text-xs uppercase tracking-[0.2em] group"
+                                            className="w-full py-7 rounded-[2rem] bg-white/[0.03] border border-white/10 text-slate-500 font-black cursor-pointer hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic"
                                         >
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Shield className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                                                <span>Staff Authentication</span>
-                                            </div>
+                                            Faculty Authentication
                                         </button>
                                     </div>
 
-                                    <div className="pt-8 flex flex-col items-center gap-6 border-t border-white/5">
-                                        {/* <div className="flex items-center gap-6 text-slate-400">
-                                            <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/10 border border-white/5 group hover:border-primary/30 transition-colors">
-                                                <Code2 className="w-4 h-4 text-primary" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Matrix Problems</span>
-                                            </div>
-                                            <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/10 border border-white/5 group hover:border-secondary/30 transition-colors">
-                                                <Sparkles className="w-4 h-4 text-secondary" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Quantum Learning</span>
-                                            </div>
-                                        </div> */}
-                                        <p className="text-center text-[10px] text-slate-600 px-8 uppercase tracking-[0.2em] font-bold leading-relaxed">
-                                            By connecting, you consent to our <Link className="text-primary underline text-gray-200" href="/terms">Terms of Engagement</Link> & <Link className="text-primary underline text-gray-200" href="/privacy">Encryption Privacy</Link>.
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            ) : (
-                                <motion.form
-                                    key="staff"
-                                    onSubmit={handleStaffLogin}
-                                    initial={{ opacity: 0, x: 30 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -30 }}
-                                    transition={{ duration: 0.5, ease: "anticipate" }}
-                                    className="space-y-8 relative z-10"
-                                >
-                                    <div className="text-center mb-10">
-                                        <div className="inline-flex p-4 rounded-2xl bg-secondary/10 text-secondary mb-6 border border-secondary/20 shadow-lg shadow-secondary/5 text-purple-400">
-                                            <UserCircle2 className="w-8 h-8 text-pink-300" />
+                                    <div className="pt-12 flex flex-col items-center gap-8 border-t border-white/10">
+                                        <div className="flex items-center gap-6">
+                                            <Link href="/terms" className="text-[10px] font-black text-white/40 overflow-hidden hover:text-white transition-colors tracking-[0.4em] uppercase hover:underline underline-offset-4 cursor-pointer">Terms</Link>
+                                            <div className="w-1 h-1 rounded-full bg-white/20" />
+                                            <Link href="/privacy" className="text-[10px] font-black text-white/40 overflow-hidden hover:text-white transition-colors tracking-[0.4em] uppercase hover:underline underline-offset-4 cursor-pointer">Privacy</Link>
                                         </div>
-                                        <h2 className="text-3xl font-black text-white tracking-tight">Command Center</h2>
-                                        <p className="text-slate-400 mt-2 font-medium">Elevated authorization required for this sector.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleStaffLogin} className="space-y-10">
+                                    <div className="text-center">
+                                        <div className="inline-flex p-6 rounded-3xl bg-primary/20 text-primary mb-8 border border-primary/30 shadow-lg shadow-primary/20">
+                                            <Shield className="w-10 h-10" />
+                                        </div>
+                                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase italic">Control Room</h2>
+                                        {/* <p className="text-slate-500 mt-3 text-xs font-black uppercase tracking-[0.4em]">Elevated clearance required.</p> */}
                                     </div>
 
                                     {error && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-black text-center tracking-wide"
-                                        >
-                                            ACCESS DENIED: {error}
-                                        </motion.div>
+                                        <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[11px] font-black text-center tracking-widest uppercase animate-shake">
+                                            Unauthorized: {error}
+                                        </div>
                                     )}
 
-                                    <div className="space-y-6">
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Identity Signature</label>
+                                    <div className="space-y-8">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 ml-4">Identity Signature</label>
                                             <input
                                                 type="text"
                                                 required
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:ring-secondary/40 placeholder:text-slate-700 transition-all font-bold tracking-tight"
-                                                placeholder="User identity"
+                                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-8 py-6 text-white focus:outline-none focus:border-primary focus:bg-white/[0.05] transition-all placeholder:text-white/10 font-black tracking-tight text-xl"
+                                                placeholder="Faculty ID"
                                             />
                                         </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Security Key</label>
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 ml-4">Security Key</label>
                                             <div className="relative">
                                                 <input
                                                     type={showPassword ? "text" : "password"}
                                                     required
                                                     value={password}
                                                     onChange={(e) => setPassword(e.target.value)}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white focus:outline-none focus:ring-2 focus:ring-secondary/40 placeholder:text-slate-700 transition-all font-bold tracking-tight pr-14"
+                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-8 py-6 text-white focus:outline-none focus:border-primary focus:bg-white/[0.05] transition-all placeholder:text-white/10 font-black tracking-tight pr-20 text-xl"
                                                     placeholder="••••••••"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-white transition-colors"
+                                                    className="absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/20 hover:text-white transition-colors"
                                                 >
-                                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                                    {showPassword ? <EyeOff className="w-7 h-7 text-gray-400" /> : <Eye className="w-7 h-7 text-gray-400" />}
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4 pt-4">
-                                        <MagneticWrapper>
-                                            <button
-                                                type="submit"
-                                                disabled={submitting}
-                                                className="premium-btn w-full py-6 rounded-2xl justify-center shadow-xl shadow-secondary/10 disabled:opacity-50 group grow"
-                                            >
-                                                {submitting ? <Loader2 className="w-7 h-7 animate-spin" /> : (
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xl">Decrypt Access</span>
-                                                        <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        </MagneticWrapper>
+                                    <div className="space-y-6 pt-3">
+                                        <button
+                                            type="submit"
+                                            disabled={submitting}
+                                            className="group relative w-full h-24 bg-primary text-white rounded-[2.25rem] text-2xl font-black uppercase tracking-tighter italic flex items-center justify-center gap-4 border-2 border-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 overflow-hidden shadow-2xl shadow-primary/20"
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                                            {submitting ? <Loader2 className="w-10 h-10 animate-spin" /> : (
+                                                <>
+                                                    <span className="relative z-10">Decrypt Access</span>
+                                                    <ArrowRight className="w-9 h-9 relative z-10 group-hover:translate-x-2 transition-transform" />
+                                                </>
+                                            )}
+                                        </button>
 
                                         <button
                                             type="button"
                                             onClick={() => setIsStaffMode(false)}
-                                            className="w-full text-center text-xs font-black text-slate-500 hover:text-white transition-colors uppercase tracking-widest"
+                                            className="w-full text-center text-[10px] font-black text-slate-600 hover:text-white transition-colors uppercase tracking-[0.6em] underline underline-offset-4"
                                         >
-                                            Return to Core Arena
+                                            Return to Origin
                                         </button>
                                     </div>
-                                </motion.form>
+                                </form>
                             )}
-                        </AnimatePresence>
-                    </motion.div>
-
-                        {/* Subtle Security Indicator */}
-                        {/* <motion.div 
-                            variants={itemVars}
-                            className="mt-12 text-center"
-                        >
-                            <div className="flex items-center justify-center gap-3 opacity-20 hover:opacity-40 transition-opacity cursor-default group">
-                                <Shield className="w-3.5 h-3.5 text-slate-500 group-hover:text-primary transition-colors" />
-                                <span className="text-[8px] font-black text-slate-600 uppercase tracking-[0.5em] leading-relaxed">
-                                    Secure Quantum Environment
-                                </span>
-                            </div>
-                        </motion.div> */}
+                        </div>
                     </div>
-                </motion.div>
+                </div>
+
+                {/* Global Footer Links */}
+                {/* <footer className="mt-auto py-12 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-white/5 opacity-40 hover:opacity-100 transition-opacity duration-700">
+                    <div className="flex items-center gap-8">
+                        <a href="https://scet.ac.in" target="_blank" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] hover:text-primary transition-colors">
+                            <Globe className="w-4 h-4" />
+                            SCET Official
+                        </a>
+                        <a href="https://github.com/Daku3011/Minicode" target="_blank" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] hover:text-primary transition-colors">
+                            <Github className="w-4 h-4" />
+                            Repository
+                        </a>
+                        <a href="#" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] hover:text-primary transition-colors">
+                            <BookOpen className="w-4 h-4" />
+                            Docs
+                        </a>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-slate-600">
+                        Crafted with <Heart className="w-3 h-3 text-rose-500 fill-rose-500" /> by SCET Dev Team
+                    </div>
+                </footer> */}
             </main>
         </div>
     );
 }
+

@@ -10,8 +10,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import api from "@/lib/api";
-import { motion, AnimatePresence } from "framer-motion";
-import MagneticWrapper from "@/components/MagneticWrapper";
 
 const eventTypes = [
     { 
@@ -104,7 +102,7 @@ export default function CreateEventPage() {
             setShowSuccess(true);
             setTimeout(() => {
                 router.push("/faculty/profile");
-            }, 1500);
+            }, 1000);
         } catch (error) {
             console.error("Failed to create event:", error);
             alert("Failed to create event. Please try again.");
@@ -116,340 +114,263 @@ export default function CreateEventPage() {
     const selectedLevel = levels.find(l => l.level === formData.min_level);
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#0a0a0f] text-slate-100 font-display relative overflow-x-hidden">
-            {/* Ambient Background Elements */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-purple-500/20 rounded-full blur-[120px] animate-pulse" />
-                <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('/grid.svg')] opacity-5" />
+        <div className="min-h-[calc(100vh-64px)] bg-[#05050a] text-white font-black relative overflow-x-hidden p-6 md:p-12">
+            {/* Minimal Background Geometry */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] opacity-[0.02]" />
+                <div className="absolute top-1/4 -left-20 w-[40rem] h-[40rem] bg-primary/5 rounded-full blur-[160px]" />
             </div>
             
-            <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="relative z-10 max-w-5xl mx-auto space-y-12">
                 {/* Header Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12"
-                >
-                    <div>
-                        <Link href="/faculty/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-all text-xs font-black uppercase tracking-widest mb-4 group">
-                            <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                            Return to Command
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+                    <div className="space-y-4">
+                        <Link href="/faculty/profile" className="inline-flex items-center gap-2 text-slate-600 hover:text-white transition-colors text-[10px] uppercase tracking-[0.4em] mb-4">
+                            <ChevronLeft className="w-4 h-4" />
+                            Return
                         </Link>
-                        <h1 className="text-4xl font-black text-white tracking-tight mb-2 uppercase">Event Constructor</h1>
-                        <p className="text-slate-500 font-medium tracking-wide">Orchestrate large-scale challenges and collaborative projects</p>
+                        <h1 className="text-6xl font-black text-white tracking-tighter uppercase italic leading-none">Event <br/> Constructor</h1>
+                        <p className="text-slate-500 text-sm tracking-tight uppercase">Orchestrate large-scale challenges and collaborative projects</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <MagneticWrapper>
-                            <button
-                                onClick={handlePublish}
-                                disabled={isPublishing || !formData.title || !formData.description}
-                                className="premium-btn px-8 py-3 rounded-xl font-black text-sm flex items-center gap-2.5 transition-all shadow-xl shadow-purple-500/20 disabled:opacity-50"
-                            >
-                                {isPublishing ? (
-                                    <>
-                                        <Loader2 className="w-5 h-5 animate-spin" />
-                                        SYNCING...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Send className="w-4 h-4" />
-                                        PUBLISH PROTOCOL
-                                    </>
-                                )}
-                            </button>
-                        </MagneticWrapper>
-                    </div>
-                </motion.div>
-
-                <AnimatePresence>
-                    {showSuccess && (
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="glass-card border-emerald-500/30 mb-8 p-6 flex items-center gap-4 text-emerald-400 font-black"
-                        >
-                            <div className="size-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                <Zap className="w-5 h-5" />
-                            </div>
-                            Success: Event synchronized with the mainframe. Redirecting...
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                <div className="space-y-10">
-                    {/* Event Category Card */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="glass-card relative overflow-hidden group"
+                    <button
+                        onClick={handlePublish}
+                        disabled={isPublishing || !formData.title || !formData.description}
+                        className="h-20 px-12 rounded-[1.75rem] bg-white text-black text-xl font-black italic flex items-center justify-center gap-3 hover:bg-slate-200 transition-all shadow-2xl disabled:opacity-50"
                     >
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-purple-500/40 group-hover:bg-purple-500 transition-colors" />
-                        <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3">
-                            <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20">
-                                <Layers className="w-5 h-5 text-purple-400" />
-                            </div>
+                        {isPublishing ? (
+                            <>
+                                <Loader2 className="w-6 h-6 animate-spin" />
+                                SYNCING
+                            </>
+                        ) : (
+                            <>
+                                <Send className="w-5 h-5" />
+                                PUBLISH
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {showSuccess && (
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2.5rem] flex items-center gap-6 text-emerald-400">
+                        <Zap className="w-8 h-8" />
+                        <span className="text-lg font-black uppercase tracking-tight italic">Synchronization successful. Redirecting...</span>
+                    </div>
+                )}
+
+                <div className="space-y-12">
+                    {/* Event Category */}
+                    <div className="bg-white/[0.01] border border-white/5 rounded-[3.5rem] p-10 md:p-14 relative overflow-hidden backdrop-blur-md">
+                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                        <h3 className="text-2xl font-black text-white mb-10 flex items-center gap-4 italic uppercase">
+                            <Layers className="w-7 h-7 text-primary" />
                             Protocol category
                         </h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {eventTypes.map((type) => (
                                 <button
                                     key={type.id}
                                     onClick={() => setFormData({ ...formData, event_type: type.id })}
                                     className={clsx(
-                                        "relative group/btn p-6 rounded-3xl border-2 transition-all transition-all duration-300 text-left overflow-hidden",
+                                        "relative p-8 rounded-[2rem] border transition-all text-left group",
                                         formData.event_type === type.id
-                                            ? "border-purple-500/50 bg-purple-500/5 shadow-2xl scale-105"
+                                            ? "border-primary bg-primary/10 shadow-2xl scale-[1.02]"
                                             : "border-white/5 bg-white/[0.02] hover:border-white/10"
                                     )}
                                 >
                                     <div className={clsx(
-                                        "w-12 h-12 rounded-2xl bg-gradient-to-br mb-4 flex items-center justify-center text-white shadow-lg",
+                                        "w-14 h-14 rounded-2xl bg-gradient-to-br mb-6 flex items-center justify-center text-white shadow-xl",
                                         type.color,
                                         type.glow
                                     )}>
                                         {type.icon}
                                     </div>
-                                    <h4 className="font-black text-lg text-white mb-2 uppercase tracking-tight">{type.label}</h4>
-                                    <p className="text-xs text-slate-500 font-medium leading-relaxed">{type.description}</p>
+                                    <h4 className="font-black text-xl text-white mb-2 uppercase tracking-tighter italic">{type.label}</h4>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-tight leading-relaxed">{type.description}</p>
                                 </button>
                             ))}
                         </div>
-                    </motion.div>
+                    </div>
 
-                    {/* Operational Details Card */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="glass-card space-y-8 relative overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-                            <FileText className="w-48 h-48 text-white" />
-                        </div>
-                        <h3 className="text-xl font-black text-white flex items-center gap-3">
-                            <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                                <FileText className="w-5 h-5 text-blue-400" />
-                            </div>
-                            Core Operational Data
+                    {/* Operational Details */}
+                    <div className="bg-white/[0.01] border border-white/5 rounded-[3.5rem] p-10 md:p-14 relative overflow-hidden backdrop-blur-md">
+                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+                        <h3 className="text-2xl font-black text-white flex items-center gap-4 mb-12 italic uppercase">
+                            <FileText className="w-7 h-7 text-blue-400" />
+                            Mission Parameters
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-6 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-6 gap-10">
                             <div className="md:col-span-4 space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Protocol Title *</label>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] ml-2">Protocol Title *</label>
                                 <input
                                     type="text"
+                                    required
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white font-black placeholder-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500/30 transition-all shadow-inner"
-                                    placeholder="e.g., Quantum Supremacy Sprint #4"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-white font-black placeholder-slate-500 focus:outline-none focus:border-primary transition-colors text-xl uppercase tracking-tighter"
+                                    placeholder="DESIGNATE OPERATION"
                                 />
                             </div>
 
                             <div className="md:col-span-2 space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Target Subject</label>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] ml-2">Subject Vector</label>
                                 <select
                                     value={formData.difficulty}
                                     onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white font-black appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500/30 transition-all cursor-pointer shadow-inner"
+                                    className="w-full h-[76px] bg-white/5 border border-white/10 rounded-2xl px-8 text-white font-black appearance-none focus:outline-none focus:border-primary transition-colors cursor-pointer uppercase tracking-tighter text-lg"
                                 >
-                                    <option value="" className="bg-[#0a0a0f]">Unclassified</option>
+                                    <option value="" className="bg-[#05050a]">UNCLASSIFIED</option>
                                     {subjects.map((s) => (
-                                        <option key={s} value={s} className="bg-[#0a0a0f]">{s}</option>
+                                        <option key={s} value={s} className="bg-[#05050a]">{s.toUpperCase()}</option>
                                     ))}
                                 </select>
                             </div>
 
                             <div className="md:col-span-6 space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Mission Briefing *</label>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] ml-2">Mission Briefing *</label>
                                 <textarea
+                                    required
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    rows={6}
-                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-8 py-8 text-slate-300 font-medium text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-purple-500/20 placeholder-slate-700 resize-none shadow-inner"
-                                    placeholder="Define the event objectives, constraints, and operational guidelines..."
+                                    rows={8}
+                                    className="w-full bg-white/5 border border-white/10 rounded-3xl px-10 py-10 text-slate-400 font-bold text-lg leading-relaxed focus:outline-none focus:border-primary placeholder-slate-500 resize-none transition-colors"
+                                    placeholder="DEFINE OBJECTIVES, CONSTRAINTS, AND ENGAGEMENT VECTORS..."
                                 />
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    {/* Temporal & Participation Card */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="glass-card space-y-8 relative overflow-hidden"
-                    >
-                        <h3 className="text-xl font-black text-white flex items-center gap-3">
-                            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                                <Clock className="w-5 h-5 text-emerald-400" />
-                            </div>
+                    {/* Temporal & Participation */}
+                    <div className="bg-white/[0.01] border border-white/5 rounded-[3.5rem] p-10 md:p-14 relative overflow-hidden backdrop-blur-md">
+                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+                        <h3 className="text-2xl font-black text-white flex items-center gap-4 mb-12 italic uppercase">
+                            <Clock className="w-7 h-7 text-emerald-400" />
                             Temporal Constraints
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Initiation Timestamp</label>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] ml-2">Initiation Timestamp</label>
                                 <input
                                     type="datetime-local"
                                     value={formData.start_date}
                                     onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all custom-datetime-input"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-white font-black focus:outline-none focus:border-emerald-500 transition-colors uppercase custom-datetime-input"
                                 />
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Termination Timestamp</label>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] ml-2">Termination Timestamp</label>
                                 <input
                                     type="datetime-local"
                                     value={formData.end_date}
                                     onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all custom-datetime-input"
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-white font-black focus:outline-none focus:border-emerald-500 transition-colors uppercase custom-datetime-input"
                                 />
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Participation Cap</label>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] ml-2">Participation Cap</label>
                                 <div className="relative group">
-                                    <Users className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-400 transition-colors" />
+                                    <Users className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-800" />
                                     <input
                                         type="number"
                                         value={formData.max_participants}
                                         onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
-                                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all shadow-inner"
-                                        placeholder="Unlimited"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-8 py-6 text-white font-black focus:outline-none focus:border-emerald-500 transition-colors text-xl"
+                                        placeholder="UNLIMITED"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block ml-1">Incentive Vector</label>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em] ml-2">Incentive Vector</label>
                                 <div className="relative group">
-                                    <Star className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-amber-400 transition-colors" />
+                                    <Star className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-800" />
                                     <input
                                         type="text"
                                         value={formData.prize_description}
                                         onChange={(e) => setFormData({ ...formData, prize_description: e.target.value })}
-                                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl pl-14 pr-6 py-4 text-white font-black focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all shadow-inner"
-                                        placeholder="e.g., 500 XP + Rare Badge"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl pl-16 pr-8 py-6 text-white font-black focus:outline-none focus:border-emerald-500 transition-colors text-xl uppercase tracking-tighter"
+                                        placeholder="REWARD DESIGNATION"
                                     />
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    {/* Level Lock Card */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="glass-card relative overflow-hidden"
-                    >
-                        <h3 className="text-xl font-black text-white flex items-center gap-3 mb-4">
-                            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                                <Lock className="w-5 h-5 text-amber-400" />
-                            </div>
-                            Authorization Clearance
+                    {/* Authorization Clearance */}
+                    <div className="bg-white/[0.01] border border-white/5 rounded-[3.5rem] p-10 md:p-14 relative overflow-hidden backdrop-blur-md">
+                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+                        <h3 className="text-2xl font-black text-white flex items-center gap-4 mb-10 italic uppercase">
+                            <Lock className="w-7 h-7 text-amber-400" />
+                            Clearance Logic
                         </h3>
-                        <p className="text-sm text-slate-500 font-bold mb-8">Minimum candidate level required for initiation</p>
 
-                        <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
                             {levels.map((level) => (
                                 <button
                                     key={level.level}
                                     onClick={() => setFormData({ ...formData, min_level: level.level })}
                                     className={clsx(
-                                        "p-6 rounded-3xl border-2 text-center transition-all group flex flex-col items-center justify-center gap-2",
+                                        "p-8 rounded-[2rem] border text-center transition-all flex flex-col items-center justify-center gap-3",
                                         formData.min_level === level.level
-                                            ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/10 scale-105"
-                                            : "border-white/5 bg-white/[0.02] hover:border-white/20"
+                                            ? "border-amber-500 bg-amber-500/10 shadow-2xl scale-[1.05]"
+                                            : "border-white/5 bg-white/[0.02] hover:border-white/10"
                                     )}
                                 >
                                     <div className={clsx(
-                                        "text-4xl font-black transition-colors",
-                                        formData.min_level === level.level ? "text-white" : "text-slate-700"
+                                        "text-5xl font-black italic",
+                                        formData.min_level === level.level ? "text-white" : "text-slate-900"
                                     )}>{level.level}</div>
-                                    <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-tight">{level.name}</div>
-                                    <div className="text-[10px] font-black text-amber-500/40">{level.minXP}+ XP</div>
+                                    <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest leading-none">{level.name.split(' ')[1]}</div>
                                 </button>
                             ))}
                         </div>
 
                         {formData.min_level > 1 && (
-                            <motion.div 
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="mt-8 flex items-center gap-4 p-6 bg-amber-500/5 border border-amber-500/10 rounded-2xl"
-                            >
-                                <AlertCircle className="w-6 h-6 text-amber-500" />
-                                <p className="text-sm text-amber-400/80 font-bold">
-                                    Restricted Access: Only candidates with <span className="text-white underline decoration-amber-500/50 underline-offset-4">{selectedLevel?.name}</span> clearance (Level {formData.min_level}) may interface with this protocol.
+                            <div className="mt-10 p-8 bg-amber-500/5 border border-amber-500/10 rounded-3xl flex items-center gap-6">
+                                <AlertCircle className="w-8 h-8 text-amber-500 shrink-0" />
+                                <p className="text-sm text-amber-500 font-black uppercase tracking-tight leading-relaxed">
+                                    Restricted Access: Only candidates with <span className="text-white underline underline-offset-8">Level {formData.min_level}</span> clearance may interface with this protocol.
                                 </p>
-                            </motion.div>
-                        )}
-                    </motion.div>
-
-                    {/* Operational Protocols (Rules) */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="glass-card space-y-6"
-                    >
-                         <h3 className="text-xl font-black text-white flex items-center gap-3">
-                            <div className="p-2.5 rounded-xl bg-slate-500/10 border border-slate-500/20">
-                                <Target className="w-5 h-5 text-slate-400" />
                             </div>
-                            Safety & Engagement Protocols (Rules)
-                        </h3>
-                        <textarea
-                            value={formData.rules}
-                            onChange={(e) => setFormData({ ...formData, rules: e.target.value })}
-                            rows={8}
-                            className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-8 py-8 text-slate-300 font-mono text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-purple-500/20 placeholder-slate-800 resize-none shadow-inner"
-                            placeholder="Enforce mandatory engagement rules, scoring vectors, and operational constraints..."
-                        />
-                    </motion.div>
+                        )}
+                    </div>
 
                     {/* Final Actions */}
-                    <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex flex-col md:flex-row items-center justify-between p-10 bg-white/[0.02] border border-white/10 rounded-[32px] gap-8"
-                    >
-                        <div className="flex items-center gap-4">
-                             <div className="size-16 rounded-3xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-lg">
-                                <Trophy className="w-8 h-8 text-purple-400" />
+                    <div className="flex flex-col md:flex-row items-center justify-between p-12 bg-white/[0.02] border border-white/5 rounded-[4rem] gap-10">
+                        <div className="flex items-center gap-8">
+                             <div className="size-20 rounded-[2rem] bg-primary/10 border border-primary/20 flex items-center justify-center shadow-2xl">
+                                <Trophy className="w-10 h-10 text-primary" />
                              </div>
                              <div>
-                                <h4 className="text-xl font-black text-white uppercase tracking-tight">Mainframe Synchronization</h4>
-                                <p className="text-slate-500 font-bold text-sm">Event data will be broadcast to all matching candidate nodes</p>
+                                <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic">Mainframe Sync</h4>
+                                <p className="text-slate-600 font-black text-[10px] uppercase tracking-widest">Protocol activation ready</p>
                              </div>
                         </div>
-                        <div className="flex items-center gap-6">
-                            <Link href="/faculty/dashboard" className="px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-all">
+                        <div className="flex items-center gap-8">
+                            <Link href="/faculty/profile" className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600 hover:text-white transition-colors">
                                 SCRUB CONFIG
                             </Link>
-                            <MagneticWrapper>
-                                <button
-                                    onClick={handlePublish}
-                                    disabled={isPublishing || !formData.title || !formData.description}
-                                    className="px-12 py-4 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-2xl hover:shadow-white/40 disabled:opacity-50"
-                                >
-                                    {isPublishing ? "TRANSMITTING..." : "OPEN OPS CHANNEL"}
-                                </button>
-                            </MagneticWrapper>
+                            <button
+                                onClick={handlePublish}
+                                disabled={isPublishing || !formData.title || !formData.description}
+                                className="h-20 px-16 bg-white text-black rounded-[1.75rem] text-xl font-black uppercase italic hover:bg-slate-200 transition-all shadow-2xl disabled:opacity-50"
+                            >
+                                {isPublishing ? "TRANSMITTING" : "OPEN OPS"}
+                            </button>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
 
             <style jsx global>{`
                 .custom-datetime-input::-webkit-calendar-picker-indicator {
                     filter: invert(1);
-                    opacity: 0.3;
+                    opacity: 0.2;
                     cursor: pointer;
                 }
                 .custom-datetime-input::-webkit-calendar-picker-indicator:hover {
