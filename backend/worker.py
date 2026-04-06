@@ -1,9 +1,14 @@
 import os
+import sys
 import asyncio
 from celery import Celery
 from sqlmodel import Session
 from dotenv import load_dotenv
 import logging
+
+_backend_dir = os.path.dirname(os.path.abspath(__file__))
+if _backend_dir not in sys.path:
+    sys.path.insert(0, _backend_dir)
 
 load_dotenv()
 
@@ -115,6 +120,76 @@ def process_submission_task(submission_id: int):
             return f"Failed submission {submission_id}"
 
 
+@celery_app.task(name="send_inactive_reminders_task")
+def send_inactive_reminders_task():
+    from email_service import send_engagement_lure_emails
+    from database import engine
+    from sqlmodel import Session
+
+    logger.info("Sending inactive student reminder emails...")
+    try:
+        with Session(engine) as session:
+            result = send_engagement_lure_emails(session, days_inactive=3)
+            logger.info(f"Inactive reminder results: {result}")
+            return f"Sent {result['sent']} reminders to {result['total']} inactive students"
+    except Exception as e:
+        logger.error(f"Error sending inactive reminders: {e}")
+        return "Failed to send inactive reminders"
+
+
+@celery_app.task(name="send_faculty_reports_task")
+def send_faculty_reports_task():
+    from email_service import send_faculty_report
+    from database import engine
+    from sqlmodel import Session, select, func
+    from models import User, Submission
+    from datetime import datetime
+
+    logger.info("Sending faculty weekly reports...")
+    try:
+        with Session(engine) as session:
+            faculty_list = session.exec(
+                select(User).where(
+                    User.role == "faculty", User.faculty_report_email != None
+                )
+            ).all()
+
+            if not faculty_list:
+                logger.info("No faculty members configured for reports")
+                return "No faculty configured for reports"
+
+            students = session.exec(select(User).where(User.role == "student")).all()
+            student_stats = []
+            for s in students:
+                sub_count = session.exec(
+                    select(func.count(Submission.id)).where(Submission.user_id == s.id)
+                ).one()
+                student_stats.append(
+                    {
+                        "username": s.username,
+                        "xp": s.xp or 0,
+                        "submissions": sub_count,
+                        "last_active": s.last_login.strftime("%Y-%m-%d %H:%M")
+                        if s.last_login
+                        else "Never",
+                    }
+                )
+
+            sent_count = 0
+            for faculty in faculty_list:
+                success = send_faculty_report(faculty, student_stats)
+                if success:
+                    sent_count += 1
+                    logger.info(f"Report sent to {faculty.username}")
+                else:
+                    logger.warning(f"Failed to send report to {faculty.username}")
+
+            return f"Sent {sent_count} faculty reports"
+    except Exception as e:
+        logger.error(f"Error sending faculty reports: {e}")
+        return "Failed to send faculty reports"
+
+
 celery_app.conf.beat_schedule = {
     "sync-xp-every-5-minutes": {
         "task": "sync_xp_task",
@@ -123,5 +198,13 @@ celery_app.conf.beat_schedule = {
     "refresh-leaderboard-every-minute": {
         "task": "refresh_leaderboard_task",
         "schedule": 60.0,
+    },
+    "send-inactive-reminders-daily": {
+        "task": "send_inactive_reminders_task",
+        "schedule": 86400.0,  # Every 24 hours
+    },
+    "send-faculty-reports-weekly": {
+        "task": "send_faculty_reports_task",
+        "schedule": 604800.0,  # Every 7 days (weekly)
     },
 }

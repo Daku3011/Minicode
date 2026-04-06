@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlmodel import Session, select
 from typing import List, Optional
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from pydantic import BaseModel
 import json
 import logging
@@ -381,7 +381,7 @@ async def update_event(
         else:
             setattr(event, key, value)
 
-    event.updated_at = datetime.now(UTC)
+    event.updated_at = datetime.now(timezone.utc)
     session.add(event)
     session.commit()
 
@@ -404,7 +404,7 @@ async def delete_event(
         raise HTTPException(status_code=403, detail="Not authorized")
 
     event.status = "cancelled"
-    event.updated_at = datetime.now(UTC)
+    event.updated_at = datetime.now(timezone.utc)
     session.add(event)
     session.commit()
 
@@ -712,7 +712,7 @@ async def submit_to_event(
         # Update existing submission
         existing.repo_url = submission_data.repo_url
         existing.submission_notes = submission_data.submission_notes
-        existing.submitted_at = datetime.now(UTC)
+        existing.submitted_at = datetime.now(timezone.utc)
         session.add(existing)
     else:
         # Create new submission
@@ -1132,7 +1132,7 @@ async def respond_to_invitation(
         raise HTTPException(status_code=400, detail="Invalid action")
 
     invitation.status = "accepted" if action == "accept" else "rejected"
-    invitation.responded_at = datetime.now(UTC)
+    invitation.responded_at = datetime.now(timezone.utc)
     session.add(invitation)
 
     if action == "accept":

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 import os
 import httpx
 import logging
@@ -76,7 +76,7 @@ async def github_callback(
         user.github_access_token = encrypt_token(access_token)
 
     # Update last login
-    user.last_login = datetime.now(UTC)
+    user.last_login = datetime.now(timezone.utc)
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -102,7 +102,7 @@ async def login(
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     # Update last login
-    user.last_login = datetime.now(UTC)
+    user.last_login = datetime.now(timezone.utc)
     session.add(user)
     session.commit()
 

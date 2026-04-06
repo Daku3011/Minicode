@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
-import api from "../lib/api";
+import api, { userApi } from "../lib/api";
 
 export interface User {
     id: number;
@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setLoading(false);
                 return;
             }
-            const response = await api.get("/auth/me");
+            const response = await userApi.me();
             setUser(response.data);
         } catch (error) {
             console.error("Failed to fetch user:", error);

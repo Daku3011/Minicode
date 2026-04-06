@@ -31,13 +31,29 @@ Rather than restricting students to a tiny browser code editor, **MiniCode deman
 
 | Component | Status | URL |
 |-----------|--------|-----|
-| **Frontend** | 🟢 Live | [https://minicode-scet.vercel.app](https://minicode-scet.vercel.app) |
-| **API Docs** | 🟢 Live | [https://minicode-backend.onrender.com/docs](https://minicode-backend.onrender.com/docs) |
+| **Frontend** | Live | [https://minicode-scet.vercel.app](https://minicode-scet.vercel.app) |
+| **API Docs** | Live | [https://minicode-web.onrender.com/docs](https://minicode-web.onrender.com/docs) |
 | **Source Code** | 🛠️ Dev | [https://github.com/Daku3011/Minicode](https://github.com/Daku3011/Minicode) |
+
+## 🐳 Docker Commands
+
+### 🚨 Important: Running Docker Commands
+If your user doesn't have Docker permissions, you'll need to use `sudo`. Create a helper script for convenience:
+
+```bash
+# Create a docker helper script
+echo 'export DOCKER_BUILDKIT=1' >> ~/.bashrc
+alias docker="sudo docker"
+alias docker-compose="sudo docker-compose"
+
+# Or use sudo directly (password: daku123$)
+sudo docker ps
+sudo docker-compose up -d
+```
 
 ---
 
-## 🏗️ Getting Started
+## Getting Started
 
 ### 🌌 Option 1: The Zero-Friction Way (Docker)
 Ensure you have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
@@ -57,9 +73,83 @@ docker-compose up -d --build
 > **Backend**: http://localhost:8000/docs  
 > **Frontend**: http://localhost:3000
 
+### Common Docker Commands
+
+```bash
+# Start all services
+sudo docker-compose up -d
+
+# Stop all services
+sudo docker-compose down
+
+# View running containers
+sudo docker ps
+
+# Restart only backend (after code changes)
+sudo docker-compose restart backend
+
+# Restart only frontend
+sudo docker-compose restart frontend
+
+# Rebuild backend after code changes
+sudo docker-compose up -d --build backend
+
+# Rebuild frontend after code changes
+sudo docker-compose up -d --build frontend
+
+# View logs
+sudo docker logs minicode_backend_1
+sudo docker-compose logs -f
+
+# Reset database (WARNING: deletes all data)
+sudo docker-compose down -v
+sudo docker-compose up -d
+```
+
+### Fixing "ContainerConfig" Error
+
+If you get a `'ContainerConfig'` error when rebuilding only frontend or backend:
+
+```bash
+# This is a Docker Compose cache issue - recreate all containers fresh
+sudo docker-compose down
+sudo docker-compose up -d
+```
+
+### Fixing PostgreSQL Authentication Issues
+
+If you get "password authentication failed" error:
+
+```bash
+# Option 1: Reset password
+sudo docker exec minicode_postgres_1 psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
+
+# Option 2: Reset pg_hba.conf to trust all connections
+sudo docker exec -u postgres minicode_postgres_1 sh -c 'cat > /var/lib/postgresql/data/pg_hba.conf << EOF
+local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+host    all             all             ::1/128                 trust
+host    all             all             0.0.0.0/0               trust
+host    all             all             ::/0                    trust
+local   replication     all                                     trust
+host    replication     all             127.0.0.1/32            trust
+host    replication     all             ::1/128                 trust
+EOF
+pg_ctl reload -D /var/lib/postgresql/data'
+
+# Restart backend to apply changes
+sudo docker-compose restart backend
+```
+
+### Health Check
+
+```bash
+curl http://localhost:8000/health
+```
+
 ---
 
-### 💻 Option 2: The Manual Way (Developer Mode)
+### Option 2: The Manual Way (Developer Mode)
 
 #### 1. Backend Setup (FastAPI)
 ```bash
@@ -104,17 +194,36 @@ npm run dev
 
 ---
 
-## ❓ FAQ
+## FAQ
 
-### 1. Why is my code evaluation stuck on "Pending"?
+### 1. Docker Login Fails with "password authentication failed"?
+This is caused by a known issue with the docker-compose environment variable expansion. The DATABASE_URL gets duplicated in the container.
+
+**Solution**: Edit `docker-compose.yml` and hardcode the DATABASE_URL instead of using variable expansion:
+
+```yaml
+# Before (problematic):
+- DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/minicode}
+
+# After (fixed):
+- DATABASE_URL=postgresql://postgres:postgres@postgres:5432/minicode
+```
+
+Then rebuild:
+```bash
+docker-compose down
+docker-compose up -d --build
+```
+
+### 2. Why is my code evaluation stuck on "Pending"?
 This almost always means the **Celery Worker** is not running. Check the logs of the `minicode-worker` container or manually run the celery command in the backend directory.
 
-### 2. GitHub Login redirects to an error page?
+### 3. GitHub Login redirects to an error page?
 Ensure your **OAuth Callback URL** in GitHub Settings perfectly matches your frontend URL.  
 - Development: `http://localhost:3000/auth/github/callback`  
 - Production: `https://your-domain.com/auth/github/callback`
 
-### 3. My Gemini AI score is 0 or "Error"?
+### 4. My Gemini AI score is 0 or "Error"?
 Verify your `GEMINI_API_KEY` in the `.env`. If you are using the Free Tier, ensure you aren't hitting the rate limit (15 RPM).
 
 ### 4. How do I clear the cached leaderboard?
@@ -122,7 +231,7 @@ Restart the Redis instance or use the backend endpoint `/admin/cache/clear` (Adm
 
 ---
 
-## 🎨 UI/UX Design Philosophies
+## UI/UX Design Philosophies
 The UI/UX is built to break away from traditional "intimidating" dark-mode coding arenas. We utilize an aesthetic of approachability, incorporating fluid micro-animations, glassmorphism components, and neon-purple highlights. Take a closer look at the [DESIGN_VISION.md](DESIGN_VISION.md) for UX philosophies.
 
 ## 👤 Default Credentials (Development)

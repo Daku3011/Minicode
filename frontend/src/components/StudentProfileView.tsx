@@ -35,10 +35,14 @@ import {
     Database,
     BookOpen,
     ChevronRight,
-    Code2
+    Code2,
+    Mail,
+    Loader2,
+    KeyRound
 } from "lucide-react";
 import { clsx } from "clsx";
-import api from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import api, { userApi } from "@/lib/api";
 
 interface RecentSubmission {
     id: number;
@@ -85,6 +89,70 @@ interface ProfileData {
     problems?: Problem[];
     leaderboard?: LeaderboardEntry[];
     faculty_report_email?: string;
+}
+
+function processRecentSubmissionsToContributionData(recentSubmissions: RecentSubmission[]): { date: string; count: number; level: number }[] {
+    const dailyCounts: Record<string, number> = {};
+    
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    
+    recentSubmissions.forEach(sub => {
+        if (sub.time) {
+            const subDate = new Date(sub.time);
+            if (!isNaN(subDate.getTime()) && subDate >= oneYearAgo) {
+                const dateStr = subDate.toISOString().split('T')[0];
+                dailyCounts[dateStr] = (dailyCounts[dateStr] || 0) + 1;
+            }
+        }
+    });
+    
+    const result: { date: string; count: number; level: number }[] = [];
+    const today = new Date();
+    for (let i = 364; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const count = dailyCounts[dateStr] || 0;
+        let level = 0;
+        if (count > 10) level = 4;
+        else if (count > 5) level = 3;
+        else if (count > 2) level = 2;
+        else if (count > 0) level = 1;
+        result.push({ date: dateStr, count, level });
+    }
+    
+    return result;
+}
+
+function processRecentSubmissionsToWeeklyActivity(recentSubmissions: RecentSubmission[]): number[] {
+    const weeklyCounts: Record<string, number> = {};
+    
+    const fifteenWeeksAgo = new Date();
+    fifteenWeeksAgo.setDate(fifteenWeeksAgo.getDate() - 15 * 7);
+    
+    recentSubmissions.forEach(sub => {
+        if (sub.time) {
+            const subDate = new Date(sub.time);
+            if (!isNaN(subDate.getTime()) && subDate >= fifteenWeeksAgo) {
+                const weekStart = new Date(subDate);
+                weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                const weekKey = weekStart.toISOString().split('T')[0];
+                weeklyCounts[weekKey] = (weeklyCounts[weekKey] || 0) + 1;
+            }
+        }
+    });
+    
+    const result: number[] = [];
+    const today = new Date();
+    for (let i = 14; i >= 0; i--) {
+        const weekStart = new Date(today);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay() - i * 7);
+        const weekKey = weekStart.toISOString().split('T')[0];
+        result.push(weeklyCounts[weekKey] || 0);
+    }
+    
+    return result;
 }
 
 interface StudentProfileViewProps {
@@ -145,11 +213,11 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
     });
 
     const levelColors = [
-        "bg-white/5",
-        "bg-primary/20",
-        "bg-white/40 shadow-[0_0_10px_rgba(137,91,245,0.1)]",
-        "bg-white/60 shadow-[0_0_15px_rgba(137,91,245,0.2)]",
-        "bg-white shadow-[0_0_20px_rgba(137,91,245,0.3)]",
+        "bg-[#161b22] border border-white/5",
+        "bg-[#0e4429]",
+        "bg-[#006d32]",
+        "bg-[#26a641]",
+        "bg-[#39d353]",
     ];
 
     return (
@@ -208,7 +276,7 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
                                     <div
                                         key={day.date}
                                         className={clsx(
-                                            "w-3.5 h-3.5 rounded-sm transition-colors duration-200 relative",
+                                            "w-3 h-3 rounded-[2px] transition-colors duration-200 relative",
                                             levelColors[day.level] || "bg-white/5",
                                             "cursor-pointer"
                                         )}
@@ -320,6 +388,22 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
 }
 
 const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
+    const processedContributionData = useMemo(() => 
+        processRecentSubmissionsToContributionData(data.recentSubmissions), 
+        [data.recentSubmissions]
+    );
+    
+    const contributionDataRaw = useMemo(() => {
+        const raw: Record<string, number> = {};
+        data.recentSubmissions.forEach(sub => {
+            if (sub.time) {
+                const dateStr = new Date(sub.time).toISOString().split('T')[0];
+                raw[dateStr] = (raw[dateStr] || 0) + 1;
+            }
+        });
+        return raw;
+    }, [data.recentSubmissions]);
+    
     return (
         <div className="space-y-12 pb-12">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
@@ -343,7 +427,7 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">Live Telemetry</span>
                                 </div> */}
                             </div>
-                            <ContributionGraph contributionData={Object.entries(data.contribution_data).map(([date, count]) => ({ date, count, level: count > 10 ? 4 : count > 5 ? 3 : count > 2 ? 2 : count > 0 ? 1 : 0 }))} contributionDataRaw={data.contribution_data} stats={data.stats} />
+                            <ContributionGraph contributionData={processedContributionData} contributionDataRaw={contributionDataRaw} stats={data.stats} />
                         </div>
                     </div>
 
@@ -447,89 +531,241 @@ const SubmissionsTab = memo(({ data }: StudentProfileViewProps) => (
     </div>
 ));
 
-const AchievementsTab = memo((_props: StudentProfileViewProps) => (
-    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg">
-        <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Honor Logs</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {[
-                { title: "Day_0_Veteran", desc: "Initialized neural link on launch day.", icon: Trophy, color: "text-amber-400" },
-                { title: "Bug_Hunter", desc: "Detected and neutralized 10 code anomalies.", icon: Zap, color: "text-indigo-400" },
-                { title: "Speed_Demon", desc: "Solved a complex repo in under 5 minutes.", icon: Activity, color: "text-rose-400" }
-            ].map((ach, i) => (
-                <div key={i} className="p-10 rounded-[3rem] bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all group">
-                    <div className={clsx("w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-8 bg-white/5 group-hover:scale-105 transition-transform", ach.color)}>
-                        <ach.icon className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-xl font-black text-white mb-3 uppercase tracking-tight">{ach.title}</h4>
-                    <p className="text-sm font-medium text-slate-500 leading-relaxed">{ach.desc}</p>
-                </div>
-            ))}
-        </div>
-    </div>
-));
+const AchievementsTab = memo(({ data }: StudentProfileViewProps) => {
+    const achievements = [
+        { title: "FIRST_BLOOD", desc: "Solve your very first repository.", icon: Trophy, color: "text-amber-400", bg: "bg-amber-400/10", glow: "shadow-amber-500/20", req: "1 Solved", unlocked: data.stats.solved >= 1 },
+        { title: "CODE_NINJA", desc: "Successfully solve 10 repositories.", icon: Code2, color: "text-indigo-400", bg: "bg-indigo-400/10", glow: "shadow-indigo-500/20", req: "10 Solved", unlocked: data.stats.solved >= 10 },
+        { title: "STREAK_MASTER", desc: "Maintain a 7-day burning streak.", icon: Flame, color: "text-rose-400", bg: "bg-rose-400/10", glow: "shadow-rose-500/20", req: "7 Day Streak", unlocked: data.stats.streak >= 7 },
+        { title: "CENTURION", desc: "Accumulate 100 XP.", icon: Zap, color: "text-emerald-400", bg: "bg-emerald-400/10", glow: "shadow-emerald-500/20", req: "100 XP", unlocked: data.stats.xp >= 100 },
+        { title: "ARCHITECT", desc: "Reach level 5.", icon: Award, color: "text-primary", bg: "bg-primary/10", glow: "shadow-primary/20", req: "Level 5", unlocked: data.stats.level >= 5 },
+        { title: "VETERAN", desc: "Solve 50 repositories.", icon: Star, color: "text-cyan-400", bg: "bg-cyan-400/10", glow: "shadow-cyan-500/20", req: "50 Solved", unlocked: data.stats.solved >= 50 }
+    ];
 
-const InsightsTab = memo((_props: StudentProfileViewProps) => (
-    <div className="space-y-12">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-            <div className="xl:col-span-2 glass-card p-8 rounded-[2.5rem] border border-white/10 text-white relative overflow-hidden bg-slate-950">
-                <h3 className="text-xl font-black mb-8 flex items-center gap-3 uppercase tracking-tight">
-                    <Activity className="w-6 h-6 text-emerald-400" />
-                    Problem Solving Velocity
-                </h3>
-                <div className="h-96 w-full flex items-end gap-3 pb-8">
-                    {[30, 45, 60, 40, 85, 55, 70, 95, 65, 80, 50, 75].map((h, i) => (
-                        <div key={i} className="flex-1 bg-gradient-to-t from-primary/80 to-primary/20 rounded-t-xl group relative" style={{ height: `${h}%` }}>
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black px-3 py-1.5 rounded-lg text-[10px] font-black opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                VELO_{h}
+    return (
+        <div className="glass-card p-10 rounded-[3.5rem] bg-slate-950 border border-white/10 shadow-antigravity">
+            <div className="flex items-center justify-between mb-12">
+                <div>
+                    <h3 className="text-2xl font-black text-white tracking-tight uppercase">Honor_Logs</h3>
+                    <p className="text-slate-500 text-xs font-bold mt-2 uppercase tracking-widest">Authenticated credentials and milestone acquisitions</p>
+                </div>
+                <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                    PROG: {achievements.filter(a => a.unlocked).length} / {achievements.length}
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                {achievements.map((ach, i) => (
+                    <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className={clsx(
+                            "group relative p-10 rounded-[3rem] border transition-all overflow-hidden",
+                            ach.unlocked 
+                                ? "bg-white/[0.03] border-white/5 hover:border-primary/40 hover:bg-white/[0.06] shadow-xl hover:shadow-2xl" 
+                                : "bg-black/40 border-white/5 opacity-40 grayscale"
+                        )}
+                    >
+                        {/* Shine Effect for unlocked */}
+                        {ach.unlocked && (
+                            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[3rem]">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shine" />
+                            </div>
+                        )}
+
+                        {!ach.unlocked && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-help">
+                                <div className="text-center p-6 bg-slate-900 rounded-3xl border border-white/10 shadow-2xl">
+                                    <KeyRound className="w-8 h-8 text-primary mx-auto mb-4" />
+                                    <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Authorization Required</p>
+                                    <p className="text-[9px] font-bold text-slate-500 uppercase">{ach.req}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className={clsx(
+                            "w-16 h-16 rounded-2xl flex items-center justify-center mb-10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6",
+                            ach.unlocked ? ach.bg : "bg-white/5",
+                            ach.unlocked && `shadow-2xl ${ach.glow}`
+                        )}>
+                            <ach.icon className={clsx("w-8 h-8", ach.unlocked ? ach.color : "text-slate-600")} />
+                        </div>
+
+                        <h4 className="text-xl font-black mb-4 uppercase tracking-tighter text-white flex items-center justify-between">
+                            {ach.title}
+                            {ach.unlocked && <CheckCircle className="w-4 h-4 text-emerald-500" />}
+                        </h4>
+                        <p className="text-sm font-medium text-slate-500 leading-relaxed tracking-tight group-hover:text-slate-400 transition-colors">{ach.desc}</p>
+                        
+                        <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
+                            <div className={clsx(
+                                "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em]",
+                                ach.unlocked ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-slate-500"
+                            )}>
+                                {ach.unlocked ? "DECRYPTED" : "ENCRYPTED"}
                             </div>
                         </div>
-                    ))}
-                </div>
-                <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                    <span>Phase_Start</span>
-                    <span>Mid_Sequence</span>
-                    <span>Current_Node</span>
-                </div>
-            </div>
-
-            <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 bg-slate-900 flex flex-col justify-between">
-                <div>
-                    <h3 className="text-lg font-black text-white mb-8 uppercase tracking-tight">Logic Proficiency</h3>
-                    <div className="space-y-10">
-                        {[
-                            { label: "ALGORITHMIC_LOGIC", val: 88, color: "bg-emerald-500" },
-                            { label: "DEBUG_PRECISION", val: 94, color: "bg-primary" },
-                            { label: "SYSTEM_ARCHITECTURE", val: 72, color: "bg-indigo-500" }
-                        ].map((stat, i) => (
-                            <div key={i} className="space-y-4">
-                                <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-widest">
-                                    <span>{stat.label}</span>
-                                    <span className="text-white">{stat.val}%</span>
-                                </div>
-                                <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div className={clsx("h-full transition-all duration-1000", stat.color)} style={{ width: `${stat.val}%` }} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <button className="w-full py-5 rounded-[2rem] border border-primary/30 bg-primary/10 text-primary font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all mt-12">
-                    Optimize_Neural_Map
-                </button>
+                    </motion.div>
+                ))}
             </div>
         </div>
-    </div>
-));
+    );
+});
+
+const InsightsTab = memo(({ data }: StudentProfileViewProps) => {
+    const weeklyActivity = useMemo(() => 
+        processRecentSubmissionsToWeeklyActivity(data.recentSubmissions), 
+        [data.recentSubmissions]
+    );
+    
+    const velocityData = useMemo(() => {
+        const maxActivity = Math.max(...weeklyActivity, 1);
+        return weeklyActivity.map(count => {
+            const normalized = (count / maxActivity) * 80;
+            return Math.max(20, Math.round(normalized + 20));
+        });
+    }, [weeklyActivity]);
+    
+    const totalSubmissions = weeklyActivity.reduce((sum, c) => sum + c, 0);
+    const efficiency = totalSubmissions > 0 ? (Math.max(...weeklyActivity) / Math.max(totalSubmissions / 15, 1)).toFixed(2) : "0.00";
+    
+    const algoLogic = Math.min(100, Math.round(40 + (data.stats.solved * 2) + (data.stats.level * 5)));
+    const debugPrecision = Math.min(100, Math.round(50 + (data.stats.streak * 3) + (data.stats.solved * 1)));
+    const sysArch = Math.min(100, Math.round(30 + (data.stats.xp / 100)));
+
+    const points = velocityData.map((v, i) => `${(i / (velocityData.length - 1)) * 100},${100 - v}`).join(" ");
+
+    return (
+        <div className="space-y-12">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
+                <div className="xl:col-span-2 glass-card p-10 rounded-[3.5rem] border border-white/10 text-white relative overflow-hidden bg-slate-950 shadow-antigravity group">
+                    <div className="absolute top-0 right-0 p-10 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity">
+                        <TrendingUp className="w-32 h-32 text-primary" />
+                    </div>
+                    
+                    <div className="relative z-10 h-full flex flex-col">
+                        <div className="flex items-center justify-between mb-12">
+                            <div>
+                                <h3 className="text-2xl font-black flex items-center gap-4 uppercase tracking-tighter">
+                                    <Activity className="w-8 h-8 text-emerald-400 glow-cyan" />
+                                    Cognitive_Velocity
+                                </h3>
+                                <p className="text-slate-500 text-xs font-bold mt-2 uppercase tracking-widest">Weekly Activity Distribution (Last 15 Weeks)</p>
+                            </div>
+                            <div className="px-6 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Efficiency: {efficiency}x</span>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 relative mt-12 mb-8">
+                            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-80 overflow-visible">
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.3" />
+                                        <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                <motion.path
+                                    initial={{ pathLength: 0, opacity: 0 }}
+                                    animate={{ pathLength: 1, opacity: 1 }}
+                                    transition={{ duration: 2, ease: "easeInOut" }}
+                                    d={`M ${points}`}
+                                    fill="none"
+                                    stroke="var(--color-primary)"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]"
+                                />
+                                <motion.path
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 1, duration: 1 }}
+                                    d={`M ${points} L 100,100 L 0,100 Z`}
+                                    fill="url(#gradient)"
+                                />
+                                {velocityData.map((v, i) => (
+                                    <motion.circle
+                                        key={i}
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ delay: 0.5 + (i * 0.05) }}
+                                        cx={(i / (velocityData.length - 1)) * 100}
+                                        cy={100 - v}
+                                        r="1.5"
+                                        fill="white"
+                                        className="cursor-pointer hover:r-3 transition-all"
+                                    />
+                                ))}
+                            </svg>
+                        </div>
+                        
+                        <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] font-mono border-t border-white/5 pt-8">
+                            <span>Sector_Start</span>
+                            <span>Mid_Analysis</span>
+                            <span>Current_Metric</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="glass-card p-10 rounded-[3.5rem] border border-white/10 bg-slate-900 shadow-antigravity flex flex-col justify-between group">
+                    <div>
+                        <h3 className="text-xl font-black text-white mb-10 uppercase tracking-tighter flex items-center gap-3">
+                            Neural_Mapping
+                            <Cpu className="w-5 h-5 text-indigo-400" />
+                        </h3>
+                        <div className="space-y-12">
+                            {[
+                                { label: "ALGORITHMIC_LOGIC", val: algoLogic, color: "bg-emerald-500", glow: "shadow-emerald-500/20" },
+                                { label: "DEBUG_PRECISION", val: debugPrecision, color: "bg-primary", glow: "shadow-primary/20" },
+                                { label: "SYSTEM_ARCHITECTURE", val: sysArch, color: "bg-indigo-500", glow: "shadow-indigo-500/20" }
+                            ].map((stat, i) => (
+                                <div key={i} className="space-y-5">
+                                    <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        <span className="group-hover:text-white transition-colors">{stat.label}</span>
+                                        <span className="text-white font-mono">{stat.val}%</span>
+                                    </div>
+                                    <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                                        <motion.div 
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${stat.val}%` }}
+                                            transition={{ duration: 1.5, delay: i * 0.2, ease: "circOut" }}
+                                            className={clsx("h-full rounded-full transition-all", stat.color, stat.glow)} 
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <button className="w-full py-6 rounded-3xl border border-primary/30 bg-primary/5 text-primary font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all duration-500 mt-16 relative overflow-hidden group/btn shadow-xl hover:shadow-primary/20">
+                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                        Optimize_Synapse
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+});
 
 const SettingsTab = ({ data }: StudentProfileViewProps) => {
     const [reportEmail, setReportEmail] = useState(data.faculty_report_email || "");
+    const [studentEmail, setStudentEmail] = useState(data.email || "");
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+    
+    // Email verification state
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [otpError, setOtpError] = useState("");
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [pendingEmail, setPendingEmail] = useState("");
 
     const handleSaveSettings = async () => {
         setIsSaving(true);
         try {
-            await api.put("/user/settings", { faculty_report_email: reportEmail });
+            await userApi.settings({ faculty_report_email: reportEmail });
             setSaveStatus("success");
             setTimeout(() => setSaveStatus("idle"), 3000);
         } catch (err) {
@@ -540,98 +776,208 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
         }
     };
 
-    return (
-        <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-xl">
-            <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Settings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-12">
-                    <div className="space-y-8">
-                        <div>
-                            <h4 className="text-sm font-black text-slate-500 uppercase tracking-[0.4em] mb-8">Neural Profile</h4>
-                            <div className="grid grid-cols-2 gap-8">
-                                <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5">
-                                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3">Identity_Alias</p>
-                                    <p className="text-xl font-black text-white tracking-tight">@{data.username}</p>
-                                </div>
-                                <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5 text-slate-500 italic">
-                                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3">Secure_Email</p>
-                                    <p className="text-sm font-bold truncate opacity-50">{data.email}</p>
-                                </div>
-                            </div>
-                        </div>
+    const handleSendVerification = async () => {
+        if (!studentEmail || !studentEmail.includes("@")) {
+            alert("Please enter a valid email address");
+            return;
+        }
+        
+        setIsSendingOtp(true);
+        try {
+            await userApi.sendVerificationEmail(studentEmail);
+            setPendingEmail(studentEmail);
+            setShowOtpModal(true);
+            setOtpError("");
+        } catch (err: any) {
+            alert(err.response?.data?.detail || "Failed to send verification code");
+        } finally {
+            setIsSendingOtp(false);
+        }
+    };
 
-                        {data.role === "faculty" && (
-                            <div className="pt-12 border-t border-white/5">
-                                <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-4 uppercase tracking-tight">
-                                    <MessageSquare className="w-6 h-6 text-amber-400" />
-                                    Reporting_Uplink
-                                </h3>
-                                <p className="text-base text-slate-500 mb-10 font-medium">Define target endpoint for encrypted student behavior archives.</p>
-                                <div className="space-y-8">
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2 font-mono">Endpoint Address</label>
-                                        <input
-                                            type="email"
-                                            value={reportEmail}
-                                            onChange={(e) => setReportEmail(e.target.value)}
-                                            placeholder="faculty@example.com"
-                                            className="w-full bg-white/[0.03] px-6 py-4 rounded-2xl border-2 border-white/5 focus:border-primary focus:ring-8 focus:ring-primary/10 outline-none transition-all font-black text-white placeholder-slate-700 tracking-wider"
-                                        />
-                                    </div>
-                                    <button
-                                        onClick={handleSaveSettings}
-                                        disabled={isSaving}
-                                        className={clsx(
-                                            "group relative px-10 py-5 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] transition-all overflow-hidden shadow-2xl",
-                                            saveStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-primary text-white"
-                                        )}
-                                    >
-                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        {isSaving ? "SYNCING..." : (
-                                            saveStatus === "success" ? <><Check className="w-5 h-5 inline mr-2" /> UPLINK_SYNCED</> : <><Save className="w-5 h-5 inline mr-2" /> Establish Link</>
-                                        )}
-                                    </button>
-                                </div>
+    const handleVerifyOtp = async () => {
+        if (otp.length !== 6) {
+            setOtpError("Please enter a 6-digit code");
+            return;
+        }
+        
+        setIsVerifying(true);
+        setOtpError("");
+        try {
+            await userApi.verifyEmail(pendingEmail, otp);
+            setShowOtpModal(false);
+            setOtp("");
+            setSaveStatus("success");
+            // Refresh the page data
+            window.location.reload();
+        } catch (err: any) {
+            setOtpError(err.response?.data?.detail || "Invalid or expired code");
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
+    return (
+        <>
+            {showOtpModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+                        <div className="text-center mb-8">
+                            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <KeyRound className="w-8 h-8 text-primary" />
                             </div>
-                        )}
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Verify Email</h3>
+                            <p className="text-slate-500 text-sm mt-2">Enter the 6-digit code sent to</p>
+                            <p className="text-primary font-bold">{pendingEmail}</p>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            <input
+                                type="text"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                                placeholder="000000"
+                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-center text-3xl font-black tracking-[0.5em] text-white focus:outline-none focus:border-primary"
+                                maxLength={6}
+                            />
+                            
+                            {otpError && (
+                                <p className="text-rose-400 text-sm text-center font-medium">{otpError}</p>
+                            )}
+                            
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => { setShowOtpModal(false); setOtp(""); }}
+                                    className="flex-1 py-4 rounded-2xl border border-white/10 text-slate-400 font-bold uppercase tracking-widest hover:bg-white/5 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleVerifyOtp}
+                                    disabled={isVerifying || otp.length !== 6}
+                                    className="flex-1 py-4 rounded-2xl bg-primary text-white font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50"
+                                >
+                                    {isVerifying ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Verify"}
+                                </button>
+                            </div>
+                            
+                            <p className="text-slate-600 text-xs text-center">Code expires in 10 minutes</p>
+                        </div>
                     </div>
                 </div>
+            )}
 
-                <div className="space-y-8">
-                    <div className="glass-card p-10 rounded-[3.5rem] bg-slate-900 border border-white/10 overflow-hidden group">
-                        <div className="relative z-10">
-                            <h3 className="text-xl font-black text-white mb-8 uppercase tracking-tight">Security Perimeter</h3>
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between group/line cursor-help">
-                                    <span className="text-sm font-bold text-slate-500 group-hover/line:text-slate-300 transition-colors uppercase tracking-tight">Multi-Factor Gateway</span>
-                                    <span className="text-[10px] font-black text-emerald-400 uppercase bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">ENFORCED</span>
-                                </div>
-                                <div className="flex items-center justify-between group/line cursor-help">
-                                    <span className="text-sm font-bold text-slate-500 group-hover/line:text-slate-300 transition-colors uppercase tracking-tight">Packet Encryption</span>
-                                    <span className="text-[10px] font-black text-emerald-400 uppercase bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">AES-256</span>
+            <div className="p-10 rounded-[2.5rem] border border-white/10">
+                <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Settings</h3>
+                <div className="grid grid-cols-1 md:grid-cols-1">
+                    <div className="space-y-12">
+                        <div className="space-y-8">
+                            <div>
+                                <h4 className="text-sm font-black text-slate-500 uppercase tracking-[0.4em] mb-10">Neural Profile</h4>
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5">
+                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3">Identity_Alias</p>
+                                        <p className="text-xl font-black text-white tracking-tight">@{data.username}</p>
+                                    </div>
+                                    <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5 text-slate-500 italic">
+                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3">Secure_Email</p>
+                                        <p className="text-sm font-bold truncate">{data.email}</p>
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* Email Update Section for Students and Faculty */}
+                            {(data.role === "student" || data.role === "faculty") && (
+                                <div className="pt-12 border-t border-white/5">
+                                    <h3 className="text-xl font-black text-white mb-4 flex items-center gap-3 uppercase tracking-tight">
+                                        <Mail className="w-5 h-5 text-primary" />
+                                        Update Email
+                                    </h3>
+                                    <p className="text-base text-slate-500 mb-6 font-medium">Add or update your email for notifications.</p>
+                                    <div className="space-y-4">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2">Email Address</label>
+                                            <input
+                                                type="email"
+                                                value={studentEmail}
+                                                onChange={(e) => setStudentEmail(e.target.value)}
+                                                placeholder="your@email.com"
+                                                className="w-full bg-white/[0.03] px-6 py-4 rounded-2xl border border-white/5 focus:border-primary focus:ring-1 focus:ring-primary/10 outline-none transition-all font-black text-white placeholder-slate-700 tracking-wider"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleSendVerification}
+                                            disabled={isSendingOtp}
+                                            className="w-full py-4 rounded-2xl bg-primary text-white font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 border border-gray-100/50 cursor-pointer hover:bg-slate-300/70"
+                                        >
+                                            {isSendingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
+                                            {isSendingOtp ? "Sending Code..." : "Send Verification Code"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Faculty Reporting Section */}
+                            {data.role === "faculty" && (
+                                <div className="pt-12 border-t border-white/5">
+                                    <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-4 uppercase tracking-tight">
+                                        <MessageSquare className="w-6 h-6 text-amber-400" />
+                                        Reporting_Uplink
+                                    </h3>
+                                    <p className="text-base text-slate-500 mb-10 font-medium">Define target endpoint for encrypted student behavior archives.</p>
+                                    <div className="space-y-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2 font-mono">Endpoint Address</label>
+                                            <input
+                                                type="email"
+                                                value={reportEmail}
+                                                onChange={(e) => setReportEmail(e.target.value)}
+                                                placeholder="faculty@example.com"
+                                                className="w-full bg-white/[0.03] px-6 py-4 rounded-2xl border-2 border-white/5 focus:border-primary focus:ring-8 focus:ring-primary/10 outline-none transition-all font-black text-white placeholder-slate-700 tracking-wider"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={handleSaveSettings}
+                                            disabled={isSaving}
+                                            className={clsx(
+                                                "group relative px-10 py-5 rounded-[2.5rem] font-black text-sm uppercase tracking-[0.2em] transition-all overflow-hidden shadow-2xl",
+                                                saveStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-primary text-white"
+                                            )}
+                                        >
+                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            {isSaving ? "SYNCING..." : (
+                                                saveStatus === "success" ? <><Check className="w-5 h-5 inline mr-2" /> UPLINK_SYNCED</> : <><Save className="w-5 h-5 inline mr-2" /> Establish Link</>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="bg-primary p-8 rounded-[2.5rem] text-white shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform">
-                        <div className="relative z-10">
-                            <h3 className="text-xl font-black mb-4 uppercase tracking-tight">Platform Status</h3>
-                            <div className="flex items-center gap-6 bg-white/10 p-6 rounded-[2.5rem] backdrop-blur-xl border border-white/10 group-hover:bg-white/20 transition-all">
-                                <div className="p-4 rounded-2xl bg-white/10">
-                                    <Globe className="w-8 h-8" />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-black uppercase tracking-widest">GitHub Vault</p>
-                                    <p className="text-[10px] font-bold text-white/50 tracking-wider">SYNCED_AS @{data.username}</p>
+                    {/* <div className="space-y-8">
+                        <div className="glass-card p-10 rounded-[3.5rem] bg-slate-900 border border-white/10 overflow-hidden group">
+                        </div>
+
+                        <div className="bg-primary p-8 rounded-[2.5rem] text-white shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform">
+                            <div className="relative z-10">
+                                <h3 className="text-xl font-black mb-4 uppercase tracking-tight">Platform Status</h3>
+                                <div className="flex items-center gap-6 bg-white/10 p-6 rounded-[2.5rem] backdrop-blur-xl border border-white/10 group-hover:bg-white/20 transition-all">
+                                    <div className="p-4 rounded-2xl bg-white/10">
+                                        <Globe className="w-8 h-8" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-black uppercase tracking-widest">GitHub Vault</p>
+                                        <p className="text-[10px] font-bold text-white/50 tracking-wider">SYNCED_AS @{data.username}</p>
+                                    </div>
                                 </div>
                             </div>
+                            <div className="absolute -bottom-20 -right-10 w-64 h-64 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
                         </div>
-                        <div className="absolute -bottom-20 -right-10 w-64 h-64 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
-                    </div>
+                    </div> */}
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

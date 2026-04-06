@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/problems", tags=["problems"])
 
+
 @router.get("", response_model=List[Problem])
 @cache(expire=300)
 def get_problems(session: Session = Depends(get_session)):
@@ -47,10 +48,25 @@ def get_problem_testcases(problem_id: int, session: Session = Depends(get_sessio
 
 
 from pydantic import BaseModel
+
+
 class TestCaseCreate(BaseModel):
     input_data: str
     expected_output: str
     is_sample: bool = False
+
+
+class ProblemCreate(BaseModel):
+    title: str
+    description: str
+    difficulty: str = "Easy"
+    subject: Optional[str] = None
+    level: int = 1
+    xp_reward: int = 100
+    hints: Optional[str] = None
+    input_format: Optional[str] = None
+    output_format: Optional[str] = None
+    constraints: Optional[str] = None
 
 
 @router.post("/{problem_id}/testcases")
@@ -85,10 +101,24 @@ def add_test_case(
 
 @router.post("", response_model=Problem)
 def create_problem(
-    problem: Problem,
+    problem_data: ProblemCreate,
     user: User = Depends(require_faculty),
     session: Session = Depends(get_session),
 ):
+    # Create Problem instance
+    problem = Problem(
+        title=problem_data.title,
+        description=problem_data.description,
+        difficulty=problem_data.difficulty,
+        subject=problem_data.subject,
+        level=problem_data.level,
+        xp_reward=problem_data.xp_reward,
+        hints=problem_data.hints,
+        input_format=problem_data.input_format,
+        output_format=problem_data.output_format,
+        constraints=problem_data.constraints,
+    )
+
     # Input validation / sanitization
     problem.title = bleach.clean(problem.title)
     allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + [
@@ -105,6 +135,8 @@ def create_problem(
         "ol",
     ]
     problem.description = bleach.clean(problem.description, tags=allowed_tags)
+    if problem.hints:
+        problem.hints = bleach.clean(problem.hints, tags=allowed_tags)
 
     problem.author_id = user.id
     session.add(problem)
@@ -156,6 +188,14 @@ def update_problem(
         problem.level = update_data["level"]
     if "xp_reward" in update_data:
         problem.xp_reward = update_data["xp_reward"]
+    if "hints" in update_data:
+        problem.hints = update_data["hints"]
+    if "input_format" in update_data:
+        problem.input_format = update_data["input_format"]
+    if "output_format" in update_data:
+        problem.output_format = update_data["output_format"]
+    if "constraints" in update_data:
+        problem.constraints = update_data["constraints"]
 
     session.add(problem)
     session.commit()

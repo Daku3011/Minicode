@@ -1,7 +1,7 @@
 import os
 from cryptography.fernet import Fernet
 import httpx
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -23,8 +23,6 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
-
-
 
 
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
@@ -74,15 +72,41 @@ async def get_github_user_info(access_token: str):
         )
         if response.status_code != 200:
             raise HTTPException(status_code=400, detail="Invalid GitHub token")
-        return response.json()
+
+        user_data = response.json()
+
+        email = user_data.get("email")
+        if not email:
+            emails_response = await client.get(
+                "https://api.github.com/user/emails",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            if emails_response.status_code == 200:
+                emails = emails_response.json()
+                for e in emails:
+                    if e.get("primary") and e.get("verified"):
+                        email = e.get("email")
+                        break
+                if not email:
+                    for e in emails:
+                        if e.get("verified"):
+                            email = e.get("email")
+                            break
+
+        if email:
+            user_data["email"] = email
+
+        return user_data
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        )
 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=ALGORITHM)

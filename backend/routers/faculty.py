@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select, func
 from typing import List, Optional
 import logging
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from pydantic import BaseModel
 
 from database import get_session
@@ -162,7 +162,7 @@ def award_student_xp(
         title=notification_title,
         message=notification_message,
         notification_type="achievement",
-        created_at=datetime.now(UTC),
+        created_at=datetime.now(timezone.utc),
     )
     session.add(notification)
     session.commit()
@@ -266,8 +266,8 @@ def get_faculty_dashboard_stats(
 
             ts = act["timestamp"]
             if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
-            diff = datetime.now(timezone.utc) - ts
+                ts = ts.replace(tzinfo=timezone.timezone.utc)
+            diff = datetime.now(timezone.timezone.utc) - ts
             if diff.days > 0:
                 act["timestamp"] = f"{diff.days}d ago"
             elif diff.seconds > 3600:

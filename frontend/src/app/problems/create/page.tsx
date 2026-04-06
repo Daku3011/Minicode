@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef } from "react"; 
 import { 
     ChevronLeft, Send, Sparkles, BookOpen, 
     Lock, Loader2, FileText, Code2, Eye, PenLine, 
-    Upload, Search, RotateCcw
+    Upload, Search, RotateCcw, Plus, Trash2, Lightbulb,
+    FileInput, FileOutput, ListOrdered
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,6 +37,15 @@ const levels = [
     { level: 6, name: "Code Legend", minXP: 1500 },
 ];
 
+const xpRewards = [
+    { value: 50, label: "50 XP - Easy" },
+    { value: 100, label: "100 XP - Medium" },
+    { value: 150, label: "150 XP - Medium" },
+    { value: 200, label: "200 XP - Hard" },
+    { value: 300, label: "300 XP - Hard" },
+    { value: 500, label: "500 XP - Expert" },
+];
+
 export default function CreateProblemPage() {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,8 +57,16 @@ export default function CreateProblemPage() {
         difficulty: "Easy",
         subject: "algorithms",
         level: 1,
+        xp_reward: 100,
         description: "",
+        hints: "",
+        input_format: "",
+        output_format: "",
+        constraints: "",
     });
+    const [testCases, setTestCases] = useState([
+        { id: 1, input_data: "", expected_output: "", is_sample: true },
+    ]);
     const [showSuccess, setShowSuccess] = useState(false);
 
     const handlePublish = async () => {
@@ -57,9 +75,38 @@ export default function CreateProblemPage() {
             return;
         }
 
+        const validTestCases = testCases.filter(tc => tc.input_data.trim() && tc.expected_output.trim());
+        if (validTestCases.length === 0) {
+            alert("Please add at least one test case");
+            return;
+        }
+
         setIsPublishing(true);
         try {
-            await api.post("/problems", formData);
+            const problemData = {
+                title: formData.title,
+                description: formData.description,
+                difficulty: formData.difficulty,
+                subject: formData.subject,
+                level: formData.level,
+                xp_reward: formData.xp_reward,
+                hints: formData.hints || null,
+                input_format: formData.input_format || null,
+                output_format: formData.output_format || null,
+                constraints: formData.constraints || null,
+            };
+            
+            const problemRes = await api.post("/problems", problemData);
+            const problemId = problemRes.data.id;
+            
+            for (const tc of validTestCases) {
+                await api.post(`/problems/${problemId}/testcases`, {
+                    input_data: tc.input_data,
+                    expected_output: tc.expected_output,
+                    is_sample: tc.is_sample,
+                });
+            }
+            
             setShowSuccess(true);
             setTimeout(() => {
                 router.push("/faculty/problems");
@@ -70,6 +117,25 @@ export default function CreateProblemPage() {
         } finally {
             setIsPublishing(false);
         }
+    };
+
+    const addTestCase = () => {
+        setTestCases([
+            ...testCases,
+            { id: Date.now(), input_data: "", expected_output: "", is_sample: false },
+        ]);
+    };
+
+    const removeTestCase = (id: number) => {
+        if (testCases.length > 1) {
+            setTestCases(testCases.filter(tc => tc.id !== id));
+        }
+    };
+
+    const updateTestCase = (id: number, field: string, value: string | boolean) => {
+        setTestCases(testCases.map(tc => 
+            tc.id === id ? { ...tc, [field]: value } : tc
+        ));
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,7 +239,7 @@ export default function CreateProblemPage() {
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-2xl font-black text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-900 uppercase tracking-tighter"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-2xl font-black text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 uppercase tracking-tighter"
                                         placeholder="Enter Mission Label..."
                                     />
                                 </div>
@@ -184,7 +250,7 @@ export default function CreateProblemPage() {
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         rows={15}
-                                        className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-8 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-900 resize-none uppercase tracking-tight"
+                                        className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-8 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
                                         placeholder="# Specifications: Given an array of signals..."
                                     />
                                 </div>
@@ -198,11 +264,156 @@ export default function CreateProblemPage() {
                                 ) : (
                                     <div className="h-full flex flex-col items-center justify-center text-slate-900 py-32 space-y-4">
                                         <FileText className="w-16 h-16 opacity-30" />
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em]">Signal Expected</p>
+                                        <p className="text-[15px] font-black uppercase tracking-[0.4em] text-slate-500">Signal Expected</p>
                                     </div>
                                 )}
                             </div>
                         )}
+                    </div>
+
+                    {/* Test Cases Section */}
+                    <div className="bg-white/[0.02] border border-white/5 p-10 space-y-8 rounded-3xl">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
+                                <Code2 className="w-4 h-4 text-primary" />
+                                Test Cases
+                            </h3>
+                            <button
+                                onClick={addTestCase}
+                                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10 transition-all"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Add
+                            </button>
+                        </div>
+                        
+                        <p className="text-[9px] text-slate-700 font-black uppercase tracking-widest">Add test cases to validate student solutions</p>
+                        
+                        <div className="space-y-6">
+                            {testCases.map((tc, index) => (
+                                <div key={tc.id} className="bg-white/[0.03] border border-white/5 p-6 rounded-2xl space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Test Case #{index + 1}</span>
+                                        <div className="flex items-center gap-4">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={tc.is_sample}
+                                                    onChange={(e) => updateTestCase(tc.id, 'is_sample', e.target.checked)}
+                                                    className="w-4 h-4 rounded border-white/10 bg-white/5 text-primary focus:ring-primary"
+                                                />
+                                                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Sample (Visible)</span>
+                                            </label>
+                                            {testCases.length > 1 && (
+                                                <button
+                                                    onClick={() => removeTestCase(tc.id)}
+                                                    className="p-2 text-slate-700 hover:text-rose-500 transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                                <FileInput className="w-3 h-3" />
+                                                Input
+                                            </label>
+                                            <textarea
+                                                value={tc.input_data}
+                                                onChange={(e) => updateTestCase(tc.id, 'input_data', e.target.value)}
+                                                rows={3}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-600 resize-none"
+                                                placeholder="Enter input data..."
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                                <FileOutput className="w-3 h-3" />
+                                                Expected Output
+                                            </label>
+                                            <textarea
+                                                value={tc.expected_output}
+                                                onChange={(e) => updateTestCase(tc.id, 'expected_output', e.target.value)}
+                                                rows={3}
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-600 resize-none"
+                                                placeholder="Enter expected output..."
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Hints Section */}
+                    <div className="bg-white/[0.02] border border-white/5 p-10 space-y-8 rounded-3xl">
+                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
+                            <Lightbulb className="w-4 h-4 text-amber-400" />
+                            Hints (Optional)
+                        </h3>
+                        <p className="text-[9px] text-slate-700 font-black uppercase tracking-widest">Provide hints to help students who are stuck</p>
+                        <textarea
+                            value={formData.hints}
+                            onChange={(e) => setFormData({ ...formData, hints: e.target.value })}
+                            rows={4}
+                            className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-8 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
+                            placeholder="Enter hints for students (supports Markdown)..."
+                        />
+                    </div>
+
+                    {/* Input/Output Format & Constraints */}
+                    <div className="bg-white/[0.02] border border-white/5 p-10 space-y-8 rounded-3xl">
+                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
+                            <ListOrdered className="w-4 h-4 text-primary" />
+                            Format & Constraints
+                        </h3>
+                        
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                    <FileInput className="w-3 h-3" />
+                                    Input Format
+                                </label>
+                                <textarea
+                                    value={formData.input_format}
+                                    onChange={(e) => setFormData({ ...formData, input_format: e.target.value })}
+                                    rows={3}
+                                    className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-6 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
+                                    placeholder="Describe the input format (e.g., First line contains n, next line contains n integers)..."
+                                />
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                    <FileOutput className="w-3 h-3" />
+                                    Output Format
+                                </label>
+                                <textarea
+                                    value={formData.output_format}
+                                    onChange={(e) => setFormData({ ...formData, output_format: e.target.value })}
+                                    rows={3}
+                                    className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-6 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
+                                    placeholder="Describe the output format (e.g., Print a single integer representing the sum)..."
+                                />
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                                    <Search className="w-3 h-3" />
+                                    Constraints
+                                </label>
+                                <textarea
+                                    value={formData.constraints}
+                                    onChange={(e) => setFormData({ ...formData, constraints: e.target.value })}
+                                    rows={3}
+                                    className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-6 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
+                                    placeholder="List constraints (e.g., 1 ≤ n ≤ 10^5, 1 ≤ arr[i] ≤ 10^9)..."
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right Column */}
@@ -321,6 +532,30 @@ export default function CreateProblemPage() {
                                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl flex items-center gap-4">
                                     <Lock className="w-4 h-4 text-slate-800" />
                                     <p className="text-[9px] text-slate-600 font-black uppercase tracking-widest leading-none">Min Requirement: {selectedLevel?.name}</p>
+                                </div>
+                            </div>
+
+                            {/* XP Reward Selection */}
+                            <div className="pt-8 border-t border-white/5 space-y-8">
+                                <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
+                                    <Sparkles className="w-4 h-4 text-amber-400" />
+                                    XP Bounty
+                                </h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {xpRewards.map((xp) => (
+                                        <button
+                                            key={xp.value}
+                                            onClick={() => setFormData({ ...formData, xp_reward: xp.value })}
+                                            className={clsx(
+                                                "p-4 rounded-xl border transition-all font-black text-[10px] uppercase tracking-widest",
+                                                formData.xp_reward === xp.value
+                                                    ? "border-amber-400 bg-amber-400/10 text-amber-400"
+                                                    : "border-white/5 bg-white/5 text-slate-700 hover:text-slate-500"
+                                            )}
+                                        >
+                                            {xp.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>

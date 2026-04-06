@@ -286,6 +286,36 @@ function ProblemDetailContent() {
                                 <div className="bg-white/[0.02] hover:bg-white/[0.03] transition-colors rounded-3xl p-8 border border-white/5 space-y-6">
                                     <div className="flex items-center gap-3 text-primary">
                                         <Shield className="w-5 h-5" />
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Input Format</h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {problem?.input_format ? (
+                                            <div className="text-[15px] font-bold text-slate-500 uppercase tracking-tighter whitespace-pre-wrap">
+                                                {problem.input_format}
+                                            </div>
+                                        ) : <span className="text-slate-800 text-[10px] font-black uppercase tracking-widest">Standard Input</span>}
+                                    </div>
+                                </div>
+
+                                <div className="bg-white/[0.02] hover:bg-white/[0.03] transition-colors rounded-3xl p-8 border border-white/5 space-y-6">
+                                    <div className="flex items-center gap-3 text-primary">
+                                        <Sparkles className="w-5 h-5" />
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Output Format</h3>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {problem?.output_format ? (
+                                            <div className="text-[15px] font-bold text-slate-500 uppercase tracking-tighter whitespace-pre-wrap">
+                                                {problem.output_format}
+                                            </div>
+                                        ) : <span className="text-slate-800 text-[10px] font-black uppercase tracking-widest">Standard Output</span>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
+                                <div className="bg-white/[0.02] hover:bg-white/[0.03] transition-colors rounded-3xl p-8 border border-white/5 space-y-6">
+                                    <div className="flex items-center gap-3 text-primary">
+                                        <Shield className="w-5 h-5" />
                                         <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Logical Constraints</h3>
                                     </div>
                                     <div className="space-y-3">

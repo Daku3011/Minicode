@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-    User, BookOpen, Users, Trophy, Calendar, Settings, 
-    BarChart3, Target, Plus, Mail, Award, TrendingUp, 
-    Clock, ChevronRight, Edit, Loader2, FileText, Sparkles, 
-    BookMarked, Search, ArrowRight, ShieldCheck, Zap, 
+import {
+    User, BookOpen, Users, Trophy, Calendar, Settings,
+    BarChart3, Target, Plus, Mail, Award, TrendingUp,
+    Clock, ChevronRight, Edit, Loader2, FileText, Sparkles,
+    BookMarked, Search, ArrowRight, ShieldCheck, Zap,
     Activity, LogOut, Bell
 } from "lucide-react";
 import Link from "next/link";
@@ -64,7 +64,7 @@ export default function FacultyProfilePage() {
                 api.get("/faculty/dashboard-stats"),
                 api.get("/events/faculty/my-events").catch(() => ({ data: [] }))
             ]);
-            
+
             setStats({
                 problems_created: statsRes.data.total_problems,
                 total_students: statsRes.data.total_students,
@@ -103,7 +103,7 @@ export default function FacultyProfilePage() {
                         <div className="relative">
                             <div className="size-36 rounded-3xl bg-gradient-to-br from-primary/20 to-blue-600/20 p-1 border border-white/10 shadow-2xl">
                                 <div className="w-full h-full rounded-[1.4rem] bg-[#0d0d14] flex items-center justify-center relative overflow-hidden">
-                                     <User className="size-16 text-slate-400" />
+                                    <User className="size-16 text-slate-400" />
                                 </div>
                             </div>
                             <div className="absolute -bottom-2 -right-2 size-12 rounded-2xl bg-white text-black flex items-center justify-center border-4 border-[#0a0a0f] shadow-xl">
@@ -148,8 +148,8 @@ export default function FacultyProfilePage() {
                                     onClick={() => setActiveTab(item.id as any)}
                                     className={clsx(
                                         "w-full flex items-center gap-4 px-6 py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] transition-all",
-                                        activeTab === item.id 
-                                            ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                                        activeTab === item.id
+                                            ? "bg-primary text-white shadow-lg shadow-primary/20"
                                             : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
                                     )}
                                 >
@@ -193,9 +193,14 @@ export default function FacultyProfilePage() {
                                             <p className="text-slate-500 font-medium text-xs mt-2">
                                                 Access performance diagnostics by entering a candidate username.
                                             </p>
+                                            <p className="text-slate-500 font-medium text-xs mt-2">
+                                                <a href="./students" className="text-primary hover:underline">
+                                                    View All Students
+                                                </a>
+                                            </p>
                                         </div>
                                         <div className="flex-1 max-w-sm w-full">
-                                            <form 
+                                            <form
                                                 onSubmit={(e) => {
                                                     e.preventDefault();
                                                     const username = (e.currentTarget.elements.namedItem("username") as HTMLInputElement).value;
@@ -210,7 +215,7 @@ export default function FacultyProfilePage() {
                                                     className="w-full bg-[#0d0d14] border border-white/10 rounded-xl py-3.5 pl-6 pr-14 text-white font-black text-xs focus:outline-none focus:border-primary/50 transition-all placeholder:text-slate-700 tracking-wider"
                                                     required
                                                 />
-                                                <button 
+                                                <button
                                                     type="submit"
                                                     className="absolute right-2 top-1/2 -translate-y-1/2 size-10 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all flex items-center justify-center"
                                                 >
@@ -223,7 +228,7 @@ export default function FacultyProfilePage() {
 
                                 {/* Activity Feed */}
                                 <div className="glass-card p-8 border-white/5 bg-white/[0.02]">
-                                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3 mb-8">
+                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3 mb-8">
                                         <Activity className="w-4 h-4 text-primary" /> Operational Logs
                                     </h3>
                                     <div className="space-y-6">
@@ -233,12 +238,12 @@ export default function FacultyProfilePage() {
                                                     <div className={clsx(
                                                         "size-9 rounded-xl flex items-center justify-center",
                                                         activity.type === 'join' ? "bg-blue-500/10 text-blue-400" :
-                                                        activity.type === 'submission' ? "bg-emerald-500/10 text-emerald-400" :
-                                                        "bg-purple-500/10 text-purple-400"
+                                                            activity.type === 'submission' ? "bg-emerald-500/10 text-emerald-400" :
+                                                                "bg-purple-500/10 text-purple-400"
                                                     )}>
                                                         {activity.type === 'join' ? <Users className="w-4 h-4" /> :
-                                                         activity.type === 'submission' ? <Zap className="w-4 h-4" /> :
-                                                         <Target className="w-4 h-4" />}
+                                                            activity.type === 'submission' ? <Zap className="w-4 h-4" /> :
+                                                                <Target className="w-4 h-4" />}
                                                     </div>
                                                     <div className="flex-1 w-px bg-white/5 my-2" />
                                                 </div>
@@ -265,7 +270,7 @@ export default function FacultyProfilePage() {
                             <div className="space-y-8">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                     <h3 className="text-2xl font-black text-white tracking-tighter uppercase">My Protocols</h3>
-                                    <Link 
+                                    <Link
                                         href="/events/create"
                                         className="bg-primary text-white px-8 py-3 rounded-xl flex items-center gap-3 font-black text-[10px] uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/10"
                                     >

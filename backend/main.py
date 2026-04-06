@@ -25,17 +25,20 @@ logger = logging.getLogger(__name__)
 # Setup Rate Limiter
 limiter = Limiter(key_func=get_remote_address)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure database tables are created and migrations run on startup
     try:
         from scripts.migrate_db import run_migrations
+
         run_migrations()
         logger.info("Database tables and migrations initialized successfully")
 
         # Run seeding script if needed
         try:
             from scripts.seed_db import seed_database
+
             seed_database()
             logger.info("Database seeding checked/completed")
         except Exception as seed_err:
@@ -53,20 +56,26 @@ async def lifespan(app: FastAPI):
             FastAPICache.init(RedisBackend(redis), prefix="minicode-cache")
             logger.info("Redis cache initialized")
         except Exception as e:
-            logger.warning(f"Failed to connect to Redis: {e}. Falling back to InMemoryBackend")
+            logger.warning(
+                f"Failed to connect to Redis: {e}. Falling back to InMemoryBackend"
+            )
             from fastapi_cache.backends.inmemory import InMemoryBackend
+
             FastAPICache.init(InMemoryBackend(), prefix="minicode-cache")
     else:
         from fastapi_cache.backends.inmemory import InMemoryBackend
+
         FastAPICache.init(InMemoryBackend(), prefix="minicode-cache")
         logger.info("InMemory cache initialized (No REDIS_URL provided)")
-    
+
     yield
+
 
 # Initialize FastAPI App
 app = FastAPI(title="MiniCode API", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 # Security & Middleware
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -75,12 +84,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        
+
         host = request.headers.get("host", "")
         if not ("localhost" in host or "127.0.0.1" in host):
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        
+            response.headers["Strict-Transport-Security"] = (
+                "max-age=31536000; includeSubDomains"
+            )
+
         return response
+
 
 app.add_middleware(SecurityHeadersMiddleware)
 
@@ -98,15 +110,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Root Endpoint
 @app.get("/")
 def read_root():
     return {"message": "MiniCode API is online", "status": "operational"}
 
+
 # Health Check Endpoint
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
 
 # Include Feature Routers
 from routers.auth import router as auth_router
@@ -126,12 +141,13 @@ app.include_router(submissions_router)
 app.include_router(admin_router)
 app.include_router(faculty_router)
 app.include_router(leaderboard_router)
-app.include_router(users_router)
+app.include_router(users_router, prefix="/user")
 app.include_router(events_router)
 app.include_router(news_router)
 app.include_router(notifications_router)
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port)

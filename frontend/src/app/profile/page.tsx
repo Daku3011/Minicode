@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import api from "@/lib/api";
+import api, { userApi } from "@/lib/api";
 import dynamic from "next/dynamic";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -20,7 +20,7 @@ export default function ProfilePage() {
             setLoading(true);
             try {
                 const [meRes, problemsRes, leaderboardRes] = await Promise.all([
-                    api.get("/auth/me"),
+                    userApi.me(),
                     api.get("/problems"),
                     api.get("/leaderboard"),
                 ]);

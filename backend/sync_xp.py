@@ -75,14 +75,14 @@ def sync_all_users_xp():
                 needs_commit = True
                 if new_level > current_level:
                     from models import Notification
-                    from datetime import datetime, UTC
+                    from datetime import datetime, timezone
 
                     notification = Notification(
                         user_id=student.id,
                         title="Level Up!",
                         message=f"Congratulations! You've reached Level {new_level}!",
                         notification_type="achievement",
-                        created_at=datetime.now(UTC),
+                        created_at=datetime.now(timezone.utc),
                     )
                     session.add(notification)
 

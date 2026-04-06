@@ -5,94 +5,89 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Add parent directory to path to allow importing from database
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database import engine
 from models import User, Problem, Submission, TestCase, NewsItem, Notification
 from models_events import Event, EventParticipant, EventSubmission
+from email_verification import EmailVerification
 
 
 def run_migrations():
     print("Initializing tables...")
-    SQLModel.metadata.create_all(engine)
-    print("Tables created.")
 
     with engine.connect() as conn:
-        print("Running column migrations...")
-
-        # Check dialect
         dialect = engine.dialect.name
+        print(f"Using database dialect: {dialect}")
 
-        if dialect == "sqlite":
-            # For SQLite
-            res = conn.execute(text("PRAGMA table_info(users);")).fetchall()
-            cols = [r[1] for r in res]
+        if dialect == "postgresql":
+            from sqlalchemy import create_engine
+            from sqlalchemy.exc import ProgrammingError
 
-            if "last_login" not in cols:
-                conn.execute(text("ALTER TABLE users ADD COLUMN last_login DATETIME;"))
-                print("Added last_login to users (SQLite)")
+            # Create tables with checkfirst to avoid duplicate errors
+            try:
+                SQLModel.metadata.create_all(engine, checkfirst=True)
+                print("Tables created or already exist.")
+            except ProgrammingError as e:
+                if "already exists" in str(e):
+                    print("Tables already exist, skipping creation.")
+                else:
+                    raise e
+            except Exception as e:
+                if "duplicate key" in str(e).lower():
+                    print("Tables may already exist, continuing...")
+                else:
+                    print(f"Table creation warning: {e}")
 
-            if "faculty_report_email" not in cols:
-                conn.execute(
-                    text("ALTER TABLE users ADD COLUMN faculty_report_email TEXT;")
-                )
-                print("Added faculty_report_email to users (SQLite)")
+            print("Running column migrations...")
 
-            if "last_news_viewed_at" not in cols:
-                conn.execute(
-                    text("ALTER TABLE users ADD COLUMN last_news_viewed_at DATETIME;")
-                )
-                print("Added last_news_viewed_at to users (SQLite)")
+            # Add missing columns to users table
+            columns_to_add = [
+                ("last_login", "TIMESTAMP"),
+                ("faculty_report_email", "TEXT"),
+                ("last_news_viewed_at", "TIMESTAMP"),
+                ("unlocked_level", "INTEGER DEFAULT 1"),
+            ]
 
-            if "unlocked_level" not in cols:
-                conn.execute(
-                    text(
-                        "ALTER TABLE users ADD COLUMN unlocked_level INTEGER DEFAULT 1;"
+            for col_name, col_type in columns_to_add:
+                try:
+                    conn.execute(
+                        text(
+                            f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col_name} {col_type};"
+                        )
                     )
-                )
-                print("Added unlocked_level to users (SQLite)")
-        else:
-            # For PostgreSQL (supports IF NOT EXISTS in 9.6+)
+                    print(f"Added {col_name} to users")
+                except Exception as e:
+                    if "already exists" in str(e).lower():
+                        print(f"Column {col_name} already exists")
+                    else:
+                        print(f"Column {col_name}: {e}")
+
+            # Create email_verifications table
             try:
                 conn.execute(
-                    text(
-                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;"
-                    )
+                    text("""
+                    CREATE TABLE IF NOT EXISTS email_verifications (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        email VARCHAR NOT NULL,
+                        otp VARCHAR(6) NOT NULL,
+                        expires_at TIMESTAMP NOT NULL,
+                        verified BOOLEAN DEFAULT FALSE,
+                        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+                    );
+                """)
                 )
-                print("Applied last_login migration (Postgres)")
+                print("Created email_verifications table")
             except Exception as e:
-                print(f"Postgres migration error (last_login): {e}")
+                if "already exists" in str(e).lower():
+                    print("email_verifications table already exists")
+                else:
+                    print(f"email_verifications table: {e}")
 
-            try:
-                conn.execute(
-                    text(
-                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS faculty_report_email TEXT;"
-                    )
-                )
-                print("Applied faculty_report_email migration (Postgres)")
-            except Exception as e:
-                print(f"Postgres migration error (faculty_report_email): {e}")
-
-            try:
-                conn.execute(
-                    text(
-                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_news_viewed_at TIMESTAMP;"
-                    )
-                )
-                print("Applied last_news_viewed_at migration (Postgres)")
-            except Exception as e:
-                print(f"Postgres migration error (last_news_viewed_at): {e}")
-
-            try:
-                conn.execute(
-                    text(
-                        "ALTER TABLE users ADD COLUMN IF NOT EXISTS unlocked_level INTEGER DEFAULT 1;"
-                    )
-                )
-                print("Applied unlocked_level migration (Postgres)")
-            except Exception as e:
-                print(f"Postgres migration error (unlocked_level): {e}")
+        elif dialect == "sqlite":
+            SQLModel.metadata.create_all(engine, checkfirst=True)
+            print("Tables created.")
 
         conn.commit()
         print("Migrations completed.")
