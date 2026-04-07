@@ -266,8 +266,8 @@ def get_faculty_dashboard_stats(
 
             ts = act["timestamp"]
             if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.timezone.utc)
-            diff = datetime.now(timezone.timezone.utc) - ts
+                ts = ts.replace(tzinfo=timezone.utc)
+            diff = datetime.now(timezone.utc) - ts
             if diff.days > 0:
                 act["timestamp"] = f"{diff.days}d ago"
             elif diff.seconds > 3600:
