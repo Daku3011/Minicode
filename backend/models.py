@@ -11,6 +11,7 @@ class User(SQLModel, table=True):
     full_name: Optional[str] = None
     avatar_url: Optional[str] = None
     github_id: Optional[int] = Field(default=None, unique=True)
+    google_id: Optional[str] = Field(default=None, unique=True, index=True)
     github_access_token: Optional[str] = None
     hashed_password: Optional[str] = None
     role: str = Field(default="student")  # student, faculty, admin

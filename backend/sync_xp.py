@@ -16,6 +16,15 @@ XP_TO_LEVEL = {
     1500: 6,
 }
 
+LEVEL_NAMES = {
+    1: "Beginner",
+    2: "Explorer",
+    3: "Ninja",
+    4: "Warrior",
+    5: "Master",
+    6: "Legend",
+}
+
 
 def calculate_unlocked_level_from_xp(xp: int) -> int:
     unlocked = 1

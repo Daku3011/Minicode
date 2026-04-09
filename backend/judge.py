@@ -6,6 +6,7 @@ from models import Submission, TestCase, User, Problem
 from github import Github
 from auth import decrypt_token
 from utils_cache import invalidate_leaderboard_cache
+from sync_xp import calculate_unlocked_level_from_xp
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
@@ -255,6 +256,13 @@ async def judge_submission(
                 if user.xp is None:
                     user.xp = 0
                 user.xp += xp_diff
+                
+                # Update unlocked level immediately
+                new_level = calculate_unlocked_level_from_xp(user.xp)
+                if user.unlocked_level is None or new_level > user.unlocked_level:
+                    logger.info(f"User {user.username} reached Level {new_level}!")
+                    user.unlocked_level = new_level
+                
                 session.add(user)
                 logger.info(
                     f"User {user.username} earned {xp_diff} XP (New best: {new_score})"

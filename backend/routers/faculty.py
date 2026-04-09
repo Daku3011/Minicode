@@ -9,37 +9,12 @@ from database import get_session
 from models import User, Problem, Submission, Notification
 from auth import require_faculty
 from routers.users import get_user_profile_logic
+from sync_xp import calculate_unlocked_level_from_xp
 from utils_cache import invalidate_leaderboard_cache
 
 
 logger = logging.getLogger(__name__)
 
-XP_TO_LEVEL = {
-    0: 1,
-    100: 2,
-    300: 3,
-    600: 4,
-    1000: 5,
-    1500: 6,
-}
-
-
-def calculate_level_from_xp(xp: int) -> int:
-    level = 1
-    for threshold, lvl in sorted(XP_TO_LEVEL.items(), key=lambda x: x[0], reverse=True):
-        if xp >= threshold:
-            level = lvl
-            break
-    return level
-
-
-def calculate_unlocked_level_from_xp(xp: int) -> int:
-    unlocked = 1
-    for threshold, lvl in sorted(XP_TO_LEVEL.items(), key=lambda x: x[0], reverse=True):
-        if xp >= threshold:
-            unlocked = lvl
-            break
-    return unlocked
 
 
 router = APIRouter(prefix="/faculty", tags=["faculty"])

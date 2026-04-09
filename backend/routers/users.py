@@ -8,6 +8,7 @@ from datetime import datetime, timezone, timedelta
 from database import get_session
 from models import User, Problem, Submission
 from auth import get_current_user
+from sync_xp import calculate_unlocked_level_from_xp, LEVEL_NAMES
 
 logger = logging.getLogger(__name__)
 
@@ -96,24 +97,16 @@ def get_user_profile_logic(user: User, session: Session):
         )
 
     # Level mapping based on XP
-    if total_score >= 1500:
-        user_level = 6
-        level_name = "Legend"
-    elif total_score >= 1000:
-        user_level = 5
-        level_name = "Master"
-    elif total_score >= 600:
-        user_level = 4
-        level_name = "Warrior"
-    elif total_score >= 300:
-        user_level = 3
-        level_name = "Ninja"
-    elif total_score >= 100:
-        user_level = 2
-        level_name = "Explorer"
-    else:
-        user_level = 1
-        level_name = "Beginner"
+    user_level = calculate_unlocked_level_from_xp(total_score)
+    level_name = LEVEL_NAMES.get(user_level, "Beginner")
+
+    # Fallback/Auto-sync: If stored level is behind calculated level, update it
+    if user.unlocked_level is None or user_level > user.unlocked_level:
+        logger.info(f"Auto-syncing level for {user.username}: {user.unlocked_level} -> {user_level}")
+        user.unlocked_level = user_level
+        session.add(user)
+        session.commit()
+        session.refresh(user)
 
     return {
         "id": user.id,
