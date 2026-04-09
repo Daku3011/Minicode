@@ -141,7 +141,7 @@ export default function FacultyProfilePage() {
                             {[
                                 { id: "overview", label: "Overview", icon: <BarChart3 className="w-4 h-4" /> },
                                 { id: "events", label: "My Events", icon: <Calendar className="w-4 h-4" /> },
-                                { id: "settings", label: "Configuration", icon: <Settings className="w-4 h-4" /> },
+                                // { id: "settings", label: "Configuration", icon: <Settings className="w-4 h-4" /> },
                             ].map((item) => (
                                 <button
                                     key={item.id}
@@ -312,7 +312,7 @@ export default function FacultyProfilePage() {
                             </div>
                         )}
 
-                        {activeTab === "settings" && (
+                        {/* {activeTab === "settings" && (
                             <div className="glass-card p-10 space-y-10 border-white/5 bg-white/[0.02]">
                                 <div>
                                     <h3 className="text-xl font-black text-white tracking-tighter uppercase mb-1">Configuration</h3>
@@ -349,7 +349,7 @@ export default function FacultyProfilePage() {
                                     <button className="px-10 py-3 rounded-lg bg-white text-black font-black text-[9px] uppercase tracking-[0.2em] hover:bg-slate-200 transition-all">Apply Schema</button>
                                 </div>
                             </div>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>

@@ -131,19 +131,50 @@ async def google_callback(
     if not google_email:
         raise HTTPException(status_code=400, detail="Could not retrieve email from Google.")
 
-    # Only allow existing faculty/admin to login
+    # Only allow @scet.ac.in or existing faculty/admin to login
     statement = select(User).where(User.email == google_email)
     user = session.exec(statement).first()
 
-    if not user or user.role not in ["faculty", "admin"]:
-        raise HTTPException(
-            status_code=403, 
-            detail="Unauthorized: Google login is restricted to registered faculty members only."
-        )
+    if not user:
+        if google_email.endswith("@scet.ac.in"):
+            # Auto-register faculty
+            base_username = google_email.split("@")[0]
+            username = base_username
+            counter = 1
+            while session.exec(select(User).where(User.username == username)).first():
+                username = f"{base_username}{counter}"
+                counter += 1
+                
+            user = User(
+                username=username,
+                email=google_email,
+                full_name=google_user.get("name") or base_username,
+                avatar_url=google_user.get("picture"),
+                google_id=google_user.get("id"),
+                role="faculty",
+            )
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+        else:
+            raise HTTPException(
+                status_code=403, 
+                detail="Unauthorized: Google login is restricted to @scet.ac.in emails or registered faculty members."
+            )
+    else:
+        if user.role not in ["faculty", "admin"] and not google_email.endswith("@scet.ac.in"):
+            raise HTTPException(
+                status_code=403, 
+                detail="Unauthorized: Google login is restricted to @scet.ac.in emails or registered faculty members."
+            )
+            
+        # Ensure role is faculty if they log in with scet.ac.in (and aren't admin)
+        if google_email.endswith("@scet.ac.in") and user.role not in ["faculty", "admin"]:
+            user.role = "faculty"
 
-    # Update google_id if this is their first time using Google Login
-    if not user.google_id:
-        user.google_id = google_user.get("id")
+        # Update google_id if this is their first time using Google Login
+        if not user.google_id:
+            user.google_id = google_user.get("id")
 
     # Update last login
     user.last_login = datetime.now(timezone.utc)
