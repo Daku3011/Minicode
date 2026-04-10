@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Download, Terminal, CheckCircle2, TrendingUp, AlertTriangle, List, MoreHorizontal, Link as LinkIcon, Edit, Trash, BarChart3, Bell } from "lucide-react";
+import { Plus, Download, CheckCircle2, TrendingUp, AlertTriangle, List, MoreHorizontal, Link as LinkIcon, Edit, Trash, BarChart3, Bell } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import api from "@/lib/api";

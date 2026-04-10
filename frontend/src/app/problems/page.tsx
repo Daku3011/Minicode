@@ -2,12 +2,13 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, Filter, Plus, Terminal, Layers, Target } from "lucide-react";
+import { Search, Filter, Plus, Layers, Target } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import ProblemCard from "@/components/ProblemCard";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { Logo } from "@/components/Logo";
 
 interface Problem {
     id: number;
@@ -253,7 +254,7 @@ function ProblemsContent() {
                             </div>
                         ) : (
                             <div className="py-32 text-center bg-white/[0.01] rounded-[4rem] border border-dashed border-white/10">
-                                <Terminal className="w-16 h-16 text-slate-900 mx-auto mb-8" />
+                                <Logo className="w-16 h-16 text-slate-900 mx-auto mb-8" variant="solid" />
                                 <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">Null Sector Reached</h3>
                                 <p className="text-slate-600 font-bold text-lg max-w-lg mx-auto uppercase tracking-widest">No matching patterns found</p>
                                 <button

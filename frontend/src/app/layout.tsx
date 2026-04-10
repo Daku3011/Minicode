@@ -12,8 +12,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "MiniCode | Internal Coding Platform",
-  description: "A premium coding practice platform for students.",
+  title: "MiniCode | Code. Compete. Evolve.",
+  description: "A modern coding arena where students build real skills, compete with peers, and level up through real-world challenges.",
 };
 
 export default function RootLayout({

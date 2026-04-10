@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Terminal, LogOut, Code2, Calendar, Trophy, Bell, User } from "lucide-react";
+import { LogOut, Code2, Calendar, Trophy, Bell, User } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import NewsPanel from "@/components/NewsPanel";
+import { Logo } from "@/components/Logo";
 
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
@@ -76,8 +77,8 @@ export default function Navbar() {
                     href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/profile' : '/problems') : "/"} 
                     className="flex items-center gap-3 transition-opacity hover:opacity-80"
                 >
-                    <div className="bg-primary p-2 rounded-xl shadow-lg shadow-primary/10">
-                        <Terminal className="text-white w-5 h-5" />
+                    <div className="bg-primary/5 p-1 rounded-xl shadow-lg shadow-primary/5 border border-white/5">
+                        <Logo className="w-7 h-7" variant="gradient" />
                     </div>
                     <h2 className="text-xl font-black tracking-tighter text-white hidden sm:block uppercase">
                         MINICODE

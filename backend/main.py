@@ -114,7 +114,7 @@ app.add_middleware(
 # Root Endpoint
 @app.get("/")
 def read_root():
-    return {"message": "MiniCode API is online", "status": "operational"}
+    return {"message": "MiniCode API is online"}
 
 
 # Health Check Endpoint

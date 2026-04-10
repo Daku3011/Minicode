@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { Terminal, Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart } from "lucide-react";
+import { Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart } from "lucide-react";
 import api from "@/lib/api";
 import { clsx } from "clsx";
 import LoginSymbolBackground from "@/components/LoginSymbolBackground";
+import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
     const { user, loading, login } = useAuth();
@@ -81,7 +82,7 @@ export default function LoginPage() {
                             <div className="flex items-center gap-3 mb-8 group cursor-default">
                                 <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
                                 <span className="text-[15px] text-primary uppercase font-black group-hover:tracking-[0.1em] transition-all duration-500">
-                                    Continuous Integration & Continuous Devlopement
+                                    For the Students  &   From the Studetns
                                 </span>
                             </div>
                             <div className="space-y-4">
@@ -117,8 +118,8 @@ export default function LoginPage() {
                         <div className="flex flex-col items-center gap-6 mb-12">
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-primary/40 blur-3xl group-hover:blur-[60px] transition-all duration-700" />
-                                <div className="relative bg-primary p-7 rounded-[2.5rem] shadow-2xl border-4 border-white/20 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
-                                    <Terminal className="text-white w-12 h-12" />
+                                <div className="relative bg-[#05050a]/50 backdrop-blur-sm p-4 rounded-[2.5rem] shadow-l border-10 border-white/20 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                                    <Logo className="w-16 h-16" variant="gradient" />
                                 </div>
                             </div>
                             <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic mt-4">

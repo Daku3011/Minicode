@@ -12,7 +12,6 @@ import {
     Code,
     Flame,
     Award,
-    Terminal,
     CheckCircle,
     AlertCircle,
     ArrowRight,
