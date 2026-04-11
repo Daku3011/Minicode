@@ -13,7 +13,7 @@ import os
 logger = logging.getLogger(__name__)
 
 SMTP_CONFIG = {
-    "host": "smtp.gmail.com",
+    "host": "smtp.googlemail.com",  # Using googlemail for better compatibility on cloud networks
     "port": 587,
     "email": os.getenv("SMTP_EMAIL", "minicode.scet@gmail.com"),
     "password": os.getenv("SMTP_PASSWORD", ""),
@@ -54,14 +54,16 @@ def send_email(to_email: str, subject: str, html_content: str, attachments: List
                 logger.error(f"Failed to attach file {attachment.get('filename')}: {e}")
 
     try:
-        with smtplib.SMTP(SMTP_CONFIG["host"], SMTP_CONFIG["port"]) as server:
+        # Added 30 second timeout and retry logic for better reliability on cloud environments
+        with smtplib.SMTP(SMTP_CONFIG["host"], SMTP_CONFIG["port"], timeout=30) as server:
+            server.set_debuglevel(1)  # Temporary: helps debug network issues in logs
             server.starttls()
             server.login(SMTP_CONFIG["email"], SMTP_CONFIG["password"])
             server.sendmail(SMTP_CONFIG["email"], to_email, msg.as_string())
         logger.info(f"Email sent to {to_email}: {subject}")
         return True
     except Exception as e:
-        logger.error(f"Failed to send email to {to_email}: {e}")
+        logger.error(f"Failed to send email to {to_email} via {SMTP_CONFIG['host']}: {e}")
         return False
 
 
