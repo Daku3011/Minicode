@@ -153,9 +153,17 @@ Render's Free Tier spins down after 15 minutes of inactivity. To keep it respons
 > - `REDIS_URL`: `rediss://...` (from Upstash)
 > - `CELERY_BROKER_URL`: `rediss://...` (same as above)
 
-### 6️⃣ Advanced: Render Blueprint (Paid)
-If you have a **Render Starter** ($7/mo) or higher plan, you can use the `render.yaml` file in the root directory. This will automate the creation of a managed database and separate worker services with better performance.
-3. Your database is now populated and ready for action.
+### 6️⃣ Advanced: Render Blueprint (Infrastructure as Code)
+If you have a **Render Starter** ($7/mo) or higher plan, you can use the `render.yaml` file in the root directory. This will automate the creation of all services:
+1. Go to **Blueprints** in your Render Dashboard.
+2. Connect your MiniCode repository.
+3. Render will auto-detect `render.yaml` and provision:
+   - **PostgreSQL Database**
+   - **Redis Cache** (Key Value instance)
+   - **Backend API**
+   - **Celery Worker & Beat**
+   - **Frontend**
+4. Your entire stack is now synchronized and production-ready in one click.
 
 ---
 
