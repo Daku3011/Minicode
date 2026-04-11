@@ -11,13 +11,16 @@ databases:
     plan: free # Change to 'starter' for production persistence
     region: oregon
 
-redis:
-  - name: minicode-redis
+services:
+  # ================================
+  # Redis Cache (Render Key Value)
+  # ================================
+  - type: keyvalue
+    name: minicode-redis
     plan: free
     region: oregon
-    ipAllowList: [] # Allow internal access from all services in this blueprint
+    ipAllowList: [] # Only allow internal access
 
-services:
   # ================================
   # Backend API (FastAPI + Gunicorn)
   # ================================
@@ -38,11 +41,13 @@ services:
           name: minicode-db
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: CELERY_BROKER_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: GITHUB_CLIENT_ID
@@ -82,11 +87,13 @@ services:
           name: minicode-db
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: CELERY_BROKER_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: GITHUB_CLIENT_ID
@@ -120,11 +127,13 @@ services:
           name: minicode-db
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: CELERY_BROKER_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: GITHUB_CLIENT_ID
