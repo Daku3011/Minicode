@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, BackgroundTasks
 from typing import Optional
 import logging
 from email_service import send_email
@@ -11,6 +11,7 @@ FEEDBACK_RECIPIENT = "minicode.scet@gmail.com"
 
 @router.post("")
 async def submit_feedback(
+    background_tasks: BackgroundTasks,
     email: str = Form(...),
     subject: str = Form(...),
     message: str = Form(...),
@@ -19,6 +20,8 @@ async def submit_feedback(
     try:
         attachments = []
         if image:
+            # IMPORTANT: We must read the file content into memory BEFORE the request returns,
+            # because the TempFile handle is closed and the file deleted once the request finishes.
             content = await image.read()
             attachments.append({
                 "filename": image.filename,
@@ -40,18 +43,18 @@ async def submit_feedback(
         </div>
         """
 
-        success = send_email(
+        # Offload the potentially slow SMTP operation to a background task.
+        # This prevents Gunicorn worker timeouts on Render.
+        background_tasks.add_task(
+            send_email,
             to_email=FEEDBACK_RECIPIENT,
             subject=f"Feedback: {subject}",
             html_content=html_content,
             attachments=attachments
         )
 
-        if not success:
-            raise HTTPException(status_code=500, detail="Failed to send feedback email")
-
-        return {"message": "Feedback submitted successfully"}
+        return {"message": "Feedback received. Transmission initialized."}
 
     except Exception as e:
-        logger.error(f"Error submitting feedback: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error processing feedback: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process feedback submission")
