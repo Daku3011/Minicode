@@ -30,32 +30,32 @@ interface Event {
 const eventTypeLabels: Record<string, { label: string; color: string; bg: string; shadow: string; icon: React.ReactNode }> = {
     weekly_challenge: { 
         label: "Weekly Challenge", 
-        color: "text-purple-400", 
-        bg: "bg-purple-500/10",
-        shadow: "shadow-purple-500/20",
+        color: "text-violet-700", 
+        bg: "bg-violet-50",
+        shadow: "shadow-violet-200",
         icon: <Zap className="w-3.5 h-3.5" /> 
     },
     team_project: { 
         label: "Team Project", 
-        color: "text-blue-400", 
-        bg: "bg-blue-500/10",
-        shadow: "shadow-blue-500/20",
+        color: "text-sky-700", 
+        bg: "bg-sky-50",
+        shadow: "shadow-sky-200",
         icon: <Users className="w-3.5 h-3.5" /> 
     },
     announcement: { 
         label: "Announcement", 
-        color: "text-amber-400", 
-        bg: "bg-amber-500/10",
-        shadow: "shadow-amber-500/20",
+        color: "text-amber-700", 
+        bg: "bg-amber-50",
+        shadow: "shadow-amber-200",
         icon: <Target className="w-3.5 h-3.5" /> 
     },
 };
 
 const statusColors: Record<string, string> = {
-    active: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-emerald-500/10",
-    draft: "bg-slate-500/10 text-slate-400 border-slate-500/20",
-    completed: "bg-slate-500/10 text-slate-400 border-slate-500/20",
-    cancelled: "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-rose-500/10",
+    active: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    draft: "bg-slate-100 text-slate-600 border-slate-200",
+    completed: "bg-slate-100 text-slate-600 border-slate-200",
+    cancelled: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
 export default function EventsPage() {
@@ -126,61 +126,63 @@ export default function EventsPage() {
     };
 
     return (
-        <div className="min-h-screen pt-15 pb-24 px-4 md:px-8 bg-[#0a0a0f]">
+        <div className="min-h-screen pt-15 pb-24 px-4 md:px-8 bg-white relative overflow-hidden">
+            <div className="pointer-events-none absolute inset-0 -z-10">
+                <div className="absolute -top-32 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-violet-100 blur-3xl opacity-70" />
+                <div className="absolute top-40 right-0 h-[320px] w-[320px] rounded-full bg-cyan-100 blur-3xl opacity-50" />
+                <div className="absolute bottom-24 left-0 h-[300px] w-[300px] rounded-full bg-indigo-100 blur-3xl opacity-40" />
+            </div>
             <div className="max-w-[1600px] mx-auto relative z-10 px-4 md:px-8">
                 {/* Hero Section */}
                 <div className="text-center mb-24 relative">
-                    {/* <span className="text-primary font-black text-[10px] uppercase tracking-[0.6em] mb-6 block">Operations Matrix</span> */}
-                    <h1 className="text-7xl font-black text-white tracking-tighter mb-8 leading-[0.9] uppercase">
-                        PROTOCOLS <span className="text-primary">&</span> EVENTS
+                    <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight mb-8 leading-[0.9]">
+                        Events <span className="text-primary italic bg-gradient-to-r from-violet-700 via-violet-500 to-cyan-500 bg-clip-text text-transparent">Hub</span>
                     </h1>
-                    <p className="text-slate-500 text-lg max-w-2xl mx-auto font-medium leading-relaxed mb-12">
-                        Synchronize with high-priority development cycles. Participate in tactical sprints, 
-                        secure rewards, and elevate your clearance level.
+                    <p className="text-slate-600 text-lg max-w-2xl mx-auto font-medium leading-relaxed mb-12">
+                        Join coding events, team challenges, and announcements. Track progress, collaborate with peers, and earn rewards.
                     </p>
                     
                     {isFaculty && (
                         <div className="flex items-center justify-center gap-6">
                             <Link 
                                 href="/faculty/events" 
-                                className="h-14 px-8 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/50 text-white font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-all"
+                                className="h-12 px-6 rounded-lg bg-white border border-slate-200 hover:border-violet-300 text-slate-700 font-semibold text-sm flex items-center gap-3 transition-all"
                             >
-                                <Calendar className="w-5 h-5 text-primary" />
-                                Manage Archives
+                                <Calendar className="w-4 h-4 text-primary" />
+                                Manage Events
                             </Link>
                             <Link 
                                 href="/events/create" 
-                                className="h-14 px-8 rounded-2xl bg-primary text-white font-black text-xs uppercase tracking-widest flex items-center gap-3 transition-all"
+                                className="h-12 px-6 rounded-lg bg-primary text-white font-semibold text-sm flex items-center gap-3 transition-all hover:bg-violet-700"
                             >
-                                <Plus className="w-5 h-5" />
-                                Initialize Protocol
+                                <Plus className="w-4 h-4" />
+                                Create Event
                             </Link>
                         </div>
                     )}
 
-                    {/* Decorative Blur - Static */}
                     <div className="absolute -top-64 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10" />
                 </div>
 
                 {/* Status Dashboard */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
                     {[
-                        { label: "Active Nodes", val: upcomingEvents.length, icon: Activity, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-                        { label: "Operators", val: (events.reduce((acc, e) => acc + e.current_participants, 0)).toLocaleString(), icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
-                        { label: "Challenges", val: events.filter(e => e.event_type === "weekly_challenge").length, icon: Trophy, color: "text-amber-400", bg: "bg-amber-500/10" },
-                        { label: "Clearance", val: events.filter(e => e.is_joined).length, icon: ShieldCheck, color: "text-purple-400", bg: "bg-purple-400/10" },
+                        { label: "Upcoming", val: upcomingEvents.length, icon: Activity, color: "text-emerald-700", bg: "bg-emerald-50" },
+                        { label: "Participants", val: (events.reduce((acc, e) => acc + e.current_participants, 0)).toLocaleString(), icon: Users, color: "text-sky-700", bg: "bg-sky-50" },
+                        { label: "Challenges", val: events.filter(e => e.event_type === "weekly_challenge").length, icon: Trophy, color: "text-amber-700", bg: "bg-amber-50" },
+                        { label: "Joined", val: events.filter(e => e.is_joined).length, icon: ShieldCheck, color: "text-violet-700", bg: "bg-violet-50" },
                     ].map((stat) => (
                         <div 
                             key={stat.label}
-                            className="bg-white/[0.02] p-6 rounded-[2rem] border border-white/5 relative overflow-hidden group hover:border-white/10 transition-all duration-300"
+                            className="bg-white p-6 rounded-xl border border-slate-200 relative overflow-hidden group hover:border-slate-300 transition-all duration-300 shadow-sm hover:shadow-md"
                         >
                             <div className="flex items-center gap-5">
-                                <div className={clsx("h-12 w-12 rounded-2xl flex items-center justify-center transition-all", stat.bg)}>
+                                <div className={clsx("h-12 w-12 rounded-lg flex items-center justify-center transition-all border border-white", stat.bg)}>
                                     <stat.icon className={clsx("w-6 h-6", stat.color)} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-2xl font-black text-white">{stat.val}</span>
-                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{stat.label}</span>
+                                    <span className="text-2xl font-bold text-slate-900">{stat.val}</span>
+                                    <span className="text-xs font-medium text-slate-500">{stat.label}</span>
                                 </div>
                             </div>
                         </div>
@@ -189,23 +191,23 @@ export default function EventsPage() {
 
                 {/* Filter Controls */}
                 <div className="flex flex-col lg:flex-row items-center justify-between mb-12 gap-8">
-                    <div className="flex items-center gap-2 p-1.5 bg-white/5 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-2 p-1.5 bg-white rounded-xl border border-slate-200 shadow-sm">
                         {[
                             { id: "upcoming", label: "Upcoming", count: upcomingEvents.length },
                             { id: "past", label: "Completed", count: pastEvents.length },
-                            { id: "all", label: "Full Archive", count: events.length },
+                            { id: "all", label: "All", count: events.length },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={clsx(
-                                    "px-6 py-2.5 rounded-xl text-xs font-black transition-all uppercase tracking-widest relative whitespace-nowrap",
-                                    activeTab === tab.id ? "bg-primary/20 text-white border border-primary/30" : "text-slate-500 hover:text-white"
+                                    "px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative whitespace-nowrap",
+                                    activeTab === tab.id ? "bg-violet-100 text-violet-700 border border-violet-200" : "text-slate-600 hover:text-slate-900"
                                 )}
                             >
                                 <span className="relative z-10 flex items-center gap-2">
                                     {tab.label}
-                                    <span className={clsx("text-[9px] opacity-60", activeTab === tab.id ? "text-primary" : "text-slate-700")}>
+                                    <span className={clsx("text-xs opacity-80", activeTab === tab.id ? "text-violet-700" : "text-slate-500")}>
                                         {tab.count}
                                     </span>
                                 </span>
@@ -214,13 +216,13 @@ export default function EventsPage() {
                     </div>
 
                     <div className="relative w-full lg:w-96 group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-700 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
-                            placeholder="LOCATE PROTOCOL..."
+                            placeholder="Search events..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-xs font-medium text-white placeholder-slate-800 tracking-widest focus:outline-none focus:border-primary/40 transition-all font-black"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-14 pr-6 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-violet-200 transition-all"
                         />
                     </div>
                 </div>
@@ -230,13 +232,13 @@ export default function EventsPage() {
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-40 gap-8">
                             <div className="w-14 h-14 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                            <span className="text-slate-600 font-black text-[10px] uppercase tracking-[0.3em]">Syncing Protocols...</span>
+                            <span className="text-slate-500 font-medium text-sm">Loading events...</span>
                         </div>
                     ) : filteredEvents.length === 0 ? (
-                        <div className="text-center py-32 rounded-[3rem] border border-dashed border-white/5 bg-white/[0.01]">
-                            <Calendar className="w-16 h-16 text-slate-900 mx-auto mb-6" />
-                            <h3 className="text-xl font-black text-slate-700 uppercase tracking-widest mb-2">No Protocols Detected</h3>
-                            <p className="text-slate-800 text-sm font-medium uppercase tracking-tight">Verify synchronization matrix</p>
+                        <div className="text-center py-24 rounded-2xl border border-dashed border-slate-300 bg-white">
+                            <Calendar className="w-14 h-14 text-slate-300 mx-auto mb-5" />
+                            <h3 className="text-2xl font-bold text-slate-900 mb-2">No events found</h3>
+                            <p className="text-slate-500 text-sm">Try a different search or tab filter.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -247,56 +249,57 @@ export default function EventsPage() {
                                     <Link
                                         key={event.id}
                                         href={`/events/${event.id}`}
-                                        className="group relative flex flex-col h-full bg-white/[0.02] rounded-[2.5rem] border border-white/5 hover:border-primary/30 transition-all duration-300 overflow-hidden"
+                                        className="group relative flex flex-col h-full bg-white rounded-xl border border-slate-200 hover:border-violet-300 transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md"
                                     >
-                                        <div className="p-8 flex flex-col h-full">
+                                        <div className="p-6 flex flex-col h-full">
                                             {/* Header */}
-                                            <div className="flex items-center justify-between mb-8">
+                                            <div className="flex items-center justify-between mb-6 gap-3">
                                                 <div className={clsx(
-                                                    "flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border border-white/5",
+                                                    "flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-semibold border border-slate-200",
                                                     typeInfo.color, typeInfo.bg
                                                 )}>
+                                                    {typeInfo.icon}
                                                     {typeInfo.label}
                                                 </div>
                                                 <span className={clsx(
-                                                    "px-2.5 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border",
+                                                    "px-2.5 py-1 rounded-md text-[11px] font-semibold capitalize border",
                                                     statusColors[event.status] || statusColors.draft
                                                 )}>
                                                     {event.status}
                                                 </span>
                                             </div>
                                             
-                                            <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors leading-tight mb-4 min-h-[3.5rem] line-clamp-2 uppercase">
+                                            <h3 className="text-2xl font-bold text-slate-900 group-hover:text-violet-700 transition-colors leading-tight mb-3 min-h-[3.5rem] line-clamp-2">
                                                 {event.title}
                                             </h3>
                                             
-                                            <p className="text-sm text-slate-500 font-medium line-clamp-3 mb-8 leading-relaxed italic">
-                                                "{event.description}"
+                                            <p className="text-sm text-slate-600 line-clamp-3 mb-6 leading-relaxed">
+                                                {event.description}
                                             </p>
 
-                                            <div className="mt-auto pt-8 border-t border-white/5">
+                                            <div className="mt-auto pt-5 border-t border-slate-200">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex flex-col gap-1">
-                                                        <div className="flex items-center gap-2 text-slate-600 mb-2">
+                                                        <div className="flex items-center gap-2 text-slate-500 mb-2">
                                                             <Clock className="w-3.5 h-3.5" />
-                                                            <span className="text-[10px] font-black uppercase tracking-widest">{getTimeRemaining(event.end_date)}</span>
+                                                            <span className="text-xs font-medium">{getTimeRemaining(event.end_date)}</span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
-                                                                {event.current_participants}/{event.max_participants || "∞"} OPERATORS
+                                                            <span className="text-xs font-medium text-slate-500">
+                                                                {event.current_participants}/{event.max_participants || "∞"} participants
                                                             </span>
                                                         </div>
                                                     </div>
                                                     
-                                                    <div className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:bg-primary transition-all duration-300">
-                                                        <ArrowUpRight className="w-5 h-5 text-slate-700 group-hover:text-white" />
+                                                    <div className="h-11 w-11 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center group-hover:bg-violet-600 group-hover:border-violet-600 transition-all duration-300">
+                                                        <ArrowUpRight className="w-4.5 h-4.5 text-slate-500 group-hover:text-white" />
                                                     </div>
                                                 </div>
 
                                                 {event.prize_description && (
-                                                    <div className="mt-6 flex items-center gap-3 px-4 py-2 bg-amber-500/5 rounded-xl border border-amber-500/10">
-                                                        <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                                                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest truncate">{event.prize_description}</span>
+                                                    <div className="mt-5 flex items-center gap-3 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200">
+                                                        <Trophy className="w-3.5 h-3.5 text-amber-700" />
+                                                        <span className="text-xs font-medium text-amber-800 truncate">{event.prize_description}</span>
                                                     </div>
                                                 )}
                                             </div>
