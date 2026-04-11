@@ -134,6 +134,7 @@ from routers.users import router as users_router
 from events import router as events_router
 from news import router as news_router
 from notifications import router as notifications_router
+from routers.feedback import router as feedback_router
 
 app.include_router(auth_router)
 app.include_router(problems_router)
@@ -145,6 +146,7 @@ app.include_router(users_router, prefix="/user")
 app.include_router(events_router)
 app.include_router(news_router)
 app.include_router(notifications_router)
+app.include_router(feedback_router)
 
 if __name__ == "__main__":
     import uvicorn

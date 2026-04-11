@@ -9,6 +9,9 @@ import api from "@/lib/api";
 import { clsx } from "clsx";
 import LoginSymbolBackground from "@/components/LoginSymbolBackground";
 import { Logo } from "@/components/Logo";
+import FeedbackModal from "@/components/FeedbackModal";
+import { MessageSquare } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
     const { user, loading, login } = useAuth();
@@ -20,6 +23,7 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
     useEffect(() => {
         if (!loading && user) {
@@ -81,8 +85,8 @@ export default function LoginPage() {
                         <div className="flex flex-col items-center lg:items-start">
                             <div className="flex items-center gap-3 mb-8 group cursor-default">
                                 <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
-                                <span className="text-[15px] text-primary uppercase font-black group-hover:tracking-[0.1em] transition-all duration-500">
-                                    For the Students  &   From the Studetns
+                                <span className="text-[15px] text-transparent uppercase  bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-white via-red-400/80 to-white">
+                                    From the Students  &   For the Studetns
                                 </span>
                             </div>
                             <div className="space-y-4">
@@ -111,6 +115,17 @@ export default function LoginPage() {
                                 Dwarkesh Ramani <span className="text-primary">&</span> Jenil Gajera
                             </span>
                         </div>
+
+                        {/* Feedback Link */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsFeedbackOpen(true)}
+                            className="mt-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-green-800/60 border border-primary/20 text-primary hover:bg-primary/20 transition-all group cursor-pointer"
+                        >
+                            <MessageSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Have Feedback? Share it here</span>
+                        </motion.button>
                     </div>
 
                     {/* Right Column: Auth Card */}
@@ -140,7 +155,7 @@ export default function LoginPage() {
                                     <div className="space-y-5">
                                         <button
                                             onClick={handleGithubLogin}
-                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300  cursor-pointer"
                                         >
                                             <div className="absolute inset-0 bg-primary/10 rounded-[2rem] scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500" />
                                             <Github className="w-10 h-10 relative z-10" />
@@ -156,7 +171,7 @@ export default function LoginPage() {
 
                                         <button
                                             onClick={() => setIsStaffMode(true)}
-                                            className="w-full py-7 rounded-[2rem] bg-white/[0.03] border border-white/10 text-slate-500 font-black cursor-pointer hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic"
+                                            className="w-full py-7 rounded-[2rem] bg-white/[0.03] border border-white/10 text-slate-500 font-black cursor-pointer hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic hover:border hover:border-white hover:underline underline-offset-4"
                                         >
                                             Faculty Authentication
                                         </button>
@@ -236,7 +251,7 @@ export default function LoginPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/20 hover:text-white transition-colors"
+                                                    className="cursor-pointer absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/20 hover:text-white transition-colors"
                                                 >
                                                     {showPassword ? <EyeOff className="w-7 h-7 text-gray-400" /> : <Eye className="w-7 h-7 text-gray-400" />}
                                                 </button>
@@ -293,6 +308,10 @@ export default function LoginPage() {
                         Crafted with <Heart className="w-3 h-3 text-rose-500 fill-rose-500" /> by SCET Dev Team
                     </div>
                 </footer> */}
+                <FeedbackModal 
+                    isOpen={isFeedbackOpen} 
+                    onClose={() => setIsFeedbackOpen(false)} 
+                />
             </main>
         </div>
     );

@@ -1,6 +1,8 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 from datetime import datetime, timezone, timedelta
 from sqlmodel import Session, select, func
 from typing import List, Dict, Any
@@ -20,16 +22,36 @@ SMTP_CONFIG = {
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
-def send_email(to_email: str, subject: str, html_content: str):
+def send_email(to_email: str, subject: str, html_content: str, attachments: List[Dict[str, Any]] = None):
     if not SMTP_CONFIG["password"]:
         logger.warning("SMTP password not configured, skipping email")
         return False
 
-    msg = MIMEMultipart("alternative")
+    # Using MIMEMultipart("mixed") to support both "alternative" (text/html) and "attachments"
+    msg = MIMEMultipart("mixed")
     msg["From"] = SMTP_CONFIG["email"]
     msg["To"] = to_email
     msg["Subject"] = subject
-    msg.attach(MIMEText(html_content, "html"))
+
+    # Attach HTML content
+    html_part = MIMEMultipart("alternative")
+    html_part.attach(MIMEText(html_content, "html"))
+    msg.attach(html_part)
+
+    # Attach files if any
+    if attachments:
+        for attachment in attachments:
+            try:
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment["content"])
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition",
+                    f"attachment; filename={attachment['filename']}",
+                )
+                msg.attach(part)
+            except Exception as e:
+                logger.error(f"Failed to attach file {attachment.get('filename')}: {e}")
 
     try:
         with smtplib.SMTP(SMTP_CONFIG["host"], SMTP_CONFIG["port"]) as server:

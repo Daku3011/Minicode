@@ -4,7 +4,7 @@ from typing import List, Optional
 import bleach
 import logging
 from fastapi_cache.decorator import cache
-
+from pydantic import BaseModel
 from database import get_session
 from models import User, Problem, TestCase, NewsItem
 from auth import require_faculty
@@ -45,9 +45,6 @@ def get_problem_testcases(problem_id: int, session: Session = Depends(get_sessio
         {"id": tc.id, "input": tc.input_data, "expected_output": tc.expected_output}
         for tc in samples
     ]
-
-
-from pydantic import BaseModel
 
 
 class TestCaseCreate(BaseModel):
