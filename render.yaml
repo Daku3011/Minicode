@@ -64,9 +64,7 @@ services:
         sync: false # Set to your frontend URL, e.g. https://minicode-web.onrender.com
       - key: WEB_CONCURRENCY
         value: "4"
-      - key: SMTP_EMAIL
-        sync: false
-      - key: SMTP_PASSWORD
+      - key: RESEND_API_KEY
         sync: false
 
   # ================================
@@ -104,9 +102,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: SMTP_EMAIL
-        sync: false
-      - key: SMTP_PASSWORD
+      - key: RESEND_API_KEY
         sync: false
 
   # ================================
@@ -144,9 +140,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: SMTP_EMAIL
-        sync: false
-      - key: SMTP_PASSWORD
+      - key: RESEND_API_KEY
         sync: false
 
   # ================================

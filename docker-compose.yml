@@ -21,8 +21,7 @@ services:
       - FERNET_KEY=${FERNET_KEY}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
       - WEB_CONCURRENCY=2
-      - SMTP_EMAIL=${SMTP_EMAIL}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
@@ -50,8 +49,7 @@ services:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - SMTP_EMAIL=${SMTP_EMAIL}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     # removed apparmor
     depends_on:
       postgres:
@@ -74,8 +72,7 @@ services:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - SMTP_EMAIL=${SMTP_EMAIL}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     # removed apparmor
     depends_on:
       postgres:

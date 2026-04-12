@@ -1,8 +1,5 @@
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
+import httpx
+import base64
 from datetime import datetime, timezone, timedelta
 from sqlmodel import Session, select, func
 from typing import List, Dict, Any
@@ -12,66 +9,74 @@ import os
 
 logger = logging.getLogger(__name__)
 
-SMTP_CONFIG = {
-    "host": "smtp.googlemail.com",  # Using googlemail for better compatibility on cloud networks
-    "port": 587,
-    "email": os.getenv("SMTP_EMAIL", "minicode.scet@gmail.com"),
-    "password": os.getenv("SMTP_PASSWORD", ""),
-}
+# Resend Configuration
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+# Note: On Resend Free tier without a domain, the 'from' email must be 'onboarding@resend.dev'
+# The 'to' email must be your verified email (minicode.scet@gmail.com)
+RESEND_FROM_EMAIL = "MiniCode Arena <onboarding@resend.dev>"
+RESEND_RECIPIENT = "minicode.scet@gmail.com"
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
 def send_email(to_email: str, subject: str, html_content: str, attachments: List[Dict[str, Any]] = None):
-    if not SMTP_CONFIG["password"]:
-        logger.warning("SMTP password not configured, skipping email")
+    if not RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not configured, skipping email")
         return False
 
-    # Using MIMEMultipart("mixed") to support both "alternative" (text/html) and "attachments"
-    msg = MIMEMultipart("mixed")
-    msg["From"] = SMTP_CONFIG["email"]
-    msg["To"] = to_email
-    msg["Subject"] = subject
+    url = "https://api.resend.com/emails"
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json"
+    }
 
-    # Attach HTML content
-    html_part = MIMEMultipart("alternative")
-    html_part.attach(MIMEText(html_content, "html"))
-    msg.attach(html_part)
-
-    # Attach files if any
+    # Prepare attachments for Resend (Base64 encoding)
+    resend_attachments = []
     if attachments:
-        for attachment in attachments:
+        for att in attachments:
             try:
-                part = MIMEBase("application", "octet-stream")
-                part.set_payload(attachment["content"])
-                encoders.encode_base64(part)
-                part.add_header(
-                    "Content-Disposition",
-                    f"attachment; filename={attachment['filename']}",
-                )
-                msg.attach(part)
+                # Content is already bytes from the UploadFile.read()
+                content_b64 = base64.b64encode(att["content"]).decode("utf-8")
+                resend_attachments.append({
+                    "content": content_b64,
+                    "filename": att["filename"]
+                })
             except Exception as e:
-                logger.error(f"Failed to attach file {attachment.get('filename')}: {e}")
+                logger.error(f"Failed to encode attachment {att.get('filename')}: {e}")
+
+    # For the free tier to work without domain verification, we often need to send TO the verified email
+    # If the user provides a different to_email, we'll try it, but onboarding@resend.dev -> verified_email is safest.
+    # USER REQUIREMENT: All emails must go to minicode.scet@gmail.com
+    target_recipient = RESEND_RECIPIENT
+    
+    payload = {
+        "from": RESEND_FROM_EMAIL,
+        "to": [target_recipient],
+        "subject": subject,
+        "html": html_content,
+        "attachments": resend_attachments
+    }
 
     try:
-        # Added 30 second timeout and retry logic for better reliability on cloud environments
-        with smtplib.SMTP(SMTP_CONFIG["host"], SMTP_CONFIG["port"], timeout=30) as server:
-            server.set_debuglevel(1)  # Temporary: helps debug network issues in logs
-            server.starttls()
-            server.login(SMTP_CONFIG["email"], SMTP_CONFIG["password"])
-            server.sendmail(SMTP_CONFIG["email"], to_email, msg.as_string())
-        logger.info(f"Email sent to {to_email}: {subject}")
-        return True
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
+            logger.info(f"Email sent via Resend to {to_email}: {subject}")
+            return True
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Resend API error ({e.response.status_code}): {e.response.text}")
+        return False
     except Exception as e:
-        logger.error(f"Failed to send email to {to_email} via {SMTP_CONFIG['host']}: {e}")
+        logger.error(f"Unexpected error sending email via Resend: {e}")
         return False
 
 
 def generate_motivation_email(username, top_activity, leaderboard_top=None, suggestions=None):
+    # (Existing generation logic remains the same)
     activity_html = ""
     for act in top_activity[:5]:
         activity_html += f"""
-        <div style="background: #f8fafc; border-left: 3px solid #6366f1; padding: 12px 16px; margin: 8px 0; border-radius: 0 8px 8px 0;">
+        <div style="background: #f8fafc; border-left: 3px solid #6366f1; padding: 12px 16px; margin: 8px 0; border-radius: 0 8px 8px 0 text-align: left;">
             <div style="font-weight: bold; color: #1e293b; font-size: 14px;">{act.get('title', 'Activity')}</div>
             <div style="color: #64748b; font-size: 12px; margin-top: 4px;">{act.get('description', '')}</div>
         </div>
@@ -140,9 +145,9 @@ def generate_motivation_email(username, top_activity, leaderboard_top=None, sugg
                 {activity_html}
                 
                 {suggestions_html}
- 
+                
                 {leaderboard_html}
- 
+                
                 <div style="text-align: center; margin-top: 40px;">
                     <p style="margin-bottom: 12px; font-weight: 600; color: #64748b; text-transform: uppercase;">Re-sync with the Arena?</p>
                     <a href="{FRONTEND_URL}" class="cta">INITIALIZE CONNECTION</a>
@@ -166,7 +171,6 @@ def generate_motivation_email(username, top_activity, leaderboard_top=None, sugg
 def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_inactive)
 
-    # Find users who haven't logged in OR haven't submitted in days_inactive
     inactive_users = session.exec(
         select(User).where(
             User.role == "student",
@@ -178,7 +182,6 @@ def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
         logger.info("No inactive students for lure emails")
         return {"sent": 0, "total": 0}
 
-    # Get top 3 from leaderboard for lure content
     top_students = session.exec(
         select(User.username, User.xp)
         .where(User.role == "student")
@@ -188,7 +191,6 @@ def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
     
     leaderboard_data = [{"username": s[0], "xp": s[1]} for s in top_students]
 
-    # Get some recent successful activity from others
     recent_activity = session.exec(
         select(User.username, Problem.title)
         .join(Submission, Submission.user_id == User.id)
@@ -214,7 +216,6 @@ def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
     for student in inactive_users:
         if not student.email: continue
         
-        # Get 2 easy problems student hasn't solved
         solved_ids_subquery = select(Submission.problem_id).where(Submission.user_id == student.id, Submission.status == "accepted")
         easy_problems = session.exec(
             select(Problem)
@@ -224,7 +225,6 @@ def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
             .limit(2)
         ).all()
         
-        # If no explicit "Easy" ones found, just get any 2 unsolved
         if not easy_problems:
             easy_problems = session.exec(
                 select(Problem)
