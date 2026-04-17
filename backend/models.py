@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -17,7 +17,7 @@ class User(SQLModel, table=True):
     role: str = Field(default="student")  # student, faculty, admin
     xp: int = Field(default=0)  # Total XP earned
     unlocked_level: int = Field(default=1)  # Current unlocked level
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=timezone.utcnow)
     last_login: Optional[datetime] = Field(default=None)  # For inactivity tracking
     faculty_report_email: Optional[str] = Field(default=None)  # For faculty reports
     last_news_viewed_at: Optional[datetime] = Field(
@@ -43,7 +43,7 @@ class Problem(SQLModel, table=True):
     hints: Optional[str] = None  # Optional hints for students
     xp_reward: int = Field(default=100)  # XP reward for solving
     author_id: Optional[int] = Field(default=None, foreign_key="users.id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=timezone.utcnow)
 
     author: Optional["User"] = Relationship(back_populates="created_problems")
     test_cases: List["TestCase"] = Relationship(back_populates="problem")
@@ -79,7 +79,7 @@ class Submission(SQLModel, table=True):
     memory_used: Optional[int] = None  # in KB
     time_taken: Optional[float] = None  # in seconds
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, index=True
+        default_factory=timezone.utcnow, index=True
     )  # Indexed for sorting
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None  # Soft delete support
@@ -98,7 +98,7 @@ class NewsItem(SQLModel, table=True):
     priority: int = Field(default=0, index=True)
     is_active: bool = Field(default=True, index=True)
     created_by: Optional[int] = Field(default=None, foreign_key="users.id")
-    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    created_at: datetime = Field(default_factory=timezone.utcnow, index=True)
     expires_at: Optional[datetime] = None
 
     author: Optional["User"] = Relationship()
@@ -113,7 +113,7 @@ class Notification(SQLModel, table=True):
     notification_type: str = Field(default="info", index=True)
     is_read: bool = Field(default=False, index=True)
     related_url: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    created_at: datetime = Field(default_factory=timezone.utcnow, index=True)
     expires_at: Optional[datetime] = None
 
     user: "User" = Relationship()

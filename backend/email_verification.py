@@ -65,7 +65,7 @@ def send_verification_email(to_email: str, otp: str) -> bool:
                 </p>
             </div>
             <div class="footer">
-                <p>© 2026 MiniCode // Secure Verification</p>
+                <p>© 2026 MiniCode</p>
             </div>
         </div>
     </body>

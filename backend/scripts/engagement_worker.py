@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Session, select, func
 from dotenv import load_dotenv
 

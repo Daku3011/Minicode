@@ -143,7 +143,7 @@ def send_faculty_reports_task():
     from database import engine
     from sqlmodel import Session, select, func
     from models import User, Submission
-    from datetime import datetime
+    from datetime import datetime, timezone
 
     logger.info("Sending faculty weekly reports...")
     try:
