@@ -1,7 +1,7 @@
 import sys
 import os
 from sqlmodel import Session, select
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add the parent directory to sys.path to allow importing from database and models
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
