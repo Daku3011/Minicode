@@ -19,7 +19,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
       - FERNET_KEY=${FERNET_KEY}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000}
       - WEB_CONCURRENCY=2
       - RESEND_API_KEY=${RESEND_API_KEY}
     restart: unless-stopped

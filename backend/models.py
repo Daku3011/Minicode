@@ -3,6 +3,16 @@ from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 
 
+class UserCohortLink(SQLModel, table=True):
+    __tablename__ = "user_cohort_links"
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", primary_key=True)
+    cohort_id: Optional[int] = Field(default=None, foreign_key="cohorts.id", primary_key=True)
+
+class LabProblemLink(SQLModel, table=True):
+    __tablename__ = "lab_problem_links"
+    lab_id: Optional[int] = Field(default=None, foreign_key="labs.id", primary_key=True)
+    problem_id: Optional[int] = Field(default=None, foreign_key="problem.id", primary_key=True)
+
 class User(SQLModel, table=True):
     __tablename__ = "users"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -26,6 +36,8 @@ class User(SQLModel, table=True):
 
     submissions: List["Submission"] = Relationship(back_populates="user")
     created_problems: List["Problem"] = Relationship(back_populates="author")
+    managed_cohorts: List["Cohort"] = Relationship(back_populates="faculty")
+    cohorts: List["Cohort"] = Relationship(back_populates="students", link_model=UserCohortLink)
 
 
 class Problem(SQLModel, table=True):
@@ -48,6 +60,7 @@ class Problem(SQLModel, table=True):
     author: Optional["User"] = Relationship(back_populates="created_problems")
     test_cases: List["TestCase"] = Relationship(back_populates="problem")
     submissions: List["Submission"] = Relationship(back_populates="problem")
+    labs: List["Lab"] = Relationship(back_populates="problems", link_model=LabProblemLink)
 
 
 class TestCase(SQLModel, table=True):
@@ -117,3 +130,31 @@ class Notification(SQLModel, table=True):
     expires_at: Optional[datetime] = None
 
     user: "User" = Relationship()
+
+
+
+class Cohort(SQLModel, table=True):
+    __tablename__ = "cohorts"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    description: Optional[str] = None
+    faculty_id: int = Field(foreign_key="users.id", index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    faculty: Optional["User"] = Relationship(back_populates="managed_cohorts")
+    students: List["User"] = Relationship(back_populates="cohorts", link_model=UserCohortLink)
+    labs: List["Lab"] = Relationship(back_populates="cohort")
+
+class Lab(SQLModel, table=True):
+    __tablename__ = "labs"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: Optional[str] = None
+    cohort_id: int = Field(foreign_key="cohorts.id", index=True)
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    cohort: Optional[Cohort] = Relationship(back_populates="labs")
+    problems: List["Problem"] = Relationship(back_populates="labs", link_model=LabProblemLink)
+

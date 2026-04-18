@@ -51,11 +51,13 @@ export default function Navbar() {
 
     const navItems = user?.role === 'faculty' || user?.role === 'admin'
         ? [
+            { name: "Cohorts", href: "/faculty/cohorts", icon: User },
             { name: "Problems", href: "/faculty/problems", icon: Code2 },
             { name: "Events", href: "/faculty/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
         ]
         : [
+            { name: "Cohorts", href: "/cohorts", icon: User },
             { name: "Problems", href: "/problems", icon: Code2 },
             { name: "Events", href: "/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
@@ -87,7 +89,7 @@ export default function Navbar() {
 
                 {/* Navigation Links */}
                 {user && (
-                    <nav className="hidden xl:flex items-center gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/5">
+                    <nav className="hidden lg:flex items-center gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/5">
                         {navItems.map((item) => {
                             const isActive = pathname.startsWith(item.href);
                             return (

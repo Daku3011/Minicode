@@ -12,6 +12,9 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from redis import asyncio as aioredis
 from dotenv import load_dotenv
+from fastapi import WebSocket, WebSocketDisconnect
+import asyncio
+from websockets_manager import manager
 
 # Load environment variables
 load_dotenv()
@@ -68,7 +71,13 @@ async def lifespan(app: FastAPI):
         FastAPICache.init(InMemoryBackend(), prefix="minicode-cache")
         logger.info("InMemory cache initialized (No REDIS_URL provided)")
 
+    # Start Redis websocket listener
+    manager.redis_task = asyncio.create_task(manager.listen_redis_events())
+
     yield
+
+    if manager.redis_task:
+        manager.redis_task.cancel()
 
 
 # Initialize FastAPI App
@@ -122,6 +131,20 @@ def read_root():
 def health_check():
     return {"status": "healthy"}
 
+@app.get("/ping")
+def ping():
+    return {"status": "pong", "message": "Render keep-alive successful"}
+
+@app.websocket("/ws/submissions/{submission_id}")
+async def websocket_submission_endpoint(websocket: WebSocket, submission_id: int):
+    await manager.connect(websocket, submission_id)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, submission_id)
+
+
 
 # Include Feature Routers
 from routers.auth import router as auth_router
@@ -135,6 +158,8 @@ from events import router as events_router
 from news import router as news_router
 from notifications import router as notifications_router
 from routers.feedback import router as feedback_router
+from routers.cohorts import router as cohorts_router
+from routers.labs import router as labs_router
 
 app.include_router(auth_router)
 app.include_router(problems_router)
@@ -147,6 +172,8 @@ app.include_router(events_router)
 app.include_router(news_router)
 app.include_router(notifications_router)
 app.include_router(feedback_router)
+app.include_router(cohorts_router)
+app.include_router(labs_router)
 
 if __name__ == "__main__":
     import uvicorn

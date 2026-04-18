@@ -13,7 +13,9 @@ coverage
 *.pyc
 .vscode/
 
-backend/venv
+backend/venv/
+venv/
 backend/__pycache__
 backend/*.pyc
 backend/minicode.db
+SKILLS.md
