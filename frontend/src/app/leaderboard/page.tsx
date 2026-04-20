@@ -177,7 +177,7 @@ export default function LeaderboardPage() {
                                     <th className="text-left py-8 px-8">Gate Level</th>
                                     <th className="text-left py-8 px-8">Resolved</th>
                                     <th className="text-left py-8 px-8">Experience</th>
-                                    <th className="text-right py-8 px-8">Protocol</th>
+                                    {/* <th className="text-right py-8 px-8">Protocol</th> */}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
@@ -226,7 +226,7 @@ export default function LeaderboardPage() {
                                             <td className="py-8 px-8 font-black text-primary text-sm tracking-tighter leading-none">
                                                 {u.experience.toLocaleString()} <span className="text-[10px] text-slate-800">XP</span>
                                             </td>
-                                            <td className="py-8 px-8 text-right">
+                                            {/* <td className="py-8 px-8 text-right">
                                                 <Link
                                                     href={`/profile/${u.username}`}
                                                     className="h-10 px-8 rounded-xl bg-white/5 border border-white/5 text-white font-black text-[9px] uppercase tracking-widest inline-flex items-center gap-2 hover:bg-primary hover:border-primary transition-all"
@@ -234,7 +234,7 @@ export default function LeaderboardPage() {
                                                     Access
                                                     <ArrowUpRight className="w-3.5 h-3.5" />
                                                 </Link>
-                                            </td>
+                                            </td> */}
                                         </tr>
                                     ))
                                 )}

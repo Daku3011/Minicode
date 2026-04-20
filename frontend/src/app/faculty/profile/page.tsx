@@ -83,7 +83,7 @@ export default function FacultyProfilePage() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0f]">
-                <div className="relative">
+                <div className="relative font-white">
                     <div className="size-16 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <ShieldCheck className="w-6 h-6 text-primary/40" />
