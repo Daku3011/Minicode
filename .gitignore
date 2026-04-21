@@ -14,6 +14,7 @@ coverage
 .vscode/
 
 backend/venv
+venv/
 backend/__pycache__
 backend/*.pyc
 backend/minicode.db
