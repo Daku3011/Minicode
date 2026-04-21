@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart } from "lucide-react";
+// import { Terminal, Github, ArrowRight, Loader2, Shield, Eye, EyeOff } from "lucide-react";
 import api from "@/lib/api";
+import { Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart, Terminal, MessageSquare } from "lucide-react";
 import { clsx } from "clsx";
 import LoginSymbolBackground from "@/components/LoginSymbolBackground";
 import { Logo } from "@/components/Logo";
 import FeedbackModal from "@/components/FeedbackModal";
-import { MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
@@ -66,53 +66,57 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-center p-6 bg-[#05050a] text-white font-black overflow-hidden select-none">
-            {/* Interactive Background */}
-            <LoginSymbolBackground />
-
-            {/* Background Aesthetics */}
+        <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-white text-gray-900 overflow-hidden select-none">
+            {/* Subtle Background Decoration */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full bg-[url('/grid.svg')] opacity-[0.03] mix-blend-overlay" />
-                <div className="absolute top-1/4 -left-20 w-[60rem] h-[60rem] bg-primary/10 rounded-full blur-[180px] animate-pulse" />
-                <div className="absolute bottom-1/4 -right-20 w-[60rem] h-[60rem] bg-secondary/10 rounded-full blur-[200px] animate-pulse delay-1000" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vh] bg-gradient-to-tr from-primary/5 via-transparent to-secondary/5 opacity-50" />
+                <div className="absolute top-[-30%] right-[-10%] w-[700px] h-[700px] bg-violet-100 rounded-full blur-[120px] opacity-60" />
+                <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-50 rounded-full blur-[100px] opacity-50" />
             </div>
 
-            <main className="w-full max-w-[90rem] z-10 flex flex-col min-h-screen pt-12 scale-[0.9] origin-top">
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <main className="w-full max-w-[1400px] z-10 flex flex-col min-h-screen px-10 py-16">
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                     {/* Left Column: Branding */}
-                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-12">
+                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-10">
                         <div className="flex flex-col items-center lg:items-start">
                             <div className="flex items-center gap-3 mb-8 group cursor-default">
                                 <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
                                 <span className="text-[15px] text-transparent uppercase  bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-white via-red-400/80 to-white">
-                                    From the Students  &   For the Studetns
+                                    From the Students  &   For the Students
                                 </span>
                             </div>
-                            <div className="space-y-4">
-                                <h2 className="text-8xl md:text-[10rem] font-black text-white tracking-tighter leading-[0.81] drop-shadow-2xl">
-                                    Coding <br className="hidden lg:block" />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-purple-400/40 italic pr-6">Club</span>
+
+                            {/* Main Heading */}
+                            <div className="space-y-3">
+                                <h2 className="text-7xl md:text-[8rem] font-extrabold tracking-tighter leading-[0.85]">
+                                    <span className="text-gray-900">Coding</span>
+                                    <br className="hidden lg:block" />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-500 to-blue-500">
+                                        Club
+                                    </span>
                                 </h2>
                             </div>
-                            <div className="flex items-center gap-1 mt-12 bg-white/[0.03] p-2 pr-6 rounded-xl border border-white/5 backdrop-blur-sm">
-                                <div className="px-4 py-3 rounded-xl bg-primary shadow-lg shadow-primary/20">
-                                    <span className="text-[9px] text-white uppercase tracking-[0.2em]">Co-Powered by</span>
+
+                            {/* Tagline */}
+                            <p className="text-xl md:text-2xl text-gray-400 italic font-light mt-6 tracking-tight">
+                                Every line you write, writes you.
+                            </p>
+
+                            {/* Co-Powered Badge */}
+                            <div className="flex items-center gap-2 mt-10 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200">
+                                <div className="px-3 py-1.5 rounded-lg bg-violet-600">
+                                    <span className="text-[10px] text-white font-semibold tracking-wider uppercase">Co-Powered by</span>
                                 </div>
-                                <span className="text-xl font-black text-slate-300 uppercase tracking-tighter italic">
-                                    SCET COMPUTER DEPT
+                                <span className="text-base font-bold text-gray-700 tracking-tight">
+                                    SCET Computer Dept
                                 </span>
                             </div>
                         </div>
 
                         {/* Team Credits */}
-                        <div className="flex flex-col items-center lg:items-start p-10 lg:px-14 rounded-[3rem] bg-white/[0.03] border border-white/10 relative group cursor-default hover:bg-white/[0.05] transition-all duration-500 backdrop-blur-md">
-                            <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-100 transition-opacity">
-                                {/* <Shield className="w-6 h-6 text-primary" /> */}
-                            </div>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.8em] mb-4">Devloped by</span>
-                            <span className="text-4xl font-black text-white tracking-tighter italic leading-none">
-                                Dwarkesh Ramani <span className="text-primary">&</span> Jenil Gajera
+                        <div className="flex flex-col items-center lg:items-start px-8 py-7 rounded-2xl bg-gray-50 border border-gray-200 relative group cursor-default hover:bg-gray-100 transition-all duration-300">
+                            <span className="text-xs font-medium text-gray-400 tracking-widest uppercase mb-2">Developed by</span>
+                            <span className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight leading-snug">
+                                Dwarkesh Ramani <span className="text-violet-600">&</span> Jenil Gajera
                             </span>
                         </div>
 
@@ -129,70 +133,77 @@ export default function LoginPage() {
                     </div>
 
                     {/* Right Column: Auth Card */}
-                    <div className="flex flex-col items-center w-full max-w-xl mx-auto">
-                        <div className="flex flex-col items-center gap-6 mb-12">
+                    <div className="flex flex-col items-center w-full max-w-md mx-auto">
+                        {/* Logo */}
+                        <div className="flex flex-col items-center gap-4 mb-10">
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-primary/40 blur-3xl group-hover:blur-[60px] transition-all duration-700" />
                                 <div className="relative bg-[#05050a]/50 backdrop-blur-sm p-4 rounded-[2.5rem] shadow-l border-10 border-white/20 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
                                     <Logo className="w-16 h-16" variant="gradient" />
                                 </div>
                             </div>
-                            <h1 className="text-5xl font-black tracking-tighter text-white uppercase italic mt-4">
-                                Minicode
+                            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
+                                MiniCode
                             </h1>
                         </div>
 
-                        <div className="w-full bg-white/[0.02] border border-white/10 rounded-[4.5rem] p-10 md:p-16 shadow-[0_0_100px_rgba(0,0,0,0.5)] relative overflow-hidden backdrop-blur-2xl">
-                            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                        {/* Auth Card */}
+                        <div className="w-full bg-white border border-gray-200 rounded-2xl p-10 md:p-14 shadow-xl shadow-gray-100/80 relative overflow-hidden">
+                            {/* Top accent line */}
+                            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-violet-500 via-purple-500 to-blue-500" />
 
                             {!isStaffMode ? (
-                                <div className="space-y-12">
-                                    <div className="text-center space-y-4">
-                                        <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic">Get Started</h2>
-                                        <p className="text-slate-500 text-sm font-black uppercase tracking-widest opacity-60">Continue with your account</p>
+                                <div className="space-y-10">
+                                    <div className="text-center space-y-2">
+                                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Get Started</h2>
+                                        <p className="text-gray-500 text-sm font-medium">Continue with your account</p>
                                     </div>
 
-                                    <div className="space-y-5">
+                                    <div className="space-y-4">
+                                        {/* GitHub Button */}
                                         <button
                                             onClick={handleGithubLogin}
                                             className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300  cursor-pointer"
                                         >
-                                            <div className="absolute inset-0 bg-primary/10 rounded-[2rem] scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500" />
-                                            <Github className="w-10 h-10 relative z-10" />
-                                            <span className="text-2xl font-black uppercase tracking-tighter relative z-10">Authorize GitHub</span>
-                                            <ArrowRight className="w-8 h-8 opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500" />
+                                            <Github className="w-5 h-5" />
+                                            <span className="text-base font-semibold">Continue with GitHub</span>
+                                            <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
                                         </button>
 
-                                        <div className="flex items-center gap-6 text-slate-800 py-6">
-                                            <div className="h-[1px] flex-1 bg-white/10" />
-                                            <span className="text-[10px] font-black uppercase tracking-[0.6em] whitespace-nowrap">Access Protocols</span>
-                                            <div className="h-[1px] flex-1 bg-white/10" />
+                                        {/* Divider */}
+                                        <div className="flex items-center gap-4 py-2">
+                                            <div className="h-px flex-1 bg-gray-200" />
+                                            <span className="text-xs font-medium text-gray-400">or</span>
+                                            <div className="h-px flex-1 bg-gray-200" />
                                         </div>
 
+                                        {/* Staff Login Button */}
                                         <button
                                             onClick={() => setIsStaffMode(true)}
                                             className="w-full py-7 rounded-[2rem] bg-white/[0.03] border border-white/10 text-slate-500 font-black cursor-pointer hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic hover:border hover:border-white hover:underline underline-offset-4"
                                         >
-                                            Faculty Authentication
+                                            <Shield className="w-4 h-4" />
+                                            Staff Login
                                         </button>
                                     </div>
 
-                                    <div className="pt-12 flex flex-col items-center gap-8 border-t border-white/10">
-                                        <div className="flex items-center gap-6">
-                                            <Link href="/terms" className="text-[10px] font-black text-white/40 overflow-hidden hover:text-white transition-colors tracking-[0.4em] uppercase hover:underline underline-offset-4 cursor-pointer">Terms</Link>
-                                            <div className="w-1 h-1 rounded-full bg-white/20" />
-                                            <Link href="/privacy" className="text-[10px] font-black text-white/40 overflow-hidden hover:text-white transition-colors tracking-[0.4em] uppercase hover:underline underline-offset-4 cursor-pointer">Privacy</Link>
+                                    {/* Footer Links */}
+                                    <div className="pt-6 flex flex-col items-center gap-4 border-t border-gray-100">
+                                        <div className="flex items-center gap-4">
+                                            <Link href="/terms" className="text-xs text-gray-400 hover:text-violet-600 transition-colors hover:underline underline-offset-4">Terms of Service</Link>
+                                            <div className="w-1 h-1 rounded-full bg-gray-300" />
+                                            <Link href="/privacy" className="text-xs text-gray-400 hover:text-violet-600 transition-colors hover:underline underline-offset-4">Privacy Policy</Link>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <form onSubmit={handleStaffLogin} className="space-y-10">
+                                <form onSubmit={handleStaffLogin} className="space-y-7">
                                     <div className="text-center">
-                                        <div className="inline-flex p-6 rounded-3xl bg-primary/20 text-primary mb-8 border border-primary/30 shadow-lg shadow-primary/20">
-                                            <Shield className="w-10 h-10" />
+                                        <div className="inline-flex p-4 rounded-xl bg-violet-50 text-violet-600 mb-5 border border-violet-100">
+                                            <Shield className="w-7 h-7" />
                                         </div>
-                                        <h2 className="text-4xl font-black text-white tracking-tighter uppercase italic">Control Room</h2>
-                                        {/* <p className="text-slate-500 mt-3 text-xs font-black uppercase tracking-[0.4em]">Elevated clearance required.</p> */}
+                                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Staff Login</h2>
+                                        <p className="text-gray-500 mt-1.5 text-sm font-medium">Sign in with your credentials</p>
                                     </div>
                                     
                                     <div className="space-y-4 mb-2 mt-4">
@@ -220,32 +231,32 @@ export default function LoginPage() {
                                     </div>
 
                                     {error && (
-                                        <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[11px] font-black text-center tracking-widest uppercase animate-shake">
-                                            Unauthorized: {error}
+                                        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-medium text-center">
+                                            {error}
                                         </div>
                                     )}
 
-                                    <div className="space-y-8">
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 ml-4">Identity Signature</label>
+                                    <div className="space-y-5">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700 ml-1">Username</label>
                                             <input
                                                 type="text"
                                                 required
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
-                                                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-8 py-6 text-white focus:outline-none focus:border-primary focus:bg-white/[0.05] transition-all placeholder:text-white/10 font-black tracking-tight text-xl"
-                                                placeholder="Faculty ID"
+                                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 focus:bg-white transition-all placeholder:text-gray-400 text-sm font-medium"
+                                                placeholder="Enter your username"
                                             />
                                         </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-600 ml-4">Security Key</label>
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700 ml-1">Password</label>
                                             <div className="relative">
                                                 <input
                                                     type={showPassword ? "text" : "password"}
                                                     required
                                                     value={password}
                                                     onChange={(e) => setPassword(e.target.value)}
-                                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-8 py-6 text-white focus:outline-none focus:border-primary focus:bg-white/[0.05] transition-all placeholder:text-white/10 font-black tracking-tight pr-20 text-xl"
+                                                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-gray-900 focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 focus:bg-white transition-all placeholder:text-gray-400 pr-12 text-sm font-medium"
                                                     placeholder="••••••••"
                                                 />
                                                 <button
@@ -253,23 +264,22 @@ export default function LoginPage() {
                                                     onClick={() => setShowPassword(!showPassword)}
                                                     className="cursor-pointer absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/20 hover:text-white transition-colors"
                                                 >
-                                                    {showPassword ? <EyeOff className="w-7 h-7 text-gray-400" /> : <Eye className="w-7 h-7 text-gray-400" />}
+                                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-6 pt-3">
+                                    <div className="space-y-4 pt-1">
                                         <button
                                             type="submit"
                                             disabled={submitting}
-                                            className="group relative w-full h-24 bg-primary text-white rounded-[2.25rem] text-2xl font-black uppercase tracking-tighter italic flex items-center justify-center gap-4 border-2 border-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 overflow-hidden shadow-2xl shadow-primary/20"
+                                            className="w-full py-3.5 bg-violet-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-violet-700 active:scale-[0.99] transition-all duration-200 disabled:opacity-50 shadow-md shadow-violet-200"
                                         >
-                                            <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
-                                            {submitting ? <Loader2 className="w-10 h-10 animate-spin" /> : (
+                                            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                                 <>
-                                                    <span className="relative z-10">Decrypt Access</span>
-                                                    <ArrowRight className="w-9 h-9 relative z-10 group-hover:translate-x-2 transition-transform" />
+                                                    <span>Sign In</span>
+                                                    <ArrowRight className="w-4 h-4" />
                                                 </>
                                             )}
                                         </button>
@@ -277,14 +287,19 @@ export default function LoginPage() {
                                         <button
                                             type="button"
                                             onClick={() => setIsStaffMode(false)}
-                                            className="w-full text-center text-[10px] font-black text-slate-600 hover:text-white transition-colors uppercase tracking-[0.6em] underline underline-offset-4"
+                                            className="w-full text-center text-sm text-gray-500 hover:text-violet-600 transition-colors font-medium hover:underline underline-offset-4"
                                         >
-                                            Return to Origin
+                                            ← Back to main login
                                         </button>
                                     </div>
                                 </form>
                             )}
                         </div>
+
+                        {/* Footer copyright */}
+                        <p className="text-xs text-gray-400 mt-6 text-center">
+                            © {new Date().getFullYear()} Coding Club, SCET Computer Dept
+                        </p>
                     </div>
                 </div>
 
@@ -316,4 +331,3 @@ export default function LoginPage() {
         </div>
     );
 }
-

@@ -72,8 +72,8 @@ export default function Navbar() {
     if (pathname === "/login") return null;
 
     return (
-        <header className="sticky top-0 z-50 px-4 md:px-8 py-4">
-            <div className="max-w-[1600px] mx-auto glass-card rounded-2xl h-16 flex items-center justify-between px-6 relative border-white/5">
+        <header className="sticky top-0 z-50 px-4 md:px-8 py-3">
+            <div className="max-w-[1600px] mx-auto bg-white rounded-2xl h-16 flex items-center justify-between px-6 relative border border-gray-200 shadow-sm">
                 {/* Logo Section */}
                 <Link 
                     href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/profile' : '/problems') : "/"} 
@@ -82,8 +82,8 @@ export default function Navbar() {
                     <div className="bg-primary/5 p-1 rounded-xl shadow-lg shadow-primary/5 border border-white/5">
                         <Logo className="w-7 h-7" variant="gradient" />
                     </div>
-                    <h2 className="text-xl font-black tracking-tighter text-white hidden sm:block uppercase">
-                        MINICODE
+                    <h2 className="text-xl font-extrabold tracking-tight text-gray-900 hidden sm:block">
+                        MiniCode
                     </h2>
                 </Link>
 
@@ -97,13 +97,13 @@ export default function Navbar() {
                                     key={item.name}
                                     href={item.href} 
                                     className={clsx(
-                                        "relative flex items-center gap-2 px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+                                        "relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all",
                                         isActive 
-                                            ? "text-white bg-white/10" 
-                                            : "text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]"
+                                            ? "text-white bg-violet-600 shadow-sm" 
+                                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
                                     )}
                                 >
-                                    <item.icon className="w-3.5 h-3.5" />
+                                    <item.icon className="w-4 h-4" />
                                     <span>{item.name}</span>
                                 </Link>
                             );
@@ -117,27 +117,27 @@ export default function Navbar() {
                         <>
                             <button 
                                 onClick={() => setShowNews(true)}
-                                className="p-2.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all relative border border-transparent hover:border-white/10"
+                                className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all relative"
                                 title="Notifications"
                             >
                                 <Bell className="w-5 h-5" />
                                 {unreadCount > 0 && (
-                                    <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border border-[#0a0a0f]">
+                                    <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-white">
                                         {unreadCount > 9 ? "9+" : unreadCount}
                                     </span>
                                 )}
                             </button>
 
-                            <div className="h-6 w-px bg-white/10 mx-1 hidden sm:block" />
+                            <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
 
                             <Link 
                                 href={user.role === "faculty" || user.role === "admin" ? "/faculty/profile" : "/profile"} 
-                                className="h-10 w-10 rounded-xl border border-white/10 p-0.5 hover:border-primary/50 transition-all bg-white/5 hidden sm:block overflow-hidden"
+                                className="h-10 w-10 rounded-xl border border-gray-200 p-0.5 hover:border-violet-400 transition-all bg-gray-50 hidden sm:block overflow-hidden"
                             >
                                 {user.avatar_url ? (
                                     <img src={user.avatar_url} alt="Profile" className="h-full w-full object-cover rounded-[0.6rem]" />
                                 ) : (
-                                    <div className="h-full w-full bg-slate-800 flex items-center justify-center text-white rounded-[0.6rem]">
+                                    <div className="h-full w-full bg-gray-100 flex items-center justify-center text-gray-500 rounded-[0.6rem]">
                                         <User className="w-5 h-5" />
                                     </div>
                                 )}
@@ -145,7 +145,7 @@ export default function Navbar() {
                             
                             <button 
                                 onClick={logout}
-                                className="p-2.5 text-slate-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
+                                className="p-2.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                                 title="Logout"
                             >
                                 <LogOut className="w-5 h-5" />
@@ -154,12 +154,12 @@ export default function Navbar() {
                     ) : !loading && !user ? (
                         <Link
                             href="/login"
-                            className="bg-primary text-white hover:bg-primary/90 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-primary/20"
+                            className="bg-violet-600 text-white hover:bg-violet-700 px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-md shadow-violet-200"
                         >
                             Log In
                         </Link>
                     ) : (
-                        <div className="w-10 h-10 bg-white/5 border border-white/5 rounded-xl" />
+                        <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-xl" />
                     )}
                 </div>
             </div>

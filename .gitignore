@@ -18,4 +18,6 @@ venv/
 backend/__pycache__
 backend/*.pyc
 backend/minicode.db
+ui-redesign-prompt.json
+UITheme.md
 SKILLS.md
