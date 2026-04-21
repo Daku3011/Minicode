@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Filter, Plus, Layers, Target } from "lucide-react";
 import { clsx } from "clsx";
@@ -40,6 +40,9 @@ function ProblemsContent() {
     const [selectedDifficulty, setSelectedDifficulty] = useState("");
     const [showFilters, setShowFilters] = useState(false);
     const [isCompact, setIsCompact] = useState(false);
+    const compactRafRef = useRef<number | null>(null);
+    const pendingCompactRef = useRef(false);
+    const compactTickingRef = useRef(false);
 
     const isFaculty = user?.role === "faculty" || user?.role === "admin";
     const userUnlockedLevel = user?.unlocked_level || 1;
@@ -65,8 +68,25 @@ function ProblemsContent() {
         return matchesSearch && matchesSubject && matchesDifficulty;
     });
 
+    useEffect(() => {
+        return () => {
+            if (compactRafRef.current !== null) {
+                cancelAnimationFrame(compactRafRef.current);
+            }
+        };
+    }, []);
+
     const handleCardsScroll = (event: React.UIEvent<HTMLDivElement>) => {
-        setIsCompact(event.currentTarget.scrollTop > 12);
+        pendingCompactRef.current = event.currentTarget.scrollTop > 12;
+        if (compactTickingRef.current) {
+            return;
+        }
+
+        compactTickingRef.current = true;
+        compactRafRef.current = requestAnimationFrame(() => {
+            setIsCompact((prev) => (prev === pendingCompactRef.current ? prev : pendingCompactRef.current));
+            compactTickingRef.current = false;
+        });
     };
 
     return (
