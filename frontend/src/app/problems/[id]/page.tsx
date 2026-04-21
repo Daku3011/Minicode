@@ -94,15 +94,36 @@ function ProblemDetailContent() {
         }
     };
 
-    const pollSubmissionStatus = async (submissionId: number) => {
-        const interval = setInterval(async () => {
-            try {
-                const response = await api.get(`/submissions/${submissionId}`);
-                const submission = response.data;
-                
-                if (submission.status !== "pending") {
-                    clearInterval(interval);
-                    setIsSubmitting(false);
+    const listenSubmissionStatus = (submissionId: number) => {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const getWsUrl = (url: string) => {
+            if (url.startsWith('https://')) return url.replace('https://', 'wss://');
+            if (url.startsWith('http://')) return url.replace('http://', 'ws://');
+            return window.location.protocol === 'https:' ? `wss://${window.location.host}` : `ws://${window.location.host}`;
+        };
+        
+        const ws = new WebSocket(`${getWsUrl(apiUrl)}/ws/submissions/${submissionId}`);
+        
+        const cleanup = () => {
+             if (ws.readyState === WebSocket.OPEN) {
+                 ws.close();
+             }
+        };
+
+        const timeoutId = setTimeout(() => {
+            cleanup();
+            setIsSubmitting(false);
+            setResult({ status: "Error", ai_feedback: "Submission processing timed out." });
+        }, 60000);
+
+        ws.onmessage = async (event) => {
+            const data = JSON.parse(event.data);
+            if (data.status !== "pending") {
+                clearTimeout(timeoutId);
+                cleanup();
+                try {
+                    const response = await api.get(`/submissions/${submissionId}`);
+                    const submission = response.data;
                     setResult({
                         status: submission.status === "accepted" ? "Accepted" :
                                 submission.status === "wrong_answer" ? "Wrong Answer" : "Error",
@@ -110,15 +131,42 @@ function ProblemDetailContent() {
                         score: submission.score,
                         code_evaluated: submission.code_content
                     });
+                } catch (e) {
+                    setResult({ status: "Error", ai_feedback: "Failed to load final result." });
+                } finally {
+                    setIsSubmitting(false);
                 }
-            } catch (error) {
-                console.error("Polling error:", error);
-                clearInterval(interval);
-                setIsSubmitting(false);
             }
-        }, 2500); 
-        
-        setTimeout(() => clearInterval(interval), 60000);
+        };
+
+        ws.onerror = (error) => {
+            console.error("WebSocket error:", error);
+            cleanup();
+            clearTimeout(timeoutId);
+            
+            const interval = setInterval(async () => {
+                try {
+                    const response = await api.get(`/submissions/${submissionId}`);
+                    const submission = response.data;
+                    if (submission.status !== "pending") {
+                        clearInterval(interval);
+                        setIsSubmitting(false);
+                        setResult({
+                            status: submission.status === "accepted" ? "Accepted" :
+                                    submission.status === "wrong_answer" ? "Wrong Answer" : "Error",
+                            ai_feedback: submission.ai_feedback || "No feedback generated yet.",
+                            score: submission.score,
+                            code_evaluated: submission.code_content
+                        });
+                    }
+                } catch (error) {
+                    console.error("Polling error:", error);
+                    clearInterval(interval);
+                    setIsSubmitting(false);
+                }
+            }, 2500); 
+            setTimeout(() => { clearInterval(interval); setIsSubmitting(false); }, 60000);
+        };
     };
 
     const handleSubmit = async () => {
@@ -134,7 +182,7 @@ function ProblemDetailContent() {
             const submission = response.data;
             
             if (submission.status === "pending") {
-                pollSubmissionStatus(submission.id);
+                listenSubmissionStatus(submission.id);
             } else {
                 setResult({
                     status: submission.status === "accepted" ? "Accepted" :

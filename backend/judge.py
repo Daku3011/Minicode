@@ -6,6 +6,7 @@ from models import Submission, TestCase, User, Problem
 from github import Github
 from auth import decrypt_token
 from utils_cache import invalidate_leaderboard_cache
+from sync_xp import calculate_unlocked_level_from_xp
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
@@ -107,24 +108,11 @@ async def run_ai_judge(
             result["feedback"] = warning_msg + result.get("feedback", "")
 
         return result, None
-    except json.JSONDecodeError:
-        # If JSON parsing fails due to unescaped newlines etc, extract feedback robustly
-        fallback_feedback = (
-            response.text if response else "Could not parse AI response."
-        )
-        if response:
-            import re
-
-            # Extract content from "feedback": "..."
-            match = re.search(
-                r'"feedback"\s*:\s*"(.*?)"\s*\}?$', response.text, re.DOTALL
-            )
-            if match:
-                fallback_feedback = (
-                    match.group(1).replace("\\n", "\n").replace('\\"', '"')
-                )
-
-        return {"status": "accepted", "score": 75, "feedback": fallback_feedback}, None
+    except json.JSONDecodeError as e:
+        fallback_feedback = "AI Judge failed to format response correctly. Resulting in error."
+        if 'response' in locals() and response and getattr(response, 'text', None):
+            fallback_feedback += f"\n\nRaw Output: {response.text}"
+        return {"status": "error", "score": 0, "feedback": fallback_feedback}, None
     except Exception as e:
         return None, f"Gemini Error: {str(e)}"
 
@@ -163,17 +151,11 @@ async def judge_submission(
 
                 for branch in branches_to_try:
                     try:
-                        root_files = repo.get_contents("", ref=branch)
-                        if not isinstance(root_files, list):
-                            root_files = [root_files]
-
-                        for f in root_files:
-                            if f.name.lower().startswith("solution."):
-                                # It's better to fetch explicitly if the file is large, but root_files objects have content if small.
-                                # We'll just fetch by name to be safe
-                                content_file = repo.get_contents(f.name, ref=branch)
+                        tree = repo.get_git_tree(branch, recursive=True)
+                        for element in tree.tree:
+                            if element.type == "blob" and element.path.split('/')[-1].lower().startswith("solution."):
+                                content_file = repo.get_contents(element.path, ref=branch)
                                 break
-
                         if content_file:
                             break
                     except Exception:
@@ -255,6 +237,13 @@ async def judge_submission(
                 if user.xp is None:
                     user.xp = 0
                 user.xp += xp_diff
+                
+                # Update unlocked level immediately
+                new_level = calculate_unlocked_level_from_xp(user.xp)
+                if user.unlocked_level is None or new_level > user.unlocked_level:
+                    logger.info(f"User {user.username} reached Level {new_level}!")
+                    user.unlocked_level = new_level
+                
                 session.add(user)
                 logger.info(
                     f"User {user.username} earned {xp_diff} XP (New best: {new_score})"
@@ -264,4 +253,16 @@ async def judge_submission(
 
     session.add(submission)
     session.commit()
+    
+    # Broadcast to WebSockets via Redis
+    try:
+        import redis
+        r = redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"))
+        r.publish("submission_events", json.dumps({
+            "submission_id": submission.id,
+            "status": submission.status
+        }))
+    except Exception as e:
+        logger.error(f"Failed to publish WebSocket event: {e}")
+
     return submission

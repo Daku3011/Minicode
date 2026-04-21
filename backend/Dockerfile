@@ -61,7 +61,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 # ============================================
 USER root
 COPY start.sh .
-RUN chmod +x start.sh
+RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 USER appuser
 
 ENV WEB_CONCURRENCY=1

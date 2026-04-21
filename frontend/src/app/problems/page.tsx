@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { Search, Filter, Plus, Terminal, Layers, Target } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Search, Filter, Plus, Layers, Target } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import ProblemCard from "@/components/ProblemCard";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { Logo } from "@/components/Logo";
 
 interface Problem {
     id: number;
@@ -265,10 +267,10 @@ function ProblemsContent() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-24 text-center bg-white rounded-2xl border border-dashed border-slate-300">
-                                <Terminal className="w-12 h-12 text-slate-400 mx-auto mb-6" />
-                                <h3 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">No problems found</h3>
-                                <p className="text-slate-500 text-base max-w-lg mx-auto">Try changing your search or clearing active filters.</p>
+                            <div className="py-32 text-center bg-white/[0.01] rounded-[4rem] border border-dashed border-white/10">
+                                <Logo className="w-16 h-16 text-slate-900 mx-auto mb-8" variant="solid" />
+                                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">Null Sector Reached</h3>
+                                <p className="text-slate-600 font-bold text-lg max-w-lg mx-auto uppercase tracking-widest">No matching patterns found</p>
                                 <button
                                     onClick={() => {
                                         setSearchQuery("");

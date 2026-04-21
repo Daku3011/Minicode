@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { Terminal, Github, ArrowRight, Loader2, Shield, Eye, EyeOff } from "lucide-react";
+// import { Terminal, Github, ArrowRight, Loader2, Shield, Eye, EyeOff } from "lucide-react";
 import api from "@/lib/api";
+import { Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart, Terminal, MessageSquare } from "lucide-react";
+import { clsx } from "clsx";
+import LoginSymbolBackground from "@/components/LoginSymbolBackground";
+import { Logo } from "@/components/Logo";
+import FeedbackModal from "@/components/FeedbackModal";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
     const { user, loading, login } = useAuth();
@@ -17,6 +23,7 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
     useEffect(() => {
         if (!loading && user) {
@@ -29,6 +36,12 @@ export default function LoginPage() {
     const handleGithubLogin = () => {
         const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
         window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo,user,user:email`;
+    };
+
+    const handleGoogleLogin = () => {
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/auth/google/callback` : "";
+        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=email profile`;
     };
 
     const handleStaffLogin = async (e: React.FormEvent) => {
@@ -65,11 +78,10 @@ export default function LoginPage() {
                     {/* Left Column: Branding */}
                     <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-10">
                         <div className="flex flex-col items-center lg:items-start">
-                            {/* Label */}
-                            <div className="flex items-center gap-2.5 mb-6">
-                                <div className="h-px w-5 bg-violet-400" />
-                                <span className="text-sm text-violet-600 font-medium tracking-wide">
-                                    Coding Club • SCET Computer Dept
+                            <div className="flex items-center gap-3 mb-8 group cursor-default">
+                                <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
+                                <span className="text-[15px] text-transparent uppercase  bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-white via-red-400/80 to-white">
+                                    From the Students  &   For the Studetns
                                 </span>
                             </div>
 
@@ -107,6 +119,17 @@ export default function LoginPage() {
                                 Dwarkesh Ramani <span className="text-violet-600">&</span> Jenil Gajera
                             </span>
                         </div>
+
+                        {/* Feedback Link */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsFeedbackOpen(true)}
+                            className="mt-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-green-800/60 border border-primary/20 text-primary hover:bg-primary/20 transition-all group cursor-pointer"
+                        >
+                            <MessageSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Have Feedback? Share it here</span>
+                        </motion.button>
                     </div>
 
                     {/* Right Column: Auth Card */}
@@ -114,8 +137,9 @@ export default function LoginPage() {
                         {/* Logo */}
                         <div className="flex flex-col items-center gap-4 mb-10">
                             <div className="relative group">
-                                <div className="relative bg-violet-600 p-5 rounded-2xl shadow-lg shadow-violet-200 transform group-hover:scale-105 transition-all duration-300">
-                                    <Terminal className="text-white w-8 h-8" />
+                                <div className="absolute inset-0 bg-primary/40 blur-3xl group-hover:blur-[60px] transition-all duration-700" />
+                                <div className="relative bg-[#05050a]/50 backdrop-blur-sm p-4 rounded-[2.5rem] shadow-l border-10 border-white/20 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                                    <Logo className="w-16 h-16" variant="gradient" />
                                 </div>
                             </div>
                             <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
@@ -139,7 +163,7 @@ export default function LoginPage() {
                                         {/* GitHub Button */}
                                         <button
                                             onClick={handleGithubLogin}
-                                            className="group relative flex w-full items-center justify-center gap-3 rounded-xl bg-gray-900 px-8 py-5 text-white shadow-md hover:bg-gray-800 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200"
+                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300  cursor-pointer"
                                         >
                                             <Github className="w-5 h-5" />
                                             <span className="text-base font-semibold">Continue with GitHub</span>
@@ -156,7 +180,7 @@ export default function LoginPage() {
                                         {/* Staff Login Button */}
                                         <button
                                             onClick={() => setIsStaffMode(true)}
-                                            className="w-full py-4 rounded-xl bg-white border border-gray-200 text-gray-600 font-medium cursor-pointer hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 transition-all duration-200 text-sm flex items-center justify-center gap-2"
+                                            className="w-full py-7 rounded-[2rem] bg-white/[0.03] border border-white/10 text-slate-500 font-black cursor-pointer hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic hover:border hover:border-white hover:underline underline-offset-4"
                                         >
                                             <Shield className="w-4 h-4" />
                                             Staff Login
@@ -180,6 +204,30 @@ export default function LoginPage() {
                                         </div>
                                         <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Staff Login</h2>
                                         <p className="text-gray-500 mt-1.5 text-sm font-medium">Sign in with your credentials</p>
+                                    </div>
+                                    
+                                    <div className="space-y-4 mb-2 mt-4">
+                                        <button
+                                            type="button"
+                                            onClick={handleGoogleLogin}
+                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-6 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                                        >
+                                            <div className="absolute inset-0 bg-primary/10 rounded-[2rem] scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500" />
+                                            {/* Minimal Google SVG Icon */}
+                                            <svg className="w-8 h-8 relative z-10" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="currentColor"/>
+                                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="currentColor"/>
+                                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="currentColor"/>
+                                            </svg>
+                                            <span className="text-[1.2rem] font-black uppercase tracking-tighter relative z-10">Sign in with Google</span>
+                                        </button>
+
+                                        <div className="flex items-center gap-6 text-slate-800 py-4">
+                                            <div className="h-[1px] flex-1 bg-white/10" />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.6em] whitespace-nowrap">Or use credentials</span>
+                                            <div className="h-[1px] flex-1 bg-white/10" />
+                                        </div>
                                     </div>
 
                                     {error && (
@@ -214,7 +262,7 @@ export default function LoginPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 transition-colors rounded-lg hover:bg-gray-100"
+                                                    className="cursor-pointer absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/20 hover:text-white transition-colors"
                                                 >
                                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
@@ -254,6 +302,31 @@ export default function LoginPage() {
                         </p>
                     </div>
                 </div>
+
+                {/* Global Footer Links */}
+                {/* <footer className="mt-auto py-12 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-white/5 opacity-40 hover:opacity-100 transition-opacity duration-700">
+                    <div className="flex items-center gap-8">
+                        <a href="https://scet.ac.in" target="_blank" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] hover:text-primary transition-colors">
+                            <Globe className="w-4 h-4" />
+                            SCET Official
+                        </a>
+                        <a href="https://github.com/Daku3011/Minicode" target="_blank" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] hover:text-primary transition-colors">
+                            <Github className="w-4 h-4" />
+                            Repository
+                        </a>
+                        <a href="#" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] hover:text-primary transition-colors">
+                            <BookOpen className="w-4 h-4" />
+                            Docs
+                        </a>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.4em] text-slate-600">
+                        Crafted with <Heart className="w-3 h-3 text-rose-500 fill-rose-500" /> by SCET Dev Team
+                    </div>
+                </footer> */}
+                <FeedbackModal 
+                    isOpen={isFeedbackOpen} 
+                    onClose={() => setIsFeedbackOpen(false)} 
+                />
             </main>
         </div>
     );

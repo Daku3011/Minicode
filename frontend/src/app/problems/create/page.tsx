@@ -269,7 +269,6 @@ export default function CreateProblemPage() {
                                 )}
                             </div>
                         )}
-                    </div>
 
                     {/* Test Cases Section */}
                     <div className="bg-white/[0.02] border border-white/5 p-10 space-y-8 rounded-3xl">
@@ -414,6 +413,7 @@ export default function CreateProblemPage() {
                                 />
                             </div>
                         </div>
+                    </div>
                     </div>
 
                     {/* Right Column */}

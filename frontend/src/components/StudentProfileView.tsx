@@ -12,7 +12,6 @@ import {
     Code,
     Flame,
     Award,
-    Terminal,
     CheckCircle,
     AlertCircle,
     ArrowRight,
@@ -887,7 +886,7 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                             </div>
 
                             {/* Email Update Section for Students and Faculty */}
-                            {(data.role === "student" || data.role === "faculty") && (
+                            {(data.role === "student") && (
                                 <div className="pt-12 border-t border-white/5">
                                     <h3 className="text-xl font-black text-white mb-4 flex items-center gap-3 uppercase tracking-tight">
                                         <Mail className="w-5 h-5 text-primary" />

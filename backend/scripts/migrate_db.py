@@ -47,6 +47,7 @@ def run_migrations():
                 ("faculty_report_email", "TEXT"),
                 ("last_news_viewed_at", "TIMESTAMP"),
                 ("unlocked_level", "INTEGER DEFAULT 1"),
+                ("google_id", "VARCHAR UNIQUE"),
             ]
 
             for col_name, col_type in columns_to_add:

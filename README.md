@@ -1,243 +1,219 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/MiniCode-AI_Powered_Coding_Arena-8B5CF6?style=for-the-badge&labelColor=0F172A" alt="MiniCode Badge" />
-</p>
+# MiniCode
 
-<h1 align="center">⚡ MiniCode</h1>
+MiniCode is a full-stack coding arena for colleges and clubs. It combines real GitHub workflows with an AI-assisted judge, role-based learning paths, live events, XP progression, and faculty/admin operations.
 
-<p align="center">
-  <strong>An Elite, AI-Powered Competitive Coding Platform with Real-World GitHub Workflows</strong>
-</p>
+## What MiniCode Does
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" alt="Next.js" />
-  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/Celery-Distributed_Workers-37814A?style=flat-square&logo=celery" alt="Celery" />
-  <img src="https://img.shields.io/badge/PostgreSQL-15-4169E1?style=flat-square&logo=postgresql" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Redis-7-DC382D?style=flat-square&logo=redis" alt="Redis" />
-  <img src="https://img.shields.io/badge/Gemini_2.5_Flash-AI_Judge-4285F4?style=flat-square&logo=google" alt="Gemini AI" />
-</p>
+- Students solve coding problems in private GitHub repositories.
+- Submissions are queued and evaluated asynchronously by a Celery worker.
+- Faculty create problems, monitor student progress, run events, and award XP.
+- Admins manage users, roles, and system-level controls.
 
----
+## Architecture
 
-## 🎯 What is MiniCode?
-
-**MiniCode** is a **full-stack competitive programming platform** designed to elevate modern educational institutions and university clubs by bringing them out of outdated, isolated coding judges and into real-world software engineering environments. 
-
-Rather than restricting students to a tiny browser code editor, **MiniCode demands real-world GitHub workflows**. Faculty publish challenges, students auto-provision private GitHub repositories directly to their accounts, and push their solutions via local IDEs (VSCode, JetBrains). When a student requests evaluation, our massive **Celery Worker Fleet** fetches their raw commits, runs logic testing, and evaluates the code for style, complexity, and plagiarism utilizing a distributed **Gemini AI Engine**.
-
----
-
-## 🚀 Live Environment (Staging)
-
-| Component | Status | URL |
-|-----------|--------|-----|
-| **Frontend** | Live | [https://minicode-scet.vercel.app](https://minicode-scet.vercel.app) |
-| **API Docs** | Live | [https://minicode-web.onrender.com/docs](https://minicode-web.onrender.com/docs) |
-| **Source Code** | 🛠️ Dev | [https://github.com/Daku3011/Minicode](https://github.com/Daku3011/Minicode) |
-
-## 🐳 Docker Commands
-
-### 🚨 Important: Running Docker Commands
-If your user doesn't have Docker permissions, you'll need to use `sudo`. Create a helper script for convenience:
-
-```bash
-# Create a docker helper script
-echo 'export DOCKER_BUILDKIT=1' >> ~/.bashrc
-alias docker="sudo docker"
-alias docker-compose="sudo docker-compose"
-
-# Or use sudo directly (password: daku123$)
-sudo docker ps
-sudo docker-compose up -d
+```text
+Frontend (Next.js 16, React 19)
+  -> Backend API (FastAPI)
+  -> Redis (cache + Celery broker/result backend)
+  -> PostgreSQL or SQLite (SQLModel)
+  -> Celery worker + beat (background judging and scheduled jobs)
+  -> External APIs (GitHub OAuth/API, Google OAuth, Gemini)
 ```
 
----
+## Repository Structure
 
-## Getting Started
+```text
+frontend/   Next.js App Router UI + auth context + pages
+backend/    FastAPI app, routers, judge, DB models, worker, scripts
+docker-compose.yml  Full local stack (frontend, backend, postgres, redis, worker, beat)
+```
 
-### 🌌 Option 1: The Zero-Friction Way (Docker)
-Ensure you have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
+## Core Features
+
+- Role-based auth and access control (`student`, `faculty`, `admin`)
+- GitHub OAuth login for coding workflow
+- Google OAuth login path for faculty/admin (`@scet.ac.in` auto-faculty rule)
+- Problem lifecycle: create, start (repo provision), submit, async judge result
+- Events, team participation, invitations, and event leaderboard
+- News + notifications + unread tracking
+- XP, levels, leaderboard, faculty XP rewards
+- Redis-backed caching and rate-limiting middleware support
+
+## Quick Start (Docker Recommended)
+
+## 1. Prerequisites
+
+- Docker
+- Docker Compose
+
+## 2. Configure Environment
+
+From project root:
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Daku3011/Minicode.git
-cd Minicode
-
-# 2. Configure Environment
 cp .env.example .env
-# Edit .env with your GITHUB_CLIENT_ID, SECRET and GEMINI_API_KEY
+```
 
-# 3. Spin up the entire ecosystem
+Update required values in `.env`:
+
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GEMINI_API_KEY`
+- `JWT_SECRET`
+- `FERNET_KEY`
+
+Generate secure values:
+
+```bash
+openssl rand -hex 32   # JWT_SECRET
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"  # FERNET_KEY
+```
+
+## 3. Start the Stack
+
+```bash
 docker-compose up -d --build
 ```
-> **Backend**: http://localhost:8000/docs  
-> **Frontend**: http://localhost:3000
 
-### Common Docker Commands
+Services:
 
-```bash
-# Start all services
-sudo docker-compose up -d
+- Frontend: `http://localhost:3000`
+- Backend API docs: `http://localhost:8000/docs`
+- Backend health: `http://localhost:8000/health`
 
-# Stop all services
-sudo docker-compose down
+## 4. Default Development Accounts
 
-# View running containers
-sudo docker ps
+Seeded automatically by backend startup script:
 
-# Restart only backend (after code changes)
-sudo docker-compose restart backend
+- Admin: `admin` / `admin123`
+- Faculty: `faculty` / `faculty123`
+- Student: `student` / `student123`
 
-# Restart only frontend
-sudo docker-compose restart frontend
+## Local Development (Without Docker)
 
-# Rebuild backend after code changes
-sudo docker-compose up -d --build backend
+## Backend
 
-# Rebuild frontend after code changes
-sudo docker-compose up -d --build frontend
-
-# View logs
-sudo docker logs minicode_backend_1
-sudo docker-compose logs -f
-
-# Reset database (WARNING: deletes all data)
-sudo docker-compose down -v
-sudo docker-compose up -d
-```
-
-### Fixing "ContainerConfig" Error
-
-If you get a `'ContainerConfig'` error when rebuilding only frontend or backend:
-
-```bash
-# This is a Docker Compose cache issue - recreate all containers fresh
-sudo docker-compose down
-sudo docker-compose up -d
-```
-
-### Fixing PostgreSQL Authentication Issues
-
-If you get "password authentication failed" error:
-
-```bash
-# Option 1: Reset password
-sudo docker exec minicode_postgres_1 psql -U postgres -c "ALTER USER postgres PASSWORD 'postgres';"
-
-# Option 2: Reset pg_hba.conf to trust all connections
-sudo docker exec -u postgres minicode_postgres_1 sh -c 'cat > /var/lib/postgresql/data/pg_hba.conf << EOF
-local   all             all                                     trust
-host    all             all             127.0.0.1/32            trust
-host    all             all             ::1/128                 trust
-host    all             all             0.0.0.0/0               trust
-host    all             all             ::/0                    trust
-local   replication     all                                     trust
-host    replication     all             127.0.0.1/32            trust
-host    replication     all             ::1/128                 trust
-EOF
-pg_ctl reload -D /var/lib/postgresql/data'
-
-# Restart backend to apply changes
-sudo docker-compose restart backend
-```
-
-### Health Check
-
-```bash
-curl http://localhost:8000/health
-```
-
----
-
-### Option 2: The Manual Way (Developer Mode)
-
-#### 1. Backend Setup (FastAPI)
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-
-# Create .env and configure DATABASE_URL, REDIS_URL, etc.
-python -m uvicorn main:app --reload --port 8000
+cp ../.env.example .env  # then edit values
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-#### 2. Async Worker Setup (Celery + Beat)
-Requires a running **Redis** server.
+## Worker (required for submission judging)
+
 ```bash
 cd backend
-# With venv active
-# Starts both the task worker and the periodic scheduler (beat)
-celery -A worker.celery_app worker --beat --loglevel=info
+source venv/bin/activate
+celery -A worker.celery_app worker --loglevel=info
 ```
-> **Note**: In production, it's recommended to run `worker` and `beat` as two separate processes.
 
-#### 3. Frontend Setup (Next.js)
+Optional scheduler:
+
+```bash
+cd backend
+source venv/bin/activate
+celery -A worker.celery_app beat --loglevel=info
+```
+
+## Frontend
+
 ```bash
 cd frontend
 npm install
-# Create .env.local with NEXT_PUBLIC_API_URL=http://localhost:8000
+cp ../.env.example .env.local
+# set NEXT_PUBLIC_API_URL=http://localhost:8000
 npm run dev
 ```
 
----
+## Environment Variables
 
-## ⚙️ Environment Configuration
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | SQLModel database connection string |
+| `REDIS_URL` | Redis connection for cache |
+| `CELERY_BROKER_URL` | Celery broker and backend |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
+| `GEMINI_API_KEY` | AI judge backend |
+| `JWT_SECRET` | JWT signing key |
+| `FERNET_KEY` | Encryption key for stored GitHub access tokens |
+| `CORS_ORIGINS` | Allowed frontend origins |
+| `NEXT_PUBLIC_API_URL` | Frontend API base URL |
 
-| Variable | Description | Source |
-|----------|-------------|--------|
-| `GITHUB_CLIENT_ID` | OAuth App Client ID | [GitHub Dev Settings](https://github.com/settings/developers) |
-| `GITHUB_CLIENT_SECRET` | OAuth App Secret | [GitHub Dev Settings](https://github.com/settings/developers) |
-| `GEMINI_API_KEY` | AI Evaluation Engine Key | [Google AI Studio](https://aistudio.google.com/) |
-| `DATABASE_URL` | PostgreSQL or SQLite URI | Supabase / Local Postgres |
-| `REDIS_URL` | Cache and Task Broker URI | Local Redis / Upstash |
+## Authentication and Roles
 
----
+- Student path:
+  - Usually GitHub OAuth.
+  - Can use seeded credentials in development.
+- Faculty/Admin path:
+  - Username/password (`/auth/login`) or Google OAuth callback.
+  - Google flow auto-creates `faculty` users for `@scet.ac.in` emails.
 
-## FAQ
+Role guards are enforced in backend dependencies (`require_faculty`, `require_admin`).
 
-### 1. Docker Login Fails with "password authentication failed"?
-This is caused by a known issue with the docker-compose environment variable expansion. The DATABASE_URL gets duplicated in the container.
+## Submission Pipeline
 
-**Solution**: Edit `docker-compose.yml` and hardcode the DATABASE_URL instead of using variable expansion:
+1. Student starts a problem: backend creates private GitHub repo.
+2. Student codes in that repository.
+3. Student submits from UI.
+4. API creates `Submission(status="pending")` and queues Celery task.
+5. Worker fetches code and commit history from GitHub.
+6. AI judge analyzes correctness, quality, and AI-likelihood signal.
+7. Submission updated with score, status, and feedback.
 
-```yaml
-# Before (problematic):
-- DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/minicode}
+Important: This judge is AI-analysis based and does not execute the code in a local sandbox.
 
-# After (fixed):
-- DATABASE_URL=postgresql://postgres:postgres@postgres:5432/minicode
-```
+## Testing
 
-Then rebuild:
+## Backend
+
 ```bash
-docker-compose down
-docker-compose up -d --build
+cd backend
+pytest
 ```
 
-### 2. Why is my code evaluation stuck on "Pending"?
-This almost always means the **Celery Worker** is not running. Check the logs of the `minicode-worker` container or manually run the celery command in the backend directory.
+## Frontend
 
-### 3. GitHub Login redirects to an error page?
-Ensure your **OAuth Callback URL** in GitHub Settings perfectly matches your frontend URL.  
-- Development: `http://localhost:3000/auth/github/callback`  
-- Production: `https://your-domain.com/auth/github/callback`
+```bash
+cd frontend
+npm run lint
+npm run test
+```
 
-### 4. My Gemini AI score is 0 or "Error"?
-Verify your `GEMINI_API_KEY` in the `.env`. If you are using the Free Tier, ensure you aren't hitting the rate limit (15 RPM).
+## Useful Operations
 
-### 4. How do I clear the cached leaderboard?
-Restart the Redis instance or use the backend endpoint `/admin/cache/clear` (Admin only).
+```bash
+# logs
+docker-compose logs -f backend
+docker-compose logs -f celery_worker
 
----
+# restart core services
+docker-compose restart backend frontend
 
-## UI/UX Design Philosophies
-The UI/UX is built to break away from traditional "intimidating" dark-mode coding arenas. We utilize an aesthetic of approachability, incorporating fluid micro-animations, glassmorphism components, and neon-purple highlights. Take a closer look at the [DESIGN_VISION.md](DESIGN_VISION.md) for UX philosophies.
+# stop everything
+docker-compose down
+```
 
-## 👤 Default Credentials (Development)
-- **Admin**: `admin` / `admin123`
-- **Faculty**: `faculty` / `faculty123`
-- **Student**: `student` / `student123`
+## Documentation Map
 
----
-*Elevate competitive programming to the modern enterprise level.* 🚀
+- User guide: `USER_MANUAL.md`
+- Backend deep dive: `backend/Dev.md`
+- Deployment specifics: `DEPLOYMENT.md`
+- Product/design direction: `DESIGN_VISION.md`
+
+## Troubleshooting
+
+- Login fails after OAuth:
+  - Verify callback URLs exactly match frontend routes.
+  - Ensure client IDs/secrets are correctly set in environment.
+- Submissions stay `pending`:
+  - Celery worker is not running or cannot reach Redis.
+- GitHub repo creation fails:
+  - Ensure user logged in through GitHub and token encryption key (`FERNET_KEY`) is stable.
+- AI judge returns error:
+  - Check `GEMINI_API_KEY` and worker logs.

@@ -11,13 +11,16 @@ databases:
     plan: free # Change to 'starter' for production persistence
     region: oregon
 
-redis:
-  - name: minicode-redis
+services:
+  # ================================
+  # Redis Cache (Render Key Value)
+  # ================================
+  - type: keyvalue
+    name: minicode-redis
     plan: free
     region: oregon
-    ipAllowList: [] # Allow internal access from all services in this blueprint
+    ipAllowList: [] # Only allow internal access
 
-services:
   # ================================
   # Backend API (FastAPI + Gunicorn)
   # ================================
@@ -26,7 +29,7 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerCommand: "gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
+    dockerCommand: "gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120"
     plan: starter
     region: oregon
     branch: main
@@ -38,11 +41,13 @@ services:
           name: minicode-db
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: CELERY_BROKER_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: GITHUB_CLIENT_ID
@@ -59,9 +64,7 @@ services:
         sync: false # Set to your frontend URL, e.g. https://minicode-web.onrender.com
       - key: WEB_CONCURRENCY
         value: "4"
-      - key: SMTP_EMAIL
-        sync: false
-      - key: SMTP_PASSWORD
+      - key: RESEND_API_KEY
         sync: false
 
   # ================================
@@ -82,11 +85,13 @@ services:
           name: minicode-db
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: CELERY_BROKER_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: GITHUB_CLIENT_ID
@@ -97,9 +102,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: SMTP_EMAIL
-        sync: false
-      - key: SMTP_PASSWORD
+      - key: RESEND_API_KEY
         sync: false
 
   # ================================
@@ -120,11 +123,13 @@ services:
           name: minicode-db
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: CELERY_BROKER_URL
-        fromRedis:
+        fromService:
+          type: keyvalue
           name: minicode-redis
           property: connectionString
       - key: GITHUB_CLIENT_ID
@@ -135,9 +140,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: SMTP_EMAIL
-        sync: false
-      - key: SMTP_PASSWORD
+      - key: RESEND_API_KEY
         sync: false
 
   # ================================

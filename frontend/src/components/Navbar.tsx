@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Terminal, LogOut, Code2, Calendar, Trophy, Bell, User } from "lucide-react";
+import { LogOut, Code2, Calendar, Trophy, Bell, User } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import NewsPanel from "@/components/NewsPanel";
+import { Logo } from "@/components/Logo";
 
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
@@ -50,11 +51,13 @@ export default function Navbar() {
 
     const navItems = user?.role === 'faculty' || user?.role === 'admin'
         ? [
+            { name: "Cohorts", href: "/faculty/cohorts", icon: User },
             { name: "Problems", href: "/faculty/problems", icon: Code2 },
             { name: "Events", href: "/faculty/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
         ]
         : [
+            { name: "Cohorts", href: "/cohorts", icon: User },
             { name: "Problems", href: "/problems", icon: Code2 },
             { name: "Events", href: "/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
@@ -76,8 +79,8 @@ export default function Navbar() {
                     href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/profile' : '/problems') : "/"} 
                     className="flex items-center gap-3 transition-opacity hover:opacity-80"
                 >
-                    <div className="bg-violet-600 p-2 rounded-xl shadow-md shadow-violet-200">
-                        <Terminal className="text-white w-5 h-5" />
+                    <div className="bg-primary/5 p-1 rounded-xl shadow-lg shadow-primary/5 border border-white/5">
+                        <Logo className="w-7 h-7" variant="gradient" />
                     </div>
                     <h2 className="text-xl font-extrabold tracking-tight text-gray-900 hidden sm:block">
                         MiniCode
@@ -86,7 +89,7 @@ export default function Navbar() {
 
                 {/* Navigation Links */}
                 {user && (
-                    <nav className="hidden xl:flex items-center gap-1 bg-gray-50 p-1 rounded-xl border border-gray-200">
+                    <nav className="hidden lg:flex items-center gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/5">
                         {navItems.map((item) => {
                             const isActive = pathname.startsWith(item.href);
                             return (

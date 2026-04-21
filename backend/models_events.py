@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime,timezone
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 from models import User
@@ -29,7 +29,7 @@ class Event(SQLModel, table=True):
     min_level: int = Field(default=1)  # Minimum level to participate (1 = any student)
     xp_reward: int = Field(default=500)  # XP reward for participating
     created_by: int = Field(foreign_key="users.id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: Optional[datetime] = None
 
     # Relationships
@@ -51,7 +51,7 @@ class EventParticipant(SQLModel, table=True):
     status: str = Field(default="active")  # "active", "withdrawn", "disqualified"
     xp_awarded: int = Field(default=0)  # XP actually awarded by faculty
     feedback: Optional[str] = None  # Faculty feedback for participant
-    joined_at: datetime = Field(default_factory=datetime.utcnow)
+    joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
     event: Event = Relationship(back_populates="participants")
@@ -71,7 +71,7 @@ class TeamInvitation(SQLModel, table=True):
     status: str = Field(
         default="pending"
     )  # "pending", "accepted", "rejected", "cancelled"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     responded_at: Optional[datetime] = None
 
     # Relationships
@@ -96,7 +96,7 @@ class EventSubmission(SQLModel, table=True):
     score: int = Field(default=0)
     feedback: Optional[str] = None
     rank: Optional[int] = None
-    submitted_at: datetime = Field(default_factory=datetime.utcnow)
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
     event: Event = Relationship(back_populates="submissions")
