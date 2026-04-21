@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#d3e4fe",
+                    "inverse-on-surface": "#eef0ff",
+                    "outline": "#7b7487",
+                    "on-tertiary": "#ffffff",
+                    "on-surface": "#131b2e",
+                    "on-primary-container": "#ede0ff",
+                    "surface-container": "#eaedff",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#d2d9f4",
+                    "surface-bright": "#faf8ff",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "on-tertiary-container": "#ffe0cd",
+                    "on-primary-fixed-variant": "#5a00c6",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "inverse-primary": "#d2bbff",
+                    "surface-container-highest": "#dae2fd",
+                    "surface-container-low": "#f2f3ff",
+                    "on-primary-fixed": "#25005a",
+                    "surface": "#faf8ff",
+                    "primary-container": "#7c3aed",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#301400",
+                    "surface-container-high": "#e2e7ff",
+                    "tertiary-fixed": "#ffdcc6",
+                    "error-container": "#ffdad6",
+                    "secondary": "#505f76",
+                    "on-background": "#131b2e",
+                    "tertiary": "#7d3d00",
+                    "on-tertiary-fixed-variant": "#713700",
+                    "primary-fixed-dim": "#d2bbff",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-surface": "#283044",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#4a4455",
+                    "tertiary-fixed-dim": "#ffb784",
+                    "primary": "#630ed4",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#732ee4",
+                    "tertiary-container": "#a15100",
+                    "secondary-container": "#d0e1fb",
+                    "background": "#faf8ff",
+                    "primary-fixed": "#eaddff",
+                    "on-secondary-container": "#54647a",
+                    "outline-variant": "#ccc3d8",
+                    "surface-variant": "#dae2fd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans", "sans-serif"],
+                    "body": ["Plus Jakarta Sans", "sans-serif"],
+                    "mono": ["JetBrains Mono", "monospace"],
+                    "label": ["Plus Jakarta Sans", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .collectible-frame {
+                @apply bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative transition-all duration-500 hover:shadow-[0_20px_50px_rgba(124,58,237,0.1)];
+            }
+            .badge-ribbon {
+                @apply absolute -top-4 -right-4 w-16 h-16 flex items-center justify-center rounded-full border-4 border-white shadow-lg z-20;
+            }
+            .rank-number {
+                @apply font-mono font-bold italic text-lg;
+            }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filament-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: #630ed4;
+            box-shadow: 0 0 8px rgba(99, 14, 212, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-[#FAFAFA] font-body text-on-surface antialiased min-h-screen">
+<nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-16 border-b border-slate-100">
+<div class="flex justify-between items-center px-12 h-full w-full max-w-[1440px] mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-xl font-extrabold tracking-tighter text-[#630ed4]">MiniCode</span>
+<div class="hidden md:flex items-center gap-6 text-sm font-semibold tracking-tight">
+<a class="text-slate-500 hover:text-[#630ed4] transition-colors" href="#">Problems</a>
+<a class="text-slate-500 hover:text-[#630ed4] transition-colors" href="#">Contests</a>
+<a class="text-[#630ed4] relative after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-0.5 after:bg-[#630ed4]" href="#">Leaderboard</a>
+<a class="text-slate-500 hover:text-[#630ed4] transition-colors" href="#">Discuss</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-lg hover:bg-slate-50 transition-all">
+<span class="material-symbols-outlined text-slate-400" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-slate-100 overflow-hidden ring-2 ring-slate-50">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_4NO7-UQwM0KYnsD0q_3YhjZT2RtKtmhS-_3oYZoT9PT6-0Ie4_LpSVMm4DTuBHFhPID2ADlcNMg251u_xArPxtdjoLwPcni_uXtw51rZpQ5l4JAJC-W-TG-1QEEx84J0RzzIYbUzKqYcJI9QR53Z4rUwMiPGui3BBnJCnq04aD8loQNTVpGDiooL_v36QGzQ5IJ_SphagihXcWaVGCTPM8N7OzNk0oXgHON7dL8YXNFld-kk7rj5GnOylUunxBw43wkAuTV8N3c"/>
+</div>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-32 max-w-[1200px] mx-auto px-6 relative">
+<header class="mb-12">
+<span class="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold tracking-widest uppercase mb-4">Hall of Fame</span>
+<h1 class="text-5xl lg:text-6xl font-extrabold tracking-tighter text-slate-900 mb-6 leading-none">Global Rankings</h1>
+<p class="text-lg text-slate-500 font-medium max-w-xl">
+                Celebrating the craft and consistency of our most dedicated scholars.
+            </p>
+</header>
+<section class="mb-24 relative min-h-[500px] md:min-h-[550px]">
+<div class="absolute z-30 left-0 top-0 md:left-8 w-full md:w-[460px]">
+<div class="collectible-frame p-2 rounded-[2.5rem]">
+<div class="bg-white rounded-[2.2rem] p-8 border border-slate-50">
+<div class="badge-ribbon bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-600">
+<span class="rank-number text-white">#1</span>
+</div>
+<div class="flex flex-col md:flex-row gap-8 items-center md:items-start">
+<div class="relative flex-shrink-0">
+<div class="w-32 h-44 md:w-40 md:h-52 rounded-2xl overflow-hidden shadow-2xl ring-8 ring-slate-50/50">
+<img alt="Elena Vance" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClHrlh4ODs1xzCbAGXAhvYO4VnonQ-zY13XnSc9id2_TDw9GXSCP9Fq8fW3BJPEukvAZ9JDx4KdQC4x7bk8xWbTNk7hL7wC5pToUwmeWebybnp6xyzBndf2IB-lLEs7sbm_rMCa63g0WRLE07Y-WrFRu4ufOSKvMvsOVRxJ4y6Tzx9elcRZc11trvuKJdUJMRmqVrqebSW_1N5FsKgUUiopMxoyHjlKf5WUuAanLDasIDbx0-TDFVA6Kl1PJQjiE-rb1ZB9DXG8GI"/>
+</div>
+<div class="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-primary px-4 py-1 rounded-full shadow-lg">
+<span class="text-[10px] text-white font-black uppercase tracking-widest whitespace-nowrap">Grandmaster</span>
+</div>
+</div>
+<div class="flex-grow text-center md:text-left pt-4">
+<h3 class="font-headline text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Elena Vance</h3>
+<div class="grid grid-cols-2 gap-4 mb-8">
+<div class="flex flex-col">
+<span class="font-mono text-2xl font-bold text-primary">2,105</span>
+<span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Solved</span>
+</div>
+<div class="flex flex-col">
+<span class="font-mono text-2xl font-bold text-primary">18.9k</span>
+<span class="text-[10px] font-black uppercase tracking-widest text-slate-400">XP Points</span>
+</div>
+</div>
+<button class="w-full py-4 px-6 rounded-2xl bg-primary text-white font-bold shadow-[0_10px_20px_-5px_rgba(124,58,237,0.3)] hover:translate-y-[-2px] transition-transform active:scale-95 text-sm uppercase tracking-widest">
+                                    Congratulate
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden md:block absolute z-20 left-[520px] top-12 w-[320px]">
+<div class="collectible-frame p-1.5 rounded-[2rem]">
+<div class="bg-slate-50/30 rounded-[1.8rem] p-6 backdrop-blur-sm">
+<div class="badge-ribbon bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 w-12 h-12 -top-3 -right-3">
+<span class="rank-number text-slate-700 text-sm">#2</span>
+</div>
+<div class="flex items-center gap-5">
+<div class="w-20 h-20 rounded-xl overflow-hidden shadow-lg border-4 border-white">
+<img alt="Alex Rivera" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQ6tCArGxGd_w8DLxkt47oLmk97NRvT9pw7cVffcvnZnahbLVS-Tic66-SBQrOQYJEArwH1AJ8z0VtVWlM-md4vbGYUSmY_R2TMxCiDVcQT0nBe3rf87YI9Fdf-ogt2AzRitSCUod0fyTBLYuTlpR2V_Wmvjflp3IhqNvpwnWrbM9tSpHkEc6OVPL-FjFmdWyqwF9kho-X0W4KLvRR8GVGK1T_73Mv6G93vZOTpLRg1VMAe3YuztVMOdJrIqGiEqcJ_96veigO3OA"/>
+</div>
+<div>
+<h3 class="font-headline text-lg font-bold text-slate-900 leading-tight">Alex Rivera</h3>
+<p class="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Master Scholar</p>
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="font-mono text-sm font-bold text-slate-900">1,420</span>
+<span class="text-[8px] font-black text-slate-400 uppercase">Solved</span>
+</div>
+<div class="flex flex-col">
+<span class="font-mono text-sm font-bold text-slate-900">12.4k</span>
+<span class="text-[8px] font-black text-slate-400 uppercase">XP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="hidden md:block absolute z-10 left-[480px] top-[260px] w-[300px]">
+<div class="collectible-frame p-1.5 rounded-[2rem]">
+<div class="bg-white rounded-[1.8rem] p-6">
+<div class="badge-ribbon bg-gradient-to-br from-orange-200 via-orange-300 to-orange-400 w-12 h-12 -top-3 -right-3">
+<span class="rank-number text-orange-900 text-sm">#3</span>
+</div>
+<div class="flex items-center gap-5">
+<div class="w-16 h-16 rounded-xl overflow-hidden shadow-md border-2 border-slate-50">
+<img alt="Marcus Chen" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrUOE0MmrI3V4EtITImHg6odx7rpeaVfGr82a7tLSSR0d3FTDGL2b2CFrZa6W7o5MGAPSIJJrnRatc5rb3rFmo07V49iyOXHbSAv57ZJ1uFDTIGSK3dheLSKgLTuu33IWYMYZg1rMW-kFYQkmIW3QavE9ejhBKqq_ePu0jmYqS8tXb2VKSoPXMH44m_kPhG77-yYLXW5BySzUqYrqutioh_JfQ4-cyvPwjPwX-j0nkKHJxbQ8MNMruZuq5GN_VrP6diIcXyx56v08"/>
+</div>
+<div>
+<h3 class="font-headline text-base font-bold text-slate-900 leading-tight">Marcus Chen</h3>
+<p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Scholar</p>
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="font-mono text-sm font-bold text-slate-900">1,288</span>
+<span class="text-[8px] font-black text-slate-400 uppercase">Solved</span>
+</div>
+<div class="flex flex-col">
+<span class="font-mono text-sm font-bold text-slate-900">10.1k</span>
+<span class="text-[8px] font-black text-slate-400 uppercase">XP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 bg-primary/5 rounded-full blur-3xl -z-10"></div>
+<div class="absolute left-[35%] bottom-0 w-64 h-2 bg-gradient-to-r from-transparent via-primary/20 to-transparent rounded-full -z-10"></div>
+</section>
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8 mt-12 md:mt-0">
+<div class="flex p-1 bg-slate-100 rounded-xl w-full md:w-auto">
+<button class="flex-1 md:px-6 py-2 rounded-lg bg-white text-primary font-bold text-sm shadow-sm">Global</button>
+<button class="flex-1 md:px-6 py-2 rounded-lg text-slate-500 font-semibold text-sm hover:text-slate-900 transition-colors">Monthly</button>
+<button class="flex-1 md:px-6 py-2 rounded-lg text-slate-500 font-semibold text-sm hover:text-slate-900 transition-colors">Weekly</button>
+</div>
+<div class="relative w-full md:w-80">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search">search</span>
+<input class="w-full pl-12 pr-4 py-3 rounded-2xl bg-white border-slate-100 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm font-medium" placeholder="Find a student..." type="text"/>
+</div>
+</div>
+<div class="bg-white rounded-[2rem] shadow-[0_4px_30px_rgba(0,0,0,0.02)] border border-slate-100 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-slate-50/50">
+<th class="px-8 py-5">Rank</th>
+<th class="px-8 py-5">Student</th>
+<th class="px-8 py-5 text-right">Problems Solved</th>
+<th class="px-8 py-5 text-right">XP Points</th>
+<th class="px-8 py-5">Tier</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-50">
+<tr class="hover:bg-slate-50/50 transition-colors group">
+<td class="px-8 py-6 font-mono font-bold text-lg text-slate-900">4</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+<img alt="Jordan" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuoVelEq0NGer8DPXMwq4H9hv3xkf9f0Xo0_Yc_MGXi_v2_p6u7IidNaozHqq4qQun6f6bl7tlXSKT8ZrnpyzGVNyFyf2pXiD_0-dhw6kqMTL6w4EeIF5trZs1Cu32SeYVjOpDafAYVCREXndUo4Fo7atzc3x6gOyjyQmSv2M88dE1rqi73u4geSJhxj-ye8OOHkp6G6EVp1JozunPcM9Lz6Hb00r4e-33-CO4Zopwm7W9CljRzI-22l6lJymGm90837UsHOf-XUw"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-slate-900">Jordan Smith</span>
+<span class="text-[10px] text-primary font-bold uppercase tracking-wider">Expert Scholar</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6 text-right font-mono font-bold text-slate-900">1,142</td>
+<td class="px-8 py-6 text-right font-mono font-bold text-primary">9,420</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest">Elite</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors group">
+<td class="px-8 py-6 font-mono font-bold text-lg text-slate-900">5</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+<img alt="Sarah" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZj0Kzgd8w6f6aqcpk6UayWFLcx9MlmS0FrVBrG0GEw7V2iLlE9UU8vQXxPqSnOo1TRN7SPKcQo4f68GyWIdQyxYPaUaFzri2hSzGIaDqMxmz36MCCYKC_0A5ndlbrp3CwMulb69_XiMa57klMzHut4LvbWQHvQ7sgZ5ZCr46Wy_b_lhqnN3TpGDLr8T-AAQiCD5OmpV5Uvux7PHHgrTKT5wNAATXz-gVzSx-KNZFFnylYjU4QixfyCH3LhEOWu_-FaAvwOr16q90"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-slate-900">Sarah Jenkins</span>
+<span class="text-[10px] text-primary font-bold uppercase tracking-wider">Master Scholar</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6 text-right font-mono font-bold text-slate-900">1,098</td>
+<td class="px-8 py-6 text-right font-mono font-bold text-primary">8,850</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest">Master</span>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors group">
+<td class="px-8 py-6 font-mono font-bold text-lg text-slate-400">6</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+<img alt="David" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKyhk7i5iSvSg8FPg5eoVwFpo6EbEEfvJqXWXLHC_ucxw-xn94Yag1QZUGZ3Ih6OmkAfa-0OoFwQxL9tiAu32h6s7P5XfhHWjXfHUoq2phi-WN_FLr_AKV-TTt-8A7mxCqULtOCVkzY9YIsnSpx137yLUCwDjr6W8xwmsh7HQ-rckB6HeLMqbQIpROX80EOxMiaZZhYhyzxQIue87Cf3ey0CN5sIvDDupcvtR_blLSJk4QJSeAfXNir15un4c6-cZgQ5plVfXIaQA"/>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-slate-900">David Miller</span>
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Apprentice</span>
+</div>
+</div>
+</td>
+<td class="px-8 py-6 text-right font-mono font-bold text-slate-900">956</td>
+<td class="px-8 py-6 text-right font-mono font-bold text-primary">7,210</td>
+<td class="px-8 py-6">
+<span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest">Professional</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-10 text-center bg-slate-50/30">
+<div class="inline-flex items-center gap-1.5 mb-6">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/20"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary/60"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary/20"></span>
+</div>
+<p class="text-slate-400 text-xs font-bold uppercase tracking-[0.2em]">Loading next 50 scholars</p>
+<div class="mt-6 max-w-[200px] mx-auto">
+<div class="filament-bar w-1/2 mx-auto"></div>
+</div>
+</div>
+</div>
+</main>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-6 pt-3 bg-white border-t border-slate-100 shadow-2xl rounded-t-[2.5rem]">
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="code">code</span>
+<span class="text-[9px] uppercase tracking-widest font-black">Code</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="emoji_events">emoji_events</span>
+<span class="text-[9px] uppercase tracking-widest font-black">Events</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#630ed4] bg-[#7c3aed]/5 rounded-2xl px-5 py-2.5" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="leaderboard">leaderboard</span>
+<span class="text-[9px] uppercase tracking-widest font-black">Rank</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="forum">forum</span>
+<span class="text-[9px] uppercase tracking-widest font-black">Talk</span>
+</a>
+</nav>
+
+</body></html>
