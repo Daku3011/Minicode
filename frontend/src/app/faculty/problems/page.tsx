@@ -73,7 +73,7 @@ export default function FacultyProblemsPage() {
     const fetchData = async () => {
         try {
             const [problemsRes, usersRes] = await Promise.all([
-                api.get("/faculty/problems"),
+                api.get("/problems"),
                 api.get("/admin/users").catch(() => ({ data: [] })),
             ]);
             setProblems(problemsRes.data);
@@ -142,18 +142,18 @@ export default function FacultyProblemsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0f] text-slate-100">
+        <div className="min-h-screen bg-slate-50 text-slate-900">
 
             <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
                     <div>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="h-px w-8 bg-primary" />
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Command Center</span>
+                            <div className="h-px w-8 bg-blue-600" />
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500">Command Center</span>
                         </div>
-                        <h1 className="text-5xl font-black text-white mb-4 tracking-tight leading-none">Problem <span className="text-slate-500">Registry</span></h1>
-                        <p className="text-slate-400 text-lg font-medium opacity-80">Architect and oversee the matrix of logical challenges</p>
+                        <h1 className="text-5xl font-black text-slate-900 mb-4 tracking-tight leading-none">Problem <span className="text-slate-400">Registry</span></h1>
+                        <p className="text-slate-500 text-lg font-medium opacity-80">Architect and oversee the matrix of logical challenges</p>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -176,14 +176,14 @@ export default function FacultyProblemsPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Identify specific records..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all text-lg font-medium"
+                            className="w-full bg-white border border-blue-200 rounded-2xl pl-12 pr-6 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all text-lg font-medium"
                         />
                     </div>
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={clsx(
                             "flex items-center p-5 gap-3 px-8 h-full rounded-2xl border text-sm font-black uppercase tracking-wider transition-all",
-                            showFilters ? "bg-primary/20 border-primary/30 text-white" : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+                            showFilters ? "bg-blue-50 border-blue-300 text-blue-700" : "bg-white border-blue-200 text-slate-500 hover:text-slate-900 hover:bg-blue-50"
                         )}
                     >
                         <Filter className="w-4 h-4" />
@@ -193,13 +193,13 @@ export default function FacultyProblemsPage() {
 
                 {showFilters && (
                     <div className="overflow-hidden mb-8">
-                        <div className="glass-card border border-white/10 rounded-3xl p-8 space-y-8">
+                        <div className="bg-white border border-blue-100 rounded-3xl p-8 space-y-8 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 rounded-xl bg-primary/10 text-primary">
                                         <Filter className="w-4 h-4" />
                                     </div>
-                                    <h3 className="text-lg font-black text-white uppercase tracking-wider">Refine Operations</h3>
+                                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-wider">Refine Operations</h3>
                                 </div>
                                 <button onClick={() => { setSelectedDifficulty(""); setSelectedLevel(""); }} className="text-xs font-black text-slate-500 hover:text-rose-500 flex items-center gap-2 transition-colors uppercase tracking-[0.2em]">
                                     <X className="w-4 h-4" /> Reset Identity
@@ -209,18 +209,18 @@ export default function FacultyProblemsPage() {
                                 <div>
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Intensity Level</label>
                                     <div className="grid grid-cols-4 gap-2">
-                                        <button onClick={() => setSelectedDifficulty("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedDifficulty ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
+                                        <button onClick={() => setSelectedDifficulty("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedDifficulty ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200" : "bg-white border-slate-200 text-slate-500 hover:border-blue-200")}  >All</button>
                                         {["Easy", "Medium", "Hard"].map((d) => (
-                                            <button key={d} onClick={() => setSelectedDifficulty(d)} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedDifficulty === d ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{d}</button>
+                                            <button key={d} onClick={() => setSelectedDifficulty(d)} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedDifficulty === d ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200" : "bg-white border-slate-200 text-slate-500 hover:border-blue-200")}>{d}</button>
                                         ))}
                                     </div>
                                 </div>
                                 <div>
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 block">Access Clearance</label>
                                     <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                                        <button onClick={() => setSelectedLevel("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedLevel ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>All</button>
+                                        <button onClick={() => setSelectedLevel("")} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", !selectedLevel ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200" : "bg-white border-slate-200 text-slate-500 hover:border-blue-200")}>All</button>
                                         {LEVELS.map((l) => (
-                                            <button key={l.level} onClick={() => setSelectedLevel(String(l.level))} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedLevel === String(l.level) ? "bg-primary border-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 border-white/10 text-slate-600 hover:border-white/20")}>{l.level}</button>
+                                            <button key={l.level} onClick={() => setSelectedLevel(String(l.level))} className={clsx("py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all", selectedLevel === String(l.level) ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200" : "bg-white border-slate-200 text-slate-500 hover:border-blue-200")}>{l.level}</button>
                                         ))}
                                     </div>
                                 </div>
@@ -230,12 +230,12 @@ export default function FacultyProblemsPage() {
                 )}
 
                 {/* Problems Table */}
-                <div className="glass-card border border-white/10 rounded-[2.5rem] overflow-hidden">
+                <div className="bg-white border border-blue-100 rounded-[2.5rem] overflow-hidden shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="border-b border-white/10 bg-white/5 relative">
-                                    <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Identity & Origin</th>
+                                <tr className="border-b border-blue-100 bg-blue-50 relative">
+                                    <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Identity &amp; Origin</th>
                                     <th className="px-6 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Logic Core</th>
                                     <th className="px-6 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Intensity</th>
                                     <th className="px-6 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Clearance</th>
@@ -243,7 +243,7 @@ export default function FacultyProblemsPage() {
                                     <th className="px-10 py-6 text-right text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Protocols</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/10">
+                            <tbody className="divide-y divide-blue-50">
                                 {loading ? (
                                     <tr><td colSpan={6} className="px-10 py-24 text-center">
                                         <div className="flex flex-col items-center gap-4">
@@ -253,59 +253,59 @@ export default function FacultyProblemsPage() {
                                     </td></tr>
                                 ) : filteredProblems.length > 0 ? (
                                     filteredProblems.map((problem, idx) => (
-                                        <tr key={problem.id} className="hover:bg-white/[0.02] transition-colors group/row">
+                                        <tr key={problem.id} className="hover:bg-blue-50/50 transition-colors group/row">
                                             <td className="px-10 py-8">
                                                 <div className="flex flex-col">
-                                                    <span className="text-white font-black text-lg tracking-tight group-hover/row:text-primary transition-colors">{problem.title}</span>
+                                                    <span className="text-slate-900 font-black text-lg tracking-tight group-hover/row:text-blue-600 transition-colors">{problem.title}</span>
                                                     <div className="flex items-center gap-3 mt-2">
-                                                        <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest italic">{new Date(problem.created_at).toLocaleDateString()}</span>
-                                                        <div className="h-1 w-1 rounded-full bg-slate-800" />
-                                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{getAuthorName(problem.author_id)}</span>
+                                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">{new Date(problem.created_at).toLocaleDateString()}</span>
+                                                        <div className="h-1 w-1 rounded-full bg-slate-300" />
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{getAuthorName(problem.author_id)}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-8">
                                                 <div className="flex items-center gap-3">
                                                     <span className="text-xl grayscale group-hover/row:grayscale-0 transition-all">{getSubjectInfo(problem.subject).icon}</span>
-                                                    <span className="text-sm font-black text-slate-400 uppercase tracking-tighter">{getSubjectInfo(problem.subject).name}</span>
+                                                    <span className="text-sm font-black text-slate-500 uppercase tracking-tighter">{getSubjectInfo(problem.subject).name}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-8">
                                                 <span className={clsx(
                                                     "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                                                    problem.difficulty === "Easy" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                                                        problem.difficulty === "Medium" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                                                            "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                                    problem.difficulty === "Easy" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                                                        problem.difficulty === "Medium" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                                            "bg-rose-50 text-rose-700 border-rose-200"
                                                 )}>
                                                     {problem.difficulty}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-8">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white">
+                                                    <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-[10px] font-black text-blue-700">
                                                         {problem.level}
                                                     </div>
-                                                    <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Level</span>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Level</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-8">
-                                                <span className="text-lg font-black text-white tabular-nums tracking-tight">
-                                                    <span className="text-primary mr-1">+</span>{problem.xp_reward}
-                                                    <span className="text-[9px] text-slate-600 ml-1 uppercase">XP</span>
+                                                <span className="text-lg font-black text-slate-900 tabular-nums tracking-tight">
+                                                    <span className="text-blue-600 mr-1">+</span>{problem.xp_reward}
+                                                    <span className="text-[9px] text-slate-400 ml-1 uppercase">XP</span>
                                                 </span>
                                             </td>
                                             <td className="px-10 py-8 text-right">
-                                                <div className="inline-flex items-center justify-end gap-2 rounded-2xl border border-white/10 bg-white/[0.02] px-2 py-1.5 opacity-70 group-hover/row:opacity-100 transition-all duration-300">
+                                                <div className="inline-flex items-center justify-end gap-2 rounded-2xl border border-blue-100 bg-blue-50/50 px-2 py-1.5 opacity-70 group-hover/row:opacity-100 transition-all duration-300">
                                                     <button
                                                         onClick={() => startEdit(problem)}
-                                                        className="p-3 text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-2xl transition-all border border-transparent hover:border-cyan-500/20"
+                                                        className="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all border border-transparent hover:border-blue-100"
                                                         aria-label="Reconfigure"
                                                     >
                                                         <Edit className="w-5 h-5" />
                                                     </button>
                                                     <Link
                                                         href={`/problems/${problem.id}`}
-                                                        className="p-3 text-slate-200 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-2xl transition-all border border-transparent hover:border-emerald-500/20"
+                                                        className="p-3 text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-2xl transition-all border border-transparent hover:border-emerald-100"
                                                         aria-label="Inspect"
                                                     >
                                                         <ChevronRight className="w-5 h-5" />
@@ -324,11 +324,11 @@ export default function FacultyProblemsPage() {
                                 ) : (
                                     <tr>
                                         <td colSpan={6} className="px-10 py-32 text-center">
-                                            <div className="flex flex-col items-center gap-6 opacity-30">
-                                                <BookOpen className="w-16 h-16" />
+                                            <div className="flex flex-col items-center gap-6 opacity-50">
+                                                <BookOpen className="w-16 h-16 text-blue-300" />
                                                 <div className="space-y-1">
-                                                    <p className="text-xl font-black text-white uppercase tracking-wider">Registry Void</p>
-                                                    <p className="text-sm text-slate-600 font-medium">No logical challenges detected in this sector</p>
+                                                    <p className="text-xl font-black text-slate-700 uppercase tracking-wider">Registry Void</p>
+                                                    <p className="text-sm text-slate-400 font-medium">No logical challenges detected in this sector</p>
                                                 </div>
                                                 <Link href="/problems/create" className="premium-btn py-4 px-8 mt-4">
                                                     Forge First Entry
@@ -347,20 +347,20 @@ export default function FacultyProblemsPage() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <div
                             onClick={() => setEditingProblem(null)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-md"
                         />
-                        <div className="glass-card border border-white/10 rounded-[3rem] p-10 w-full max-w-2xl relative z-10 shadow-2xl">
+                        <div className="bg-white border border-blue-100 rounded-[3rem] p-10 w-full max-w-2xl relative z-10 shadow-2xl">
                             <div className="flex items-center justify-between mb-10">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                                    <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
                                         <Edit className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black text-white tracking-tight">Reconfigure Problem</h3>
-                                        <p className="text-slate-500 text-sm font-medium">Updating logic sector: {editingProblem?.id}</p>
+                                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">Reconfigure Problem</h3>
+                                        <p className="text-slate-400 text-sm font-medium">Updating logic sector: {editingProblem?.id}</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setEditingProblem(null)} className="p-3 text-slate-500 hover:text-white transition-colors">
+                                <button onClick={() => setEditingProblem(null)} className="p-3 text-slate-400 hover:text-slate-900 transition-colors">
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
@@ -372,7 +372,7 @@ export default function FacultyProblemsPage() {
                                         type="text"
                                         value={editForm.title}
                                         onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold text-lg focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all"
                                         placeholder="Enter problem title..."
                                     />
                                 </div>
@@ -382,11 +382,11 @@ export default function FacultyProblemsPage() {
                                         <select
                                             value={editForm.difficulty}
                                             onChange={(e) => setEditForm({ ...editForm, difficulty: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
+                                            className="w-full bg-slate-50 border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none"
                                         >
-                                            <option className="bg-[#0a0a14]" value="Easy">Easy</option>
-                                            <option className="bg-[#0a0a14]" value="Medium">Medium</option>
-                                            <option className="bg-[#0a0a14]" value="Hard">Hard</option>
+                                            <option value="Easy">Easy</option>
+                                            <option value="Medium">Medium</option>
+                                            <option value="Hard">Hard</option>
                                         </select>
                                     </div>
                                     <div className="space-y-3">
@@ -394,10 +394,10 @@ export default function FacultyProblemsPage() {
                                         <select
                                             value={editForm.level}
                                             onChange={(e) => setEditForm({ ...editForm, level: parseInt(e.target.value) })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
+                                            className="w-full bg-slate-50 border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none"
                                         >
                                             {LEVELS.map((l) => (
-                                                <option className="bg-[#0a0a14]" key={l.level} value={l.level}>Lvl {l.level}: {l.name}</option>
+                                                <option key={l.level} value={l.level}>Lvl {l.level}: {l.name}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -407,11 +407,11 @@ export default function FacultyProblemsPage() {
                                     <select
                                         value={editForm.subject}
                                         onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 appearance-none"
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none"
                                     >
-                                        <option className="bg-[#0a0a14]" value="">Not Set</option>
+                                        <option value="">Not Set</option>
                                         {SUBJECTS.map((s) => (
-                                            <option className="bg-[#0a0a14]" key={s.id} value={s.id}>{s.icon} {s.name}</option>
+                                            <option key={s.id} value={s.id}>{s.icon} {s.name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -421,14 +421,14 @@ export default function FacultyProblemsPage() {
                                         value={editForm.description}
                                         onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                                         rows={6}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none leading-relaxed"
                                         placeholder="Define technical requirements..."
                                     />
                                 </div>
                                 <div className="flex gap-4 justify-end pt-6">
                                     <button
                                         onClick={() => setEditingProblem(null)}
-                                        className="px-8 py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-widest"
+                                        className="px-8 py-4 rounded-2xl bg-slate-100 text-slate-500 hover:text-slate-900 transition-all text-sm font-black uppercase tracking-widest"
                                     >
                                         Abort
                                     </button>
@@ -451,14 +451,14 @@ export default function FacultyProblemsPage() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <div
                             onClick={() => setDeleteConfirm(null)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-md"
                         />
-                        <div className="glass-card border border-rose-500/20 rounded-[2.5rem] p-10 w-full max-w-md relative z-10 shadow-2xl">
+                        <div className="bg-white border border-rose-200 rounded-[2.5rem] p-10 w-full max-w-md relative z-10 shadow-2xl">
                             <div className="flex flex-col items-center text-center">
                                 <div className="h-20 w-20 rounded-full bg-rose-500/10 flex items-center justify-center mb-6">
                                     <AlertCircle className="w-10 h-10 text-rose-500" />
                                 </div>
-                                <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Decommission Entry?</h3>
+                                <h3 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Decommission Entry?</h3>
                                 <p className="text-slate-500 font-medium mb-10 leading-relaxed">This action will permanently erase the logical challenge from the registry. This is irreversible.</p>
 
                                 <div className="flex flex-col w-full gap-3">
@@ -470,7 +470,7 @@ export default function FacultyProblemsPage() {
                                     </button>
                                     <button
                                         onClick={() => setDeleteConfirm(null)}
-                                        className="w-full py-4 rounded-2xl bg-white/5 text-slate-400 hover:text-white transition-all text-sm font-black uppercase tracking-[0.2em]"
+                                        className="w-full py-4 rounded-2xl bg-slate-100 text-slate-500 hover:text-slate-900 transition-all text-sm font-black uppercase tracking-[0.2em]"
                                     >
                                         Abort Operation
                                     </button>

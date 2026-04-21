@@ -142,14 +142,14 @@ export default function FacultyEventDetailPage() {
             <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-purple-500/10 via-transparent to-transparent pointer-events-none" />
 
             <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
-                <Link href="/faculty/events" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6">
+                <Link href="/faculty/events" className="inline-flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-colors mb-6">
                     <ChevronLeft className="w-4 h-4" />
                     Back to Event Management
                 </Link>
 
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-black text-white mb-2">Participants & Submissions</h1>
+                        <h1 className="text-3xl font-black text-blue-500 mb-2">Participants & Submissions</h1>
                         <p className="text-slate-400">Review submissions, award XP, and provide feedback</p>
                     </div>
                     <Link

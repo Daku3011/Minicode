@@ -142,7 +142,7 @@ export default function FacultyEventsPage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#0a0a14] text-slate-100 font-display relative overflow-x-hidden">
+        <div className="min-h-[calc(100vh-64px)] bg-slate-50 text-slate-900 font-display relative overflow-x-hidden">
             {/* Minimalist Grid Pattern Only */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-[0.03]">
                 <div className="absolute inset-0 bg-[url('/grid.svg')]" />
@@ -155,13 +155,13 @@ export default function FacultyEventsPage() {
                         {/* <div className="flex items-center gap-3 mb-2">
                             <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-wider">Event Control</span>
                         </div> */}
-                        <h1 className="text-4xl font-black text-white tracking-tight leading-none">Event Management</h1>
-                        <p className="text-slate-400 mt-2">Manage your events and hackathons with zero latency.</p>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">Event Management</h1>
+                        <p className="text-slate-500 mt-2">Manage your events and hackathons with zero latency.</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link
                             href="/events/create"
-                            className="bg-primary text-white hover:bg-blue-500/80 hover:text-black px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 transition-colors border border-white/30"
+                            className="bg-primary text-white hover:bg-blue-600 hover:text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 transition-colors shadow-sm"
                         >
                             <Plus className="w-4 h-4" /> New Event
                         </Link>
@@ -177,14 +177,14 @@ export default function FacultyEventsPage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search events..."
-                            className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                            className="w-full bg-white border border-blue-200 rounded-xl pl-12 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium shadow-sm"
                         />
                     </div>
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={clsx(
-                            "flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all",
-                            showFilters ? "bg-primary/20 border-primary/30 text-primary" : "bg-white/5 border-white/10 text-slate-400 hover:text-slate-200"
+                            "flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all shadow-sm",
+                            showFilters ? "bg-blue-50 border-blue-200 text-primary" : "bg-white border-blue-200 text-slate-600 hover:text-slate-900"
                         )}
                     >
                         <Filter className="w-4 h-4" /> Filters
@@ -192,10 +192,10 @@ export default function FacultyEventsPage() {
                 </div>
 
                 {showFilters && (
-                    <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 mb-8 shadow-xl">
+                    <div className="bg-white border border-blue-100 rounded-2xl p-6 mb-8 shadow-sm">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-sm font-black text-white uppercase tracking-widest">Filter System</h3>
-                            <button onClick={() => { setSelectedType(""); setSelectedStatus(""); }} className="text-xs text-slate-500 hover:text-white flex items-center gap-2 font-bold transition-colors">
+                            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Filter System</h3>
+                            <button onClick={() => { setSelectedType(""); setSelectedStatus(""); }} className="text-xs text-slate-500 hover:text-slate-900 flex items-center gap-2 font-bold transition-colors">
                                 <X className="w-3.5 h-3.5" /> Clear Filters
                             </button>
                         </div>
@@ -203,9 +203,9 @@ export default function FacultyEventsPage() {
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block">Event Category</label>
                                 <div className="flex flex-wrap gap-2">
-                                    <button onClick={() => setSelectedType("")} className={clsx("px-4 py-2 rounded-xl text-xs font-bold border transition-all", !selectedType ? "bg-primary/20 border-primary/30 text-primary" : "bg-white/5 border-white/5 text-slate-500 hover:text-slate-300")}>All Types</button>
+                                    <button onClick={() => setSelectedType("")} className={clsx("px-4 py-2 rounded-xl text-xs font-bold border transition-all shadow-sm", !selectedType ? "bg-blue-50 border-blue-200 text-primary" : "bg-white border-blue-100 text-slate-600 hover:text-slate-900")}>All Types</button>
                                     {EVENT_TYPES.map((t) => (
-                                        <button key={t.id} onClick={() => setSelectedType(t.id)} className={clsx("px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2", selectedType === t.id ? "bg-primary/20 border-primary/30 text-primary" : "bg-white/5 border-white/5 text-slate-500 hover:text-slate-300")}>
+                                        <button key={t.id} onClick={() => setSelectedType(t.id)} className={clsx("px-4 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-2 shadow-sm", selectedType === t.id ? "bg-blue-50 border-blue-200 text-primary" : "bg-white border-blue-100 text-slate-600 hover:text-slate-900")}>
                                             <span className="text-sm leading-none">{t.icon}</span> {t.name}
                                         </button>
                                     ))}
@@ -215,7 +215,7 @@ export default function FacultyEventsPage() {
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block">Current Status</label>
                                 <div className="flex flex-wrap gap-2">
                                     {STATUSES.map((s) => (
-                                        <button key={s.value} onClick={() => setSelectedStatus(s.value)} className={clsx("px-4 py-2 rounded-xl text-xs font-bold border transition-all", selectedStatus === s.value ? "bg-primary/20 border-primary/30 text-primary" : "bg-white/5 border-white/5 text-slate-500 hover:text-slate-300")}>{s.label}</button>
+                                        <button key={s.value} onClick={() => setSelectedStatus(s.value)} className={clsx("px-4 py-2 rounded-xl text-xs font-bold border transition-all shadow-sm", selectedStatus === s.value ? "bg-blue-50 border-blue-200 text-primary" : "bg-white border-blue-100 text-slate-600 hover:text-slate-900")}>{s.label}</button>
                                     ))}
                                 </div>
                             </div>
@@ -224,11 +224,11 @@ export default function FacultyEventsPage() {
                 )}
 
                 {/* Events Table Container */}
-                <div className="bg-white/[0.01] border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+                <div className="bg-white border border-blue-100 rounded-2xl overflow-hidden shadow-sm">
                     <div className="overflow-x-auto no-scrollbar">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-white/[0.02] border-b border-white/5">
+                                <tr className="bg-slate-50 border-b border-blue-100">
                                     <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap">Event Identity</th>
                                     <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap">Category Tag</th>
                                     <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap">Progress Status</th>
@@ -237,14 +237,14 @@ export default function FacultyEventsPage() {
                                     <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 whitespace-nowrap text-right">System Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/5">
+                            <tbody className="divide-y divide-blue-50">
                                 {loading ? (
                                     <tr><td colSpan={6} className="px-6 py-12 text-center"><Loader2 className="w-6 h-6 text-primary animate-spin mx-auto" /></td></tr>
                                 ) : filteredEvents.length > 0 ? (
                                     filteredEvents.map((event) => (
-                                        <tr key={event.id} className="hover:bg-white/[0.02] transition-colors group">
+                                        <tr key={event.id} className="hover:bg-slate-50 transition-colors group">
                                             <td className="px-8 py-6">
-                                                <p className="text-white font-bold text-base group-hover:text-primary transition-colors">{event.title}</p>
+                                                <p className="text-slate-900 font-bold text-base group-hover:text-primary transition-colors">{event.title}</p>
                                                 <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1.5">{formatDate(event.created_at)}</p>
                                             </td>
                                             <td className="px-8 py-6">
@@ -270,11 +270,11 @@ export default function FacultyEventsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="flex items-center gap-3 text-slate-300">
-                                                    <Clock className="w-4 h-4 text-slate-700" />
+                                                <div className="flex items-center gap-3 text-slate-600">
+                                                    <Clock className="w-4 h-4 text-slate-400" />
                                                     <div>
-                                                        <p className="text-sm font-bold tracking-tight">{formatDate(event.start_date)}</p>
-                                                        {event.end_date && <p className="text-[10px] text-slate-600 font-black uppercase mt-0.5">{getTimeRemaining(event.end_date)}</p>}
+                                                        <p className="text-sm font-bold text-slate-900 tracking-tight">{formatDate(event.start_date)}</p>
+                                                        {event.end_date && <p className="text-[10px] text-slate-500 font-black uppercase mt-0.5">{getTimeRemaining(event.end_date)}</p>}
                                                     </div>
                                                 </div>
                                             </td>
@@ -328,22 +328,22 @@ export default function FacultyEventsPage() {
                     </div>
                 </div>
 
-                {/* Edit Modal - Stripped of Framer Motion */}
+                {/* Edit Modal */}
                 {editingEvent && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div
                             onClick={() => setEditingEvent(null)}
-                            className="absolute inset-0 bg-[#05020a]/90 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         />
                         <div
-                            className="bg-[#0f0a1e] border border-white/10 p-10 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar relative z-10 shadow-2xl"
+                            className="bg-white border border-blue-100 p-10 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar relative z-10 shadow-xl"
                         >
                             <div className="flex items-center justify-between mb-10">
                                 <div className="space-y-1">
-                                    <h3 className="text-3xl font-black text-white tracking-tight">Modify Parameters</h3>
+                                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">Modify Parameters</h3>
                                     <p className="text-slate-500 text-sm font-medium">Updating event descriptor for {editingEvent?.title}</p>
                                 </div>
-                                <button onClick={() => setEditingEvent(null)} className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 text-slate-400 hover:text-white transition-all">
+                                <button onClick={() => setEditingEvent(null)} className="p-3 rounded-2xl bg-white border border-blue-100 text-slate-400 hover:text-slate-900 hover:bg-blue-50 transition-all">
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
@@ -354,7 +354,7 @@ export default function FacultyEventsPage() {
                                         type="text"
                                         value={editForm.title}
                                         onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                        className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:border-primary/50 transition-all placeholder:text-slate-700"
+                                        className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-slate-400"
                                         placeholder="Enter descriptive title..."
                                     />
                                 </div>
@@ -364,10 +364,10 @@ export default function FacultyEventsPage() {
                                         <select
                                             value={editForm.event_type}
                                             onChange={(e) => setEditForm({ ...editForm, event_type: e.target.value })}
-                                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-black appearance-none focus:outline-none focus:border-primary/50 transition-all cursor-pointer"
+                                            className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-black appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
                                         >
                                             {EVENT_TYPES.map((t) => (
-                                                <option key={t.id} value={t.id} className="bg-[#0f0a1e]">{t.icon} {t.name}</option>
+                                                <option key={t.id} value={t.id} className="bg-white text-slate-900">{t.icon} {t.name}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -376,10 +376,10 @@ export default function FacultyEventsPage() {
                                         <select
                                             value={editForm.status}
                                             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-black appearance-none focus:outline-none focus:border-primary/50 transition-all cursor-pointer"
+                                            className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-black appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all cursor-pointer"
                                         >
                                             {STATUSES.filter(s => s.value).map((s) => (
-                                                <option key={s.value} value={s.value} className="bg-[#0f0a1e]">{s.label}</option>
+                                                <option key={s.value} value={s.value} className="bg-white text-slate-900">{s.label}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -391,7 +391,7 @@ export default function FacultyEventsPage() {
                                             type="datetime-local"
                                             value={editForm.start_date}
                                             onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })}
-                                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:border-primary/50 transition-all"
+                                            className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
                                     <div className="space-y-3">
@@ -400,7 +400,7 @@ export default function FacultyEventsPage() {
                                             type="datetime-local"
                                             value={editForm.end_date}
                                             onChange={(e) => setEditForm({ ...editForm, end_date: e.target.value })}
-                                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:border-primary/50 transition-all"
+                                            className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                         />
                                     </div>
                                 </div>
@@ -410,7 +410,7 @@ export default function FacultyEventsPage() {
                                         value={editForm.description}
                                         onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                                         rows={4}
-                                        className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-slate-300 font-medium focus:outline-none focus:border-primary/50 transition-all resize-none leading-relaxed"
+                                        className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-none leading-relaxed"
                                         placeholder="Specify mission objectives..."
                                     />
                                 </div>
@@ -421,7 +421,7 @@ export default function FacultyEventsPage() {
                                             type="number"
                                             value={editForm.max_participants}
                                             onChange={(e) => setEditForm({ ...editForm, max_participants: e.target.value })}
-                                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:border-primary/50 transition-all"
+                                            className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                             placeholder="Unlimited"
                                         />
                                     </div>
@@ -431,7 +431,7 @@ export default function FacultyEventsPage() {
                                             type="text"
                                             value={editForm.prize_description}
                                             onChange={(e) => setEditForm({ ...editForm, prize_description: e.target.value })}
-                                            className="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:border-primary/50 transition-all"
+                                            className="w-full bg-white border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                                             placeholder="e.g. 500 Credits"
                                         />
                                     </div>
@@ -439,14 +439,14 @@ export default function FacultyEventsPage() {
                                 <div className="flex gap-4 justify-center pt-6">
                                     <button
                                         onClick={() => setEditingEvent(null)}
-                                        className="px-8 py-3 rounded-2xl bg-red-400/10 border border-red-400/5 text-slate-500 hover:text-red-700 transition-all text-xs font-black uppercase tracking-widest"
+                                        className="px-8 py-3 rounded-2xl bg-white border border-black-100 text-slate-500 hover:text-red-500 transition-all text-xs font-black uppercase tracking-widest cursor-pointer hover:bg-red-500/20"
                                     >
                                         Abort
                                     </button>
                                     <button
                                         onClick={saveEdit}
                                         disabled={saving}
-                                        className="bg-primary text-white hover:bg-primary/90 hover:bg-gray-300/10 px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3 transition-all disabled:opacity-50 border border-white/50"
+                                        className="bg-primary text-blue-500 hover:bg-blue-600 px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3 transition-all disabled:opacity-90 border border-blue-400 cursor-pointer hover:text-white"
                                     >
                                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                                         {saving ? "Processing..." : "Commit Changes"}
@@ -457,32 +457,32 @@ export default function FacultyEventsPage() {
                     </div>
                 )}
 
-                {/* Delete Confirmation - Stripped of Framer Motion */}
+                {/* Delete Confirmation */}
                 {deleteConfirm && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div
                             onClick={() => setDeleteConfirm(null)}
-                            className="absolute inset-0 bg-[#05020a]/95"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         />
                         <div
-                            className="bg-[#0f0a1e] border border-white/10 p-10 rounded-3xl w-full max-w-md relative z-10 shadow-2xl text-center"
+                            className="bg-white border border-blue-100 p-10 rounded-3xl w-full max-w-md relative z-10 shadow-2xl text-center"
                         >
-                            <div className="size-20 rounded-3xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-6">
+                            <div className="size-20 rounded-3xl bg-red-50 flex items-center justify-center mx-auto mb-6">
                                 <AlertCircle className="w-10 h-10 text-red-500" />
                             </div>
-                            <h3 className="text-2xl font-black text-white tracking-tight mb-2 uppercase">Cancel Event?</h3>
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2 uppercase">Cancel Event?</h3>
                             <p className="text-slate-500 font-medium mb-10 text-sm">This will immediately terminate the event and notify all joined participants.</p>
 
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setDeleteConfirm(null)}
-                                    className="flex-1 px-8 py-3 rounded-2xl bg-white/[0.02] border border-white/5 text-slate-500 hover:text-white text-xs font-black uppercase tracking-widest transition-colors duration-75"
+                                    className="flex-1 px-8 py-3 rounded-2xl bg-white border border-blue-100 text-slate-500 hover:text-slate-900 text-xs font-black uppercase tracking-widest transition-colors duration-75"
                                 >
                                     Abort
                                 </button>
                                 <button
                                     onClick={() => deleteConfirm && deleteEvent(deleteConfirm)}
-                                    className="flex-1 px-8 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-widest transition-colors duration-75"
+                                    className="flex-1 px-8 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-xs font-black uppercase tracking-widest transition-colors duration-75 shadow-md shadow-red-200"
                                 >
                                     Confirm
                                 </button>

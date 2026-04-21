@@ -1,45 +1,53 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Custom properties for theme colors */
+/* ============================================
+   OCEANIC CLARITY — Light Blue Design System
+   ============================================ */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.9%;
-  
-  /* High-Definition Palette - Lightened for Clarity */
-  --color-background: hsl(250 25% 10%); /* Refined Deep Space */
-  --color-foreground: hsl(210 40% 98%);
-   
-  --color-primary: hsl(263 90% 66%); /* Radiant Violet */
-  --color-primary-foreground: hsl(210 40% 98%);
- 
-  --color-secondary: hsl(190 100% 45%); /* Electric Cyan */
-  --color-secondary-foreground: hsl(222 47% 11%);
- 
-  --color-muted: hsl(250 15% 18%);
-  --color-muted-foreground: hsl(215 16% 65%);
-   
-  --color-accent: hsl(263 70% 35%); /* Deep Spatial Aura */
-  --color-accent-foreground: hsl(210 40% 98%);
- 
-  --color-popover: hsl(250 25% 12%);
-  --color-popover-foreground: hsl(215 20% 80%);
- 
-  --color-border: hsl(250 20% 18%);
-  --color-input: hsl(250 20% 18%);
- 
-  --color-card: hsl(250 30% 14%);
-  --color-card-foreground: hsl(210 40% 98%);
- 
-  /* Spatial Shadows */
-  --shadow-weightless: 0 20px 40px -20px rgba(0, 0, 0, 0.5);
-  --shadow-antigravity: 0 40px 80px -40px rgba(0, 0, 0, 0.7);
- 
+  --background: 210 40% 98%;
+  --foreground: 215 25% 15%;
+
+  /* Primary surface palette */
+  --color-background: hsl(210 40% 98%);
+  --color-foreground: hsl(215 25% 15%);
+
+  /* Ocean Blue as the primary brand color */
+  --color-primary: hsl(213 94% 48%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  /* Cyan accent */
+  --color-secondary: hsl(196 100% 42%);
+  --color-secondary-foreground: hsl(215 25% 10%);
+
+  /* Muted surfaces — ultra-light blue tints */
+  --color-muted: hsl(210 30% 95%);
+  --color-muted-foreground: hsl(215 16% 47%);
+
+  /* Accent — lightest blue tint for highlight areas */
+  --color-accent: hsl(213 80% 94%);
+  --color-accent-foreground: hsl(213 94% 35%);
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(215 25% 18%);
+
+  /* Borders — soft blue-grey */
+  --color-border: hsl(213 30% 88%);
+  --color-input: hsl(213 30% 88%);
+
+  /* Cards — pure white */
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(215 25% 15%);
+
+  /* Refined blue shadows */
+  --shadow-weightless: 0 4px 16px -4px rgba(14, 113, 219, 0.12);
+  --shadow-antigravity: 0 12px 40px -12px rgba(14, 113, 219, 0.18);
+
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
   --radius-sm: 0.75rem;
 
-  /* Minimalist Loader */
+  /* Loader */
   --loader-duration: 2s;
 }
 
@@ -55,7 +63,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, hsl(263 90% 66%), transparent);
+  background: linear-gradient(90deg, transparent, hsl(213 94% 48%), transparent);
   z-index: 9999;
   overflow: hidden;
 }
@@ -71,31 +79,31 @@
   animation: linear-loader var(--loader-duration) infinite linear;
 }
 
-/* Premium Utilities - Converted to plain CSS */
+/* Glass effect — frosted ice blue */
 .glass-effect {
-  background-color: hsla(250, 40%, 10%, 0.5); /* Lighter bg overlap */
-  backdrop-filter: blur(48px); /* slightly reduced blur */
-  border-color: hsla(210, 40%, 98%, 0.08); /* border visibility boost */
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 20px 40px -20px rgba(0, 0, 0, 0.4);
+  background-color: hsla(213, 80%, 97%, 0.75);
+  backdrop-filter: blur(24px);
+  border-color: hsla(213, 70%, 85%, 0.6);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 16px -4px rgba(14, 113, 219, 0.10);
 }
 
 .glass-card {
-  background-color: hsla(250, 40%, 8%, 0.5); 
-  backdrop-filter: blur(48px);
-  border-color: hsla(210, 40%, 98%, 0.06);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08), 0 20px 40px -20px rgba(0, 0, 0, 0.3);
+  background-color: hsla(213, 80%, 98%, 0.80);
+  backdrop-filter: blur(24px);
+  border: 1px solid hsla(213, 60%, 88%, 0.8);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95), 0 4px 16px -4px rgba(14, 113, 219, 0.10);
   border-radius: 1.5rem;
   padding: 2rem;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms; /* Snappier duration */
+  transition-duration: 300ms;
   transform-style: preserve-3d;
 }
 
 .glass-card:hover {
-  border-color: hsla(263, 90%, 66%, 0.2);
-  background-color: hsla(250, 40%, 10%, 0.6); 
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  border-color: hsla(213, 94%, 60%, 0.3);
+  background-color: hsla(213, 80%, 97%, 0.90);
+  box-shadow: 0 8px 24px -8px rgba(14, 113, 219, 0.14);
 }
 
 .magnetic-item {
@@ -107,46 +115,46 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem; /* gap-2 */
-  padding-left: 2rem; /* px-8 */
-  padding-right: 2rem; /* px-8 */
-  padding-top: 1rem; /* py-4 */
-  padding-bottom: 1rem; /* py-4 */
-  font-weight: 700; /* font-bold */
-  color: #fff; /* text-white */
+  gap: 0.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-weight: 700;
+  color: #fff;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
-  background-color: hsl(263 90% 66%); /* bg-primary */
-  border-radius: 2rem; /* rounded-2xl */
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  background-color: hsl(213 94% 48%);
+  border-radius: 2rem;
+  box-shadow: 0 4px 12px rgba(14, 113, 219, 0.30), inset 0 1px 1px rgba(255, 255, 255, 0.25);
 }
 
 .premium-btn:hover {
-  background-color: hsl(263 90% 66% / 0.9); /* hover:bg-primary/90 */
+  background-color: hsl(213 94% 42%);
 }
 
 .premium-btn:active {
-  transform: scale(0.95); /* active:scale-95 */
+  transform: scale(0.95);
 }
 
 .neon-border {
   border-width: 1px;
   border-style: solid;
-  border-color: hsla(190, 100%, 45%, 0.4); /* border-secondary/40 */
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.15); /* shadow-[0_0_20px_rgba(0,242,255,0.15)] */
+  border-color: hsla(196, 100%, 42%, 0.4);
+  box-shadow: 0 0 20px rgba(0, 195, 215, 0.12);
 }
 
 .text-neon {
-  color: hsl(190 100% 45%); /* text-secondary */
-  font-weight: 700; /* font-bold */
-  filter: drop-shadow(0 0 12px rgba(0, 242, 255, 0.5)); /* drop-shadow-[0_0_12px_rgba(0,242,255,0.5)] */
+  color: hsl(196 100% 42%);
+  font-weight: 700;
+  filter: drop-shadow(0 0 10px rgba(0, 195, 215, 0.4));
 }
 
 .mesh-glow {
-  background: radial-gradient(circle at center, hsl(263 90% 66%) 0%, transparent 70%);
+  background: radial-gradient(circle at center, hsl(213 94% 65%) 0%, transparent 70%);
   filter: blur(80px);
-  opacity: 0.15;
+  opacity: 0.12;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -158,11 +166,11 @@
 }
 
 .glow-cyan {
-  filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.4));
+  filter: drop-shadow(0 0 10px rgba(0, 195, 215, 0.35));
 }
 
-.glow-violet {
-  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.4));
+.glow-blue {
+  filter: drop-shadow(0 0 10px rgba(14, 113, 219, 0.35));
 }
 
 @keyframes shine {

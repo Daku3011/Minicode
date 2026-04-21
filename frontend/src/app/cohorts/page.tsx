@@ -60,36 +60,36 @@ export default function StudentCohortsPage() {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-[#05050a] p-8">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-8 text-slate-900">
                 <LoadingSpinner size="lg" label="SYNCING CLASSROOM..." />
             </div>
         );
     }
 
     if (!user) {
-        return <div className="p-8 text-center text-white">Please login first.</div>;
+        return <div className="p-8 text-center text-slate-900">Please login first.</div>;
     }
 
     return (
-        <div className="min-h-screen bg-[#05050a] text-white p-8 md:p-12 font-black">
-            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 blur-[120px] pointer-events-none" />
+        <div className="min-h-screen bg-slate-50 text-slate-900 p-8 md:p-12 font-display">
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-50 blur-[120px] pointer-events-none" />
             
             <header className="mb-12">
-                <h1 className="text-4xl lg:text-6xl font-black uppercase tracking-tighter">My Cohorts</h1>
-                <p className="text-slate-500 uppercase tracking-widest text-xs mt-2">Active Classes & Lab Sessions</p>
+                <h1 className="text-4xl lg:text-6xl font-black uppercase tracking-tight text-slate-900">My Cohorts</h1>
+                <p className="text-slate-500 uppercase tracking-widest text-xs mt-2 font-bold">Active Classes & Lab Sessions</p>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Join Panel */}
-                <div className="bg-white/[0.02] border border-white/5 p-8 rounded-3xl h-fit">
-                    <h2 className="text-lg uppercase tracking-widest mb-6 flex items-center gap-3">
+                <div className="bg-white border border-blue-100 p-8 rounded-3xl h-fit shadow-sm">
+                    <h2 className="text-lg font-black uppercase tracking-widest mb-6 flex items-center gap-3 text-slate-900">
                         <Presentation className="w-5 h-5 text-primary" />
                         Join Class
                     </h2>
                     <div className="space-y-4">
                         <input 
                             type="text" 
-                            className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-primary/50 focus:outline-none transition-colors text-white"
+                            className="w-full bg-white border border-blue-200 rounded-xl px-4 py-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all text-slate-900 placeholder:text-slate-400 font-bold shadow-sm"
                             placeholder="Enter Invite Code (ID)"
                             value={inviteCode}
                             onChange={(e) => setInviteCode(e.target.value)}
@@ -97,35 +97,35 @@ export default function StudentCohortsPage() {
                         <button 
                             onClick={handleJoinCohort}
                             disabled={isJoining || !inviteCode.trim()}
-                            className="bg-primary hover:bg-primary/90 text-white w-full rounded-xl py-3 text-xs uppercase tracking-widest transition-colors disabled:opacity-50"
+                            className="bg-primary hover:bg-blue-600 text-white font-black w-full rounded-xl py-3 text-xs uppercase tracking-widest transition-all disabled:opacity-50 shadow-sm"
                         >
                             {isJoining ? "Scanning..." : "Enroll Now"}
                         </button>
-                        <p className="text-[10px] text-slate-500 text-center tracking-widest mt-4">Obtain your classroom ID from your Faculty instructor.</p>
+                        <p className="text-[10px] text-slate-500 font-bold text-center tracking-widest mt-4">Obtain your classroom ID from your Faculty instructor.</p>
                     </div>
                 </div>
 
                 {/* Cohorts List */}
                 <div className="lg:col-span-2 space-y-4">
                     {cohorts.length === 0 ? (
-                        <div className="text-center py-20 bg-white/[0.01] rounded-3xl border border-white/5 border-dashed">
-                            <Search className="w-12 h-12 text-slate-700 mx-auto mb-4" />
-                            <p className="text-slate-500 uppercase tracking-widest">You have not joined any cohorts</p>
+                        <div className="text-center py-20 bg-white rounded-3xl border border-blue-100 border-dashed shadow-sm">
+                            <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                            <p className="text-slate-500 font-bold uppercase tracking-widest">You have not joined any cohorts</p>
                         </div>
                     ) : (
                         cohorts.map(c => (
-                            <div key={c.id} className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl flex items-center justify-between hover:border-white/10 transition-colors">
+                            <div key={c.id} className="bg-white border border-blue-100 p-6 rounded-2xl flex items-center justify-between hover:border-blue-200 transition-all shadow-sm">
                                 <div>
-                                    <h3 className="text-xl uppercase tracking-tighter">{c.name}</h3>
-                                    <div className="flex items-center gap-6 mt-2 text-slate-500 text-[10px] tracking-widest uppercase">
+                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{c.name}</h3>
+                                    <div className="flex items-center gap-6 mt-2 text-slate-500 text-[10px] tracking-widest font-bold uppercase">
                                         <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-primary" /> Prof: {c.faculty_name}</span>
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => router.push(`/cohorts/${c.id}`)}
-                                    className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors group"
+                                    className="p-3 bg-blue-50 border border-blue-100 hover:bg-blue-100 rounded-xl transition-all group"
                                 >
-                                    <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-primary transition-colors" />
+                                    <ChevronRight className="w-5 h-5 text-primary transition-colors" />
                                 </button>
                             </div>
                         ))

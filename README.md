@@ -95,6 +95,7 @@ Seeded automatically by backend startup script:
 
 ## Backend
 
+**Linux/macOS:**
 ```bash
 cd backend
 python -m venv venv
@@ -104,19 +105,45 @@ cp ../.env.example .env  # then edit values
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+**Windows (PowerShell):**
+```powershell
+cd backend
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+copy ..\.env.example .env  # then edit values
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
 ## Worker (required for submission judging)
 
+**Linux/macOS:**
 ```bash
 cd backend
 source venv/bin/activate
 celery -A worker.celery_app worker --loglevel=info
 ```
 
+**Windows:**
+```bash
+cd backend
+.\venv\Scripts\activate
+celery -A worker.celery_app worker --loglevel=info -P solo
+```
+
 Optional scheduler:
 
+**Linux/macOS:**
 ```bash
 cd backend
 source venv/bin/activate
+celery -A worker.celery_app beat --loglevel=info
+```
+
+**Windows:**
+```bash
+cd backend
+.\venv\Scripts\activate
 celery -A worker.celery_app beat --loglevel=info
 ```
 
@@ -125,7 +152,7 @@ celery -A worker.celery_app beat --loglevel=info
 ```bash
 cd frontend
 npm install
-cp ../.env.example .env.local
+copy ..\.env.example .env.local  # Use 'cp' on Linux
 # set NEXT_PUBLIC_API_URL=http://localhost:8000
 npm run dev
 ```
@@ -144,6 +171,8 @@ npm run dev
 | `FERNET_KEY` | Encryption key for stored GitHub access tokens |
 | `CORS_ORIGINS` | Allowed frontend origins |
 | `NEXT_PUBLIC_API_URL` | Frontend API base URL |
+| `RESEND_API_KEY` | API Key for Resend email provider |
+| `SMTP_EMAIL` / `SMTP_PASSWORD` | Fallback SMTP credentials (if Resend not used) |
 
 ## Authentication and Roles
 

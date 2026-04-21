@@ -136,7 +136,7 @@ export default function EventsPage() {
                 {/* Hero Section */}
                 <div className="text-center mb-24 relative">
                     <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight mb-8 leading-[0.9]">
-                        Events <span className="text-primary italic bg-gradient-to-r from-violet-700 via-violet-500 to-cyan-500 bg-clip-text text-transparent">Hub</span>
+                        Events <span className="text-primary bg-gradient-to-r from-violet-700 via-violet-500 to-blue-500 bg-clip-text text-transparent">Hub</span>
                     </h1>
                     <p className="text-slate-600 text-lg max-w-2xl mx-auto font-medium leading-relaxed mb-12">
                         Join coding events, team challenges, and announcements. Track progress, collaborate with peers, and earn rewards.

@@ -161,11 +161,11 @@ interface StudentProfileViewProps {
 
 const statusColor = (status: string) => {
     switch (status) {
-        case "accepted": return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-        case "wrong_answer": return "text-rose-400 bg-rose-500/10 border-rose-500/20";
-        case "pending": return "text-amber-400 bg-amber-500/10 border-amber-500/20";
-        case "error": case "runtime_error": return "text-rose-400 bg-rose-500/10 border-rose-500/20";
-        default: return "text-slate-400 bg-white/5 border-white/10";
+        case "accepted": return "text-emerald-600 bg-emerald-50 border-emerald-200";
+        case "wrong_answer": return "text-rose-600 bg-rose-50 border-rose-200";
+        case "pending": return "text-amber-600 bg-amber-50 border-amber-200";
+        case "error": case "runtime_error": return "text-rose-600 bg-rose-50 border-rose-200";
+        default: return "text-slate-500 bg-slate-50 border-slate-200";
     }
 };
 
@@ -212,32 +212,31 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
     });
 
     const levelColors = [
-        "bg-[#161b22] border border-white/5",
-        "bg-[#0e4429]",
-        "bg-[#006d32]",
-        "bg-[#26a641]",
-        "bg-[#39d353]",
+        "bg-slate-100 border border-slate-200",
+        "bg-blue-200",
+        "bg-blue-400",
+        "bg-blue-600",
+        "bg-blue-800",
     ];
 
     return (
-        <div className="glass-card p-8 rounded-[3rem] border border-white/10 relative overflow-hidden group shadow-xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <div className="bg-white p-8 rounded-[3rem] border border-blue-100 relative overflow-hidden group shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-transparent pointer-events-none" />
 
             <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
                 <div className="flex items-center gap-6">
-                    {/* <div className="h-12 w-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(137,91,245,0.3)]" /> */}
                     <div>
-                        <h3 className="text-2xl font-black text-white tracking-tight">Execution History</h3>
-                        <p className="text-slate-500 text-[10px] uppercase font-black tracking-[0.3em] mt-1.5">Temporal logic sample distribution</p>
+                        <h3 className="text-2xl font-black text-slate-900 tracking-tight">Execution History</h3>
+                        <p className="text-slate-400 text-[10px] uppercase font-black tracking-[0.3em] mt-1.5">Temporal logic sample distribution</p>
                     </div>
                 </div>
-                <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-center min-w-[140px]">
-                    <p className="text-xl font-black text-white">{Object.values(contributionDataRaw).reduce((sum, c) => sum + (c || 0), 0)}</p>
+                <div className="px-6 py-3 rounded-2xl bg-blue-50 border border-blue-100 text-center min-w-[140px]">
+                    <p className="text-xl font-black text-slate-900">{Object.values(contributionDataRaw).reduce((sum, c) => sum + (c || 0), 0)}</p>
                     <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-1">Total Signals</p>
                 </div>
             </div>
 
-            <div className="h-12 mb-8 flex items-center justify-center border-b border-dashed border-white/10">
+            <div className="h-12 mb-8 flex items-center justify-center border-b border-dashed border-blue-100">
                 {hoveredDay ? (
                     <div className="flex items-center gap-4">
                         <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
@@ -248,7 +247,7 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
                         </span>
                     </div>
                 ) : (
-                    <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.5em] italic">Scan matrix tiles for authority data</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.5em] italic">Scan matrix tiles for authority data</p>
                 )}
             </div>
 
@@ -259,7 +258,7 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
                     ))}
                 </div>
                 <div className="flex">
-                    <div className="flex flex-col justify-between mr-4 text-[9px] font-black text-slate-600 uppercase py-1">
+                    <div className="flex flex-col justify-between mr-4 text-[9px] font-black text-slate-400 uppercase py-1">
                         <div className="h-3.5 flex items-center">S</div>
                         <div className="h-3.5 flex items-center opacity-0">M</div>
                         <div className="h-3.5 flex items-center">T</div>
@@ -293,16 +292,15 @@ const ContributionGraph = memo(function ContributionGraph({ contributionData, co
 });
 
 const MetricTile = memo(({ icon: Icon, label, value, trend }: any) => (
-    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 flex flex-col justify-between overflow-hidden relative group">
+    <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 flex flex-col justify-between overflow-hidden relative group shadow-sm hover:border-blue-300 transition-colors">
         <div className="flex justify-between items-start mb-6">
-            <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10">
-                <Icon className="w-6 h-6 text-primary" />
+            <div className="h-14 w-14 rounded-2xl flex items-center justify-center bg-blue-50 border border-blue-100">
+                <Icon className="w-6 h-6 text-blue-600" />
             </div>
-            {/* <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg">{trend}</span> */}
         </div>
         <div>
             <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mb-2">{label}</p>
-            <h3 className="text-4xl font-black text-white tracking-tighter">{value}</h3>
+            <h3 className="text-4xl font-black text-slate-900 tracking-tighter">{value}</h3>
         </div>
     </div>
 ));
@@ -335,41 +333,41 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
     };
 
     return (
-        <div className="min-h-screen bg-black text-slate-300 font-sans selection:bg-primary/30 selection:text-white pt-24 pb-12 overflow-x-hidden">
+        <div className="min-h-screen bg-slate-50 text-slate-700 font-sans pt-24 pb-12 overflow-x-hidden">
             <div className="max-w-[1800px] mx-auto px-6 relative">
                 <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                    <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary/5 blur-[120px] rounded-full" />
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-indigo-500/5 blur-[120px] rounded-full" />
+                    <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-50 blur-[120px] rounded-full" />
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-sky-50 blur-[120px] rounded-full" />
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-12 relative z-10">
                     <div className="w-full lg:w-96 shrink-0 space-y-8">
-                        <div className="glass-card p-6 rounded-[2.5rem] border border-white/10 shadow-xl text-center relative overflow-hidden group">
+                        <div className="bg-white p-6 rounded-[2.5rem] border border-blue-100 shadow-sm text-center relative overflow-hidden group">
                             <div className="relative z-10">
                                 <div className="relative inline-block mb-6">
-                                    <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-primary/20 shadow-xl relative group-hover:border-primary/40 transition-colors">
+                                    <div className="w-32 h-32 rounded-3xl overflow-hidden border-2 border-blue-200 shadow-xl relative group-hover:border-blue-400 transition-colors">
                                         <img src={data.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`} alt={data.username} className="w-full h-full object-cover" />
                                     </div>
-                                    <div className="absolute -bottom-2 -right-2 bg-primary text-white w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-lg shadow-primary/20">
+                                    <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shadow-lg">
                                         {data.stats.level}
                                     </div>
                                 </div>
-                                <h2 className="text-2xl font-black text-white tracking-tight uppercase">{data.full_name}</h2>
-                                <p className="text-primary font-black text-[10px] mt-2 tracking-[0.2em] uppercase">{data.stats.level_name}</p>
+                                <h2 className="text-2xl font-black text-slate-900 tracking-tight uppercase">{data.full_name}</h2>
+                                <p className="text-blue-600 font-black text-[10px] mt-2 tracking-[0.2em] uppercase">{data.stats.level_name}</p>
                             </div>
                         </div>
 
-                        <nav className="glass-card p-2 rounded-3xl border border-white/10 shadow-xl overflow-hidden">
+                        <nav className="bg-white p-2 rounded-3xl border border-blue-100 shadow-sm overflow-hidden">
                             {sidebarItems.map((item) => (
                                 <button
                                     key={item.id}
                                     onClick={() => setActiveTab(item.id)}
                                     className={clsx(
                                         "w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group relative",
-                                        activeTab === item.id ? "bg-white/10 text-white" : "hover:bg-white/5 text-slate-500 hover:text-slate-300"
+                                        activeTab === item.id ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50 text-slate-500 hover:text-slate-700"
                                     )}
                                 >
-                                    {activeTab === item.id && <div className="absolute left-2 w-1 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(137,91,245,0.6)]" />}
+                                    {activeTab === item.id && <div className="absolute left-2 w-1 h-6 bg-blue-600 rounded-full" />}
                                     <item.icon className={clsx("w-5 h-5 shrink-0 transition-transform duration-300", activeTab === item.id ? "scale-110" : "group-hover:scale-110")} />
                                     <span className="font-black text-[10px] uppercase tracking-widest">{item.label}</span>
                                 </button>
@@ -417,38 +415,34 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                     <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg relative overflow-hidden group">
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-3">
-                                    <Activity className="w-6 h-6 text-primary" />
+                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                                    <Activity className="w-6 h-6 text-blue-600" />
                                     Activity History
                                 </h3>
-                                {/* <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">Live Telemetry</span>
-                                </div> */}
                             </div>
                             <ContributionGraph contributionData={processedContributionData} contributionDataRaw={contributionDataRaw} stats={data.stats} />
                         </div>
                     </div>
 
-                    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg relative overflow-hidden group">
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm relative overflow-hidden group">
                         <div className="relative z-10">
-                            <h3 className="text-xl font-black text-white mb-8 flex items-center gap-3 uppercase tracking-tight">
-                                <Code2 className="w-6 h-6 text-indigo-400" />
+                            <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3 uppercase tracking-tight">
+                                <Code2 className="w-6 h-6 text-blue-500" />
                                 Recent Activity
                             </h3>
                             <div className="space-y-4">
                                 {data.recentSubmissions.slice(0, 5).map((sub, i) => (
-                                    <div key={sub.id} className="group/item flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer">
+                                    <div key={sub.id} className="group/item flex items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer">
                                         <div className="flex items-center gap-6">
                                             <div className={clsx("w-15 h-15 rounded-xl flex items-center justify-center font-black text-[9px]", statusColor(sub.status))}>
                                                 {statusLabel(sub.status)}
                                             </div>
                                             <div>
-                                                <p className="font-black text-white text-base tracking-tight">{sub.problem || "Untitled Fragment"}</p>
-                                                <p className="text-slate-500 text-[9px] font-bold mt-0.5 uppercase tracking-widest">{new Date(sub.time).toLocaleDateString()} // v{String(sub.id).slice(0, 4)}</p>
+                                                <p className="font-black text-slate-900 text-base tracking-tight">{sub.problem || "Untitled Fragment"}</p>
+                                                <p className="text-slate-400 text-[9px] font-bold mt-0.5 uppercase tracking-widest">{new Date(sub.time).toLocaleDateString()} // v{String(sub.id).slice(0, 4)}</p>
                                             </div>
                                         </div>
-                                        <ChevronRight className="w-5 h-5 text-slate-700 group-hover/item:text-white transition-colors" />
+                                        <ChevronRight className="w-5 h-5 text-slate-300 group-hover/item:text-blue-500 transition-colors" />
                                     </div>
                                 ))}
                             </div>
@@ -505,22 +499,22 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
 });
 
 const SubmissionsTab = memo(({ data }: StudentProfileViewProps) => (
-    <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg">
-        <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Submission History</h3>
+    <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm">
+        <h3 className="text-xl font-black text-slate-900 mb-8 tracking-tight uppercase">Submission History</h3>
         <div className="space-y-6">
             {data.recentSubmissions.map((sub) => (
-                <div key={sub.id} className="flex items-center justify-between p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/5 hover:bg-white/10 transition-all">
+                <div key={sub.id} className="flex items-center justify-between p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-all">
                     <div className="flex items-center gap-10">
                         <div className={clsx("px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest", statusColor(sub.status))}>
                             {statusLabel(sub.status)}
                         </div>
                         <div>
-                            <h4 className="text-lg font-black text-white tracking-tight uppercase">{sub.problem || "Problem Name"}</h4>
+                            <h4 className="text-lg font-black text-slate-900 tracking-tight uppercase">{sub.problem || "Problem Name"}</h4>
                             <div className="flex items-center gap-6 mt-2">
-                                <span className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2">
+                                <span className="text-[10px] font-black text-slate-400 uppercase flex items-center gap-2">
                                     <Activity className="w-3.5 h-3.5" /> {String(sub.id).slice(0, 8)}
                                 </span>
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TIMESTAMP: {new Date(sub.time).toLocaleString()}</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TIMESTAMP: {new Date(sub.time).toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -541,13 +535,13 @@ const AchievementsTab = memo(({ data }: StudentProfileViewProps) => {
     ];
 
     return (
-        <div className="glass-card p-10 rounded-[3.5rem] bg-slate-950 border border-white/10 shadow-antigravity">
+        <div className="bg-white p-10 rounded-[3.5rem] border border-blue-100 shadow-sm">
             <div className="flex items-center justify-between mb-12">
                 <div>
-                    <h3 className="text-2xl font-black text-white tracking-tight uppercase">Honor_Logs</h3>
-                    <p className="text-slate-500 text-xs font-bold mt-2 uppercase tracking-widest">Authenticated credentials and milestone acquisitions</p>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Honor_Logs</h3>
+                    <p className="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Authenticated credentials and milestone acquisitions</p>
                 </div>
-                <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <div className="px-6 py-3 rounded-2xl bg-blue-50 border border-blue-100 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                     PROG: {achievements.filter(a => a.unlocked).length} / {achievements.length}
                 </div>
             </div>
@@ -562,45 +556,37 @@ const AchievementsTab = memo(({ data }: StudentProfileViewProps) => {
                         className={clsx(
                             "group relative p-10 rounded-[3rem] border transition-all overflow-hidden",
                             ach.unlocked 
-                                ? "bg-white/[0.03] border-white/5 hover:border-primary/40 hover:bg-white/[0.06] shadow-xl hover:shadow-2xl" 
-                                : "bg-black/40 border-white/5 opacity-40 grayscale"
+                                ? "bg-white border-blue-100 hover:border-blue-300 shadow-sm hover:shadow-md" 
+                                : "bg-slate-50 border-slate-100 opacity-50 grayscale"
                         )}
                     >
-                        {/* Shine Effect for unlocked */}
-                        {ach.unlocked && (
-                            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[3rem]">
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shine" />
-                            </div>
-                        )}
-
                         {!ach.unlocked && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-help">
-                                <div className="text-center p-6 bg-slate-900 rounded-3xl border border-white/10 shadow-2xl">
-                                    <KeyRound className="w-8 h-8 text-primary mx-auto mb-4" />
-                                    <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Authorization Required</p>
-                                    <p className="text-[9px] font-bold text-slate-500 uppercase">{ach.req}</p>
+                            <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-help">
+                                <div className="text-center p-6 bg-white rounded-3xl border border-blue-100 shadow-lg">
+                                    <KeyRound className="w-8 h-8 text-blue-500 mx-auto mb-4" />
+                                    <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-1">Authorization Required</p>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase">{ach.req}</p>
                                 </div>
                             </div>
                         )}
 
                         <div className={clsx(
                             "w-16 h-16 rounded-2xl flex items-center justify-center mb-10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6",
-                            ach.unlocked ? ach.bg : "bg-white/5",
-                            ach.unlocked && `shadow-2xl ${ach.glow}`
+                            ach.unlocked ? ach.bg : "bg-slate-100",
                         )}>
-                            <ach.icon className={clsx("w-8 h-8", ach.unlocked ? ach.color : "text-slate-600")} />
+                            <ach.icon className={clsx("w-8 h-8", ach.unlocked ? ach.color : "text-slate-400")} />
                         </div>
 
-                        <h4 className="text-xl font-black mb-4 uppercase tracking-tighter text-white flex items-center justify-between">
+                        <h4 className="text-xl font-black mb-4 uppercase tracking-tighter text-slate-900 flex items-center justify-between">
                             {ach.title}
                             {ach.unlocked && <CheckCircle className="w-4 h-4 text-emerald-500" />}
                         </h4>
-                        <p className="text-sm font-medium text-slate-500 leading-relaxed tracking-tight group-hover:text-slate-400 transition-colors">{ach.desc}</p>
+                        <p className="text-sm font-medium text-slate-500 leading-relaxed tracking-tight group-hover:text-slate-600 transition-colors">{ach.desc}</p>
                         
-                        <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
+                        <div className="mt-8 pt-8 border-t border-slate-100 flex items-center justify-between">
                             <div className={clsx(
                                 "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-[0.2em]",
-                                ach.unlocked ? "bg-emerald-500/10 text-emerald-400" : "bg-white/5 text-slate-500"
+                                ach.unlocked ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-100 text-slate-400"
                             )}>
                                 {ach.unlocked ? "DECRYPTED" : "ENCRYPTED"}
                             </div>
@@ -638,22 +624,22 @@ const InsightsTab = memo(({ data }: StudentProfileViewProps) => {
     return (
         <div className="space-y-12">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-                <div className="xl:col-span-2 glass-card p-10 rounded-[3.5rem] border border-white/10 text-white relative overflow-hidden bg-slate-950 shadow-antigravity group">
-                    <div className="absolute top-0 right-0 p-10 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity">
-                        <TrendingUp className="w-32 h-32 text-primary" />
+                <div className="xl:col-span-2 bg-white p-10 rounded-[3.5rem] border border-blue-100 text-slate-900 relative overflow-hidden shadow-sm group">
+                    <div className="absolute top-0 right-0 p-10 pointer-events-none opacity-10 group-hover:opacity-20 transition-opacity">
+                        <TrendingUp className="w-32 h-32 text-blue-500" />
                     </div>
                     
                     <div className="relative z-10 h-full flex flex-col">
                         <div className="flex items-center justify-between mb-12">
                             <div>
-                                <h3 className="text-2xl font-black flex items-center gap-4 uppercase tracking-tighter">
-                                    <Activity className="w-8 h-8 text-emerald-400 glow-cyan" />
+                                <h3 className="text-2xl font-black flex items-center gap-4 uppercase tracking-tighter text-slate-900">
+                                    <Activity className="w-8 h-8 text-emerald-500" />
                                     Cognitive_Velocity
                                 </h3>
-                                <p className="text-slate-500 text-xs font-bold mt-2 uppercase tracking-widest">Weekly Activity Distribution (Last 15 Weeks)</p>
+                                <p className="text-slate-400 text-xs font-bold mt-2 uppercase tracking-widest">Weekly Activity Distribution (Last 15 Weeks)</p>
                             </div>
-                            <div className="px-6 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Efficiency: {efficiency}x</span>
+                            <div className="px-6 py-3 rounded-2xl bg-emerald-50 border border-emerald-100">
+                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Efficiency: {efficiency}x</span>
                             </div>
                         </div>
 
@@ -708,37 +694,36 @@ const InsightsTab = memo(({ data }: StudentProfileViewProps) => {
                     </div>
                 </div>
 
-                <div className="glass-card p-10 rounded-[3.5rem] border border-white/10 bg-slate-900 shadow-antigravity flex flex-col justify-between group">
+                <div className="bg-white p-10 rounded-[3.5rem] border border-blue-100 shadow-sm flex flex-col justify-between group">
                     <div>
-                        <h3 className="text-xl font-black text-white mb-10 uppercase tracking-tighter flex items-center gap-3">
+                        <h3 className="text-xl font-black text-slate-900 mb-10 uppercase tracking-tighter flex items-center gap-3">
                             Neural_Mapping
-                            <Cpu className="w-5 h-5 text-indigo-400" />
+                            <Cpu className="w-5 h-5 text-blue-500" />
                         </h3>
                         <div className="space-y-12">
                             {[
-                                { label: "ALGORITHMIC_LOGIC", val: algoLogic, color: "bg-emerald-500", glow: "shadow-emerald-500/20" },
-                                { label: "DEBUG_PRECISION", val: debugPrecision, color: "bg-primary", glow: "shadow-primary/20" },
-                                { label: "SYSTEM_ARCHITECTURE", val: sysArch, color: "bg-indigo-500", glow: "shadow-indigo-500/20" }
+                                { label: "ALGORITHMIC_LOGIC", val: algoLogic, color: "bg-emerald-500", glow: "" },
+                                { label: "DEBUG_PRECISION", val: debugPrecision, color: "bg-blue-600", glow: "" },
+                                { label: "SYSTEM_ARCHITECTURE", val: sysArch, color: "bg-indigo-500", glow: "" }
                             ].map((stat, i) => (
                                 <div key={i} className="space-y-5">
-                                    <div className="flex justify-between text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                        <span className="group-hover:text-white transition-colors">{stat.label}</span>
-                                        <span className="text-white font-mono">{stat.val}%</span>
+                                    <div className="flex justify-between text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                                        <span className="group-hover:text-slate-700 transition-colors">{stat.label}</span>
+                                        <span className="text-slate-900 font-mono">{stat.val}%</span>
                                     </div>
-                                    <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                                    <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-[1px]">
                                         <motion.div 
                                             initial={{ width: 0 }}
                                             animate={{ width: `${stat.val}%` }}
                                             transition={{ duration: 1.5, delay: i * 0.2, ease: "circOut" }}
-                                            className={clsx("h-full rounded-full transition-all", stat.color, stat.glow)} 
+                                            className={clsx("h-full rounded-full transition-all", stat.color)} 
                                         />
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <button className="w-full py-6 rounded-3xl border border-primary/30 bg-primary/5 text-primary font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all duration-500 mt-16 relative overflow-hidden group/btn shadow-xl hover:shadow-primary/20">
-                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/btn:opacity-100 transition-opacity" />
+                    <button className="w-full py-6 rounded-3xl border border-blue-200 bg-blue-50 text-blue-700 font-black text-[10px] uppercase tracking-[0.3em] hover:bg-blue-600 hover:text-white transition-all duration-500 mt-16 relative overflow-hidden group/btn shadow-sm">
                         Optimize_Synapse
                     </button>
                 </div>
@@ -836,7 +821,7 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                                 value={otp}
                                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                                 placeholder="000000"
-                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-center text-3xl font-black tracking-[0.5em] text-white focus:outline-none focus:border-primary"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-8 py-6 text-center text-3xl font-black tracking-[0.5em] text-slate-900 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                                 maxLength={6}
                             />
                             
@@ -847,14 +832,14 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => { setShowOtpModal(false); setOtp(""); }}
-                                    className="flex-1 py-4 rounded-2xl border border-white/10 text-slate-400 font-bold uppercase tracking-widest hover:bg-white/5 transition-all"
+                                    className="flex-1 py-4 rounded-2xl border border-slate-200 text-slate-600 font-bold uppercase tracking-widest hover:bg-slate-50 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleVerifyOtp}
                                     disabled={isVerifying || otp.length !== 6}
-                                    className="flex-1 py-4 rounded-2xl bg-primary text-white font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50"
+                                    className="flex-1 py-4 rounded-2xl bg-blue-600 text-white font-bold uppercase tracking-widest hover:bg-blue-700 transition-all disabled:opacity-50"
                                 >
                                     {isVerifying ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Verify"}
                                 </button>
@@ -866,20 +851,20 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                 </div>
             )}
 
-            <div className="p-10 rounded-[2.5rem] border border-white/10">
-                <h3 className="text-xl font-black text-white mb-8 tracking-tight uppercase">Settings</h3>
+            <div className="p-10 rounded-[2.5rem] border border-blue-100 bg-white shadow-sm">
+                <h3 className="text-xl font-black text-slate-900 mb-8 tracking-tight uppercase">Settings</h3>
                 <div className="grid grid-cols-1 md:grid-cols-1">
                     <div className="space-y-12">
                         <div className="space-y-8">
                             <div>
-                                <h4 className="text-sm font-black text-slate-500 uppercase tracking-[0.4em] mb-10">Neural Profile</h4>
+                                <h4 className="text-sm font-black text-slate-400 uppercase tracking-[0.4em] mb-10">Neural Profile</h4>
                                 <div className="grid grid-cols-2 gap-8">
-                                    <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5">
-                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3">Identity_Alias</p>
-                                        <p className="text-xl font-black text-white tracking-tight">@{data.username}</p>
+                                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Identity_Alias</p>
+                                        <p className="text-xl font-black text-slate-900 tracking-tight">@{data.username}</p>
                                     </div>
-                                    <div className="bg-white/[0.03] p-8 rounded-[2.5rem] border border-white/5 text-slate-500 italic">
-                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-3">Secure_Email</p>
+                                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 text-slate-600 italic">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Secure_Email</p>
                                         <p className="text-sm font-bold truncate">{data.email}</p>
                                     </div>
                                 </div>
@@ -887,27 +872,27 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
 
                             {/* Email Update Section for Students and Faculty */}
                             {(data.role === "student") && (
-                                <div className="pt-12 border-t border-white/5">
-                                    <h3 className="text-xl font-black text-white mb-4 flex items-center gap-3 uppercase tracking-tight">
-                                        <Mail className="w-5 h-5 text-primary" />
+                                <div className="pt-12 border-t border-slate-100">
+                                    <h3 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-3 uppercase tracking-tight">
+                                        <Mail className="w-5 h-5 text-blue-600" />
                                         Update Email
                                     </h3>
                                     <p className="text-base text-slate-500 mb-6 font-medium">Add or update your email for notifications.</p>
                                     <div className="space-y-4">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2">Email Address</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2">Email Address</label>
                                             <input
                                                 type="email"
                                                 value={studentEmail}
                                                 onChange={(e) => setStudentEmail(e.target.value)}
                                                 placeholder="your@email.com"
-                                                className="w-full bg-white/[0.03] px-6 py-4 rounded-2xl border border-white/5 focus:border-primary focus:ring-1 focus:ring-primary/10 outline-none transition-all font-black text-white placeholder-slate-700 tracking-wider"
+                                                className="w-full bg-slate-50 px-6 py-4 rounded-2xl border border-slate-200 focus:border-blue-400 focus:ring-1 focus:ring-blue-100 outline-none transition-all font-bold text-slate-900 placeholder-slate-400 tracking-wider"
                                             />
                                         </div>
                                         <button
                                             onClick={handleSendVerification}
                                             disabled={isSendingOtp}
-                                            className="w-full py-4 rounded-2xl bg-primary text-white font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 border border-gray-100/50 cursor-pointer hover:bg-slate-300/70"
+                                            className="w-full py-4 rounded-2xl bg-primary text-black font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2 border border-gray-500/50 cursor-pointer hover:bg-slate-300/70"
                                         >
                                             {isSendingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mail className="w-5 h-5" />}
                                             {isSendingOtp ? "Sending Code..." : "Send Verification Code"}
@@ -918,21 +903,21 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
 
                             {/* Faculty Reporting Section */}
                             {data.role === "faculty" && (
-                                <div className="pt-12 border-t border-white/5">
-                                    <h3 className="text-2xl font-black text-white mb-6 flex items-center gap-4 uppercase tracking-tight">
-                                        <MessageSquare className="w-6 h-6 text-amber-400" />
+                                <div className="pt-12 border-t border-slate-100">
+                                    <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-4 uppercase tracking-tight">
+                                        <MessageSquare className="w-6 h-6 text-amber-500" />
                                         Reporting_Uplink
                                     </h3>
                                     <p className="text-base text-slate-500 mb-10 font-medium">Define target endpoint for encrypted student behavior archives.</p>
                                     <div className="space-y-8">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2 font-mono">Endpoint Address</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2 font-mono">Endpoint Address</label>
                                             <input
                                                 type="email"
                                                 value={reportEmail}
                                                 onChange={(e) => setReportEmail(e.target.value)}
                                                 placeholder="faculty@example.com"
-                                                className="w-full bg-white/[0.03] px-6 py-4 rounded-2xl border-2 border-white/5 focus:border-primary focus:ring-8 focus:ring-primary/10 outline-none transition-all font-black text-white placeholder-slate-700 tracking-wider"
+                                                className="w-full bg-slate-50 px-6 py-4 rounded-2xl border-2 border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all font-bold text-slate-900 placeholder-slate-400 tracking-wider"
                                             />
                                         </div>
                                         <button
@@ -986,7 +971,7 @@ const HelpTab = memo((_props: StudentProfileViewProps) => (
             <div className="flex items-center gap-6">
                 {/* <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.3)]" /> */}
                 <div>
-                    <h1 className="text-3xl font-black text-white tracking-tight uppercase">Help Center</h1>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Help Center</h1>
                     <p className="text-slate-500 font-medium text-base mt-2 uppercase tracking-wide">Documentation and support access</p>
                 </div>
             </div>
@@ -1003,12 +988,12 @@ const HelpTab = memo((_props: StudentProfileViewProps) => (
                 { title: "Leaderboard Analytics", icon: Activity, iconColor: "text-amber-500", desc: "Understanding rank decay, global weights, and seasonal resets." },
                 { title: "Repository Workflow", icon: Code2, iconColor: "text-emerald-500", desc: "Technical breakdown of multi-stage problem solving and testing." }
             ].map((section, i) => (
-                <div key={i} className="glass-card p-8 rounded-[2.5rem] border border-white/10 hover:border-primary/50 transition-all group flex flex-col justify-between">
+                <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-blue-100 hover:border-blue-300 transition-all group flex flex-col justify-between shadow-sm">
                     <div>
-                        <div className={clsx("w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform", section.iconColor || "text-primary")}>
+                        <div className={clsx("w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform", section.iconColor || "text-blue-600")}>
                             <section.icon className="w-7 h-7" />
                         </div>
-                        <h4 className="text-xl font-black text-white mb-4 uppercase tracking-tight">{section.title}</h4>
+                        <h4 className="text-xl font-black text-slate-900 mb-4 uppercase tracking-tight">{section.title}</h4>
                         <p className="text-[12px] text-slate-500 leading-relaxed font-medium uppercase tracking-wide">{section.desc}</p>
                     </div>
                 </div>
@@ -1042,13 +1027,13 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
         <div className="space-y-12 pb-12">
             <div className="flex items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-white tracking-tight uppercase">Sovereign Override</h1>
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Sovereign Override</h1>
                     <p className="text-slate-500 font-medium text-base mt-2 uppercase tracking-wide">Direct credit award for @{data.username}</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-xl space-y-8">
+                <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm space-y-8">
                     <div className="space-y-4">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2 font-mono">Award Amount (XP)</label>
                         <div className="flex items-center gap-4">
@@ -1058,7 +1043,7 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                                     onClick={() => setAmount(val)}
                                     className={clsx(
                                         "flex-1 py-4 rounded-2xl font-black text-xs transition-all border",
-                                        amount === val ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
+                                        amount === val ? "bg-blue-600 text-white border-blue-600 shadow-lg" : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-blue-50 hover:border-blue-300"
                                     )}
                                 >
                                     +{val}
@@ -1069,18 +1054,18 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                             type="number"
                             value={amount}
                             onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-black focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 font-black focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400"
                             placeholder="Custom Amount..."
                         />
                     </div>
 
                     <div className="space-y-6">
-                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em] ml-2 font-mono">Operational Reason</label>
+                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] ml-2 font-mono">Operational Reason</label>
                         <textarea
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="Enter justification for manual XP award..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-[120px] resize-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400/50 min-h-[120px] resize-none"
                         />
                     </div>
 
@@ -1092,7 +1077,7 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                             awardStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/40" : "bg-primary text-white hover:shadow-primary/40"
                         )}
                     >
-                        <span className="relative z-10 flex items-center justify-center gap-3">
+                        <span className="relative z-10 flex items-center justify-center gap-3 border border-white py-5 rounded-2xl">
                             {isAwarding ? "INITIALIZING INFUSION..." : (
                                 awardStatus === "success" ? <><CheckCircle className="w-5 h-5" /> OVERRIDE_SUCCESSFUL</> : <><Zap className="w-5 h-5" /> Execute Sovereign Override</>
                             )}
@@ -1100,7 +1085,7 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                     </button>
                 </div>
 
-                <div className="space-y-8">
+                {/* <div className="space-y-8">
                     <div className="glass-card p-10 rounded-[3rem] bg-indigo-500/5 border border-indigo-500/10">
                         <h4 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 text-amber-500" /> Administrative Protocol
@@ -1119,7 +1104,7 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                             ))}
                         </ul>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

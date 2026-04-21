@@ -47,11 +47,11 @@ function GithubCallbackContent() {
         return (
             <div className="flex h-screen items-center justify-center p-4 text-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-rose-500 mb-4 text-white">Authentication Error</h2>
-                    <p className="text-muted-foreground text-white mb-4">{error}</p>
+                    <h2 className="text-2xl font-bold text-rose-500 mb-4 text-black">Authentication Error</h2>
+                    <p className="text-muted-foreground text-black mb-4">{error}</p>
                     <button
                         onClick={() => router.push("/login")}
-                        className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all font-medium text-white"
+                        className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all font-medium text-black"
                     >
                         Return to Login
                     </button>
@@ -63,8 +63,8 @@ function GithubCallbackContent() {
     return (
         <div className="flex h-screen flex-col items-center justify-center space-y-4">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <h2 className="text-xl font-bold text-white">Authenticating with GitHub...</h2>
-            <p className="text-muted-foreground text-white">Please wait while we set up your session.</p>
+            <h2 className="text-xl font-bold text-black">Authenticating with GitHub...</h2>
+            <p className="text-muted-foreground text-black">Please wait while we set up your session.</p>
         </div>
     );
 }
@@ -74,7 +74,7 @@ export default function GithubCallback() {
         <Suspense fallback={
             <div className="flex h-screen flex-col items-center justify-center space-y-4">
                 <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                <h2 className="text-xl font-bold text-white">Loading...</h2>
+                <h2 className="text-xl font-bold text-black">Loading...</h2>
             </div>
         }>
             <GithubCallbackContent />

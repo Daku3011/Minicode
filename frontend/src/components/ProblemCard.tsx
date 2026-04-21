@@ -52,17 +52,17 @@ export default function ProblemCard({ problem, userUnlockedLevel = 1, isFaculty 
             <div className={clsx(
                 "relative transition-all duration-200 rounded-xl p-6 h-full min-h-[360px] flex flex-col justify-between overflow-hidden border",
                 isLocked 
-                    ? "bg-slate-50 border-slate-200 opacity-75" 
-                    : "bg-white border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300"
+                    ? "bg-slate-50 border-blue-100 opacity-75" 
+                    : "bg-white border-blue-100 shadow-blue-sm hover:shadow-blue-md hover:border-blue-200"
             )}>
 
                 {isLocked && (
-                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 rounded-xl">
+                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/75 rounded-xl">
                         <div className="flex flex-col items-center gap-4">
-                            <div className="p-4 bg-white rounded-full border border-slate-200 shadow-sm">
-                                <Lock className="w-8 h-8 text-slate-500" />
+                            <div className="p-4 bg-white rounded-full border border-blue-100 shadow-sm">
+                                <Lock className="w-8 h-8 text-blue-400" />
                             </div>
-                            <p className="text-xs font-medium text-slate-600 tracking-wide">
+                            <p className="text-xs font-medium text-slate-500 tracking-wide">
                                 Unlock at Level {problem.level}
                             </p>
                         </div>
@@ -83,11 +83,11 @@ export default function ProblemCard({ problem, userUnlockedLevel = 1, isFaculty 
                         <div className="flex items-center gap-2">
                             {problem.subject && (
                                 <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-md border border-slate-200">
-                                    <Cpu className="w-3.5 h-3.5 text-slate-500" />
+                                    <Cpu className="w-3.5 h-3.5 text-slate-400" />
                                     {problem.subject.replace("-", " ")}
                                 </div>
                             )}
-                            <div className="flex items-center gap-2 text-xs font-medium text-violet-700 bg-violet-50 px-2.5 py-1.5 rounded-md border border-violet-200">
+                            <div className="flex items-center gap-2 text-xs font-medium text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-md border border-blue-200">
                                 Level {problem.level}
                             </div>
                         </div>
@@ -97,24 +97,24 @@ export default function ProblemCard({ problem, userUnlockedLevel = 1, isFaculty 
                         <Link href={isLocked ? "#" : `/problems/${problem.id}`}>
                             <h4 className={clsx(
                                 "mb-3 tracking-tight leading-tight line-clamp-2 transition-colors",
-                                isLocked ? "text-slate-500" : "text-2xl font-bold text-slate-900 group-hover:text-violet-700"
+                                isLocked ? "text-slate-400" : "text-2xl font-bold text-slate-900 group-hover:text-blue-700"
                             )}>
                                 {problem.title}
                             </h4>
                         </Link>
-                        <p className="text-slate-600 text-sm leading-relaxed mb-8 line-clamp-3 transition-opacity">
+                        <p className="text-slate-500 text-sm leading-relaxed mb-8 line-clamp-3 transition-opacity">
                             {problem.description || `Solve ${problem.title} with an efficient approach and clean implementation.`}
                         </p>
                     </div>
                 </div>
 
-                <div className={clsx("flex items-center justify-between pt-5 border-t border-slate-200 relative z-10 mt-auto", isLocked && "opacity-60")}>
+                <div className={clsx("flex items-center justify-between pt-5 border-t border-blue-100 relative z-10 mt-auto", isLocked && "opacity-60")}>
                     <div className="flex items-center gap-4 py-1">
                         <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-200">
                             <Trophy className="w-4 h-4 text-emerald-600" />
                         </div>
                         <div>
-                            <p className="text-xs font-medium text-slate-500 leading-none mb-1">Reward</p>
+                            <p className="text-xs font-medium text-slate-400 leading-none mb-1">Reward</p>
                             <p className="text-base font-bold text-slate-900 tracking-tight">{xp} <span className="text-emerald-600 text-xs ml-0.5">XP</span></p>
                         </div>
                     </div>
@@ -125,8 +125,8 @@ export default function ProblemCard({ problem, userUnlockedLevel = 1, isFaculty 
                         className={clsx(
                             "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all border",
                             isLocked 
-                                ? "bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed" 
-                                : "bg-white hover:bg-violet-600 text-slate-700 hover:text-white border-slate-300 hover:border-violet-600"
+                                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" 
+                                : "bg-white hover:bg-blue-600 text-slate-700 hover:text-white border-blue-200 hover:border-blue-600"
                         )}
                     >
                         <span>{isLocked ? "Locked" : "Solve"}</span>

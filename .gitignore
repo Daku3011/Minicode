@@ -21,3 +21,4 @@ backend/minicode.db
 ui-redesign-prompt.json
 UITheme.md
 SKILLS.md
+backend/celerybeat-schedule*

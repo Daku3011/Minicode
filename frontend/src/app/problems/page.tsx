@@ -90,15 +90,15 @@ function ProblemsContent() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-88px)] relative overflow-hidden bg-white">
+        <div className="min-h-screen bg-white relative">
             <div className="pointer-events-none fixed inset-0 -z-10">
-                <div className="absolute -top-32 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-violet-100 blur-3xl opacity-70" />
-                <div className="absolute top-40 right-0 h-[320px] w-[320px] rounded-full bg-cyan-100 blur-3xl opacity-50" />
-                <div className="absolute bottom-20 left-0 h-[300px] w-[300px] rounded-full bg-indigo-100 blur-3xl opacity-40" />
+                <div className="absolute -top-32 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-blue-100 blur-3xl opacity-60" />
+                <div className="absolute top-40 right-0 h-[320px] w-[320px] rounded-full bg-sky-100 blur-3xl opacity-50" />
+                <div className="absolute bottom-20 left-0 h-[300px] w-[300px] rounded-full bg-cyan-100 blur-3xl opacity-40" />
             </div>
 
-            <main className="flex-1 px-4 md:px-12 py-6 md:py-8 relative z-10 overflow-hidden">
-                <div className="max-w-[1600px] mx-auto h-full flex flex-col gap-6">
+            <main className="px-4 md:px-12 py-10 md:py-16 relative z-10">
+                <div className="max-w-[1600px] mx-auto flex flex-col gap-6">
 
                     {/* Hero Section */}
                     <div className={clsx(
@@ -114,7 +114,7 @@ function ProblemsContent() {
                                 <span className="text-slate-950">
                                     {isFaculty ? "Manage" : "Explore"}
                                 </span>
-                                <span className="text-primary italic tracking-tighter bg-gradient-to-r from-violet-700 via-violet-500 to-cyan-500 bg-clip-text text-transparent">
+                                <span className="text-primary italic tracking-tighter bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
                                     Problems
                                 </span>
                             </h1>
@@ -169,7 +169,7 @@ function ProblemsContent() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search problems..."
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-14 pr-6 py-4 text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-primary focus:ring-2 focus:ring-violet-200 transition-all"
+                                    className="w-full bg-slate-50 border border-blue-100 rounded-xl pl-14 pr-6 py-4 text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
                                 />
                             </div>
 
@@ -178,14 +178,14 @@ function ProblemsContent() {
                                 className={clsx(
                                     "flex items-center justify-center gap-3 px-6 py-4 rounded-xl border font-medium text-sm transition-all duration-200",
                                     showFilters || [selectedSubject, selectedDifficulty].some(Boolean)
-                                        ? "bg-violet-50 border-violet-200 text-violet-700"
+                                        ? "bg-blue-50 border-blue-200 text-blue-700"
                                         : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                                 )}
                             >
                                 <Filter className="w-4 h-4" />
                                 Filters
                                 {[selectedSubject, selectedDifficulty].filter(Boolean).length > 0 && (
-                                    <span className="flex items-center justify-center w-6 h-6 bg-primary text-white rounded-full text-xs">
+                                    <span className="flex items-center justify-center w-6 h-6 bg-primary text-black rounded-full text-xs">
                                         {[selectedSubject, selectedDifficulty].filter(Boolean).length}
                                     </span>
                                 )}
@@ -205,7 +205,7 @@ function ProblemsContent() {
                                                 onClick={() => setSelectedSubject("")}
                                                 className={clsx(
                                                     "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                    !selectedSubject ? "bg-primary text-white border-primary" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                                    !selectedSubject ? "bg-primary text-blue-500 border-gray-400/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
                                                 )}
                                             >
                                                 All
@@ -216,7 +216,7 @@ function ProblemsContent() {
                                                     onClick={() => setSelectedSubject(s.id)}
                                                     className={clsx(
                                                         "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                        selectedSubject === s.id ? "bg-primary text-white border-primary" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                                        selectedSubject === s.id ? "bg-blue-500/19 text-black border-gray-500/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
                                                     )}
                                                 >
                                                     <span className="mr-2">{s.icon}</span>
@@ -235,7 +235,7 @@ function ProblemsContent() {
                                                 onClick={() => setSelectedDifficulty("")}
                                                 className={clsx(
                                                     "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                    !selectedDifficulty ? "bg-primary text-white border-primary" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                                    !selectedDifficulty ? "bg-primary text-blue-500 border-gray-500/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
                                                 )}
                                             >
                                                 All
@@ -246,7 +246,7 @@ function ProblemsContent() {
                                                     onClick={() => setSelectedDifficulty(d)}
                                                     className={clsx(
                                                         "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                        selectedDifficulty === d ? "bg-primary text-white border-primary" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                                                        selectedDifficulty === d ? "bg-blue-500/19 text-black border-gray-500/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
                                                     )}
                                                 >
                                                     {d}
@@ -260,7 +260,7 @@ function ProblemsContent() {
                     </div>
 
                     {/* Problem Matrix */}
-                    <div onScroll={handleCardsScroll} className="space-y-8 flex-1 min-h-0 overflow-y-auto pr-1 pb-6">
+                    <div className="space-y-8 pb-10">
                         <div className="flex items-center gap-6">
                             <h3 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">All Problems</h3>
                             <div className="h-px flex-1 bg-slate-200" />
@@ -287,10 +287,10 @@ function ProblemsContent() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-32 text-center bg-white/[0.01] rounded-[4rem] border border-dashed border-white/10">
+                            <div className="py-32 text-center bg-blue-50/30 rounded-[4rem] border border-dashed border-blue-100">
                                 <Logo className="w-16 h-16 text-slate-900 mx-auto mb-8" variant="solid" />
-                                <h3 className="text-4xl font-black text-white mb-4 tracking-tighter uppercase">Null Sector Reached</h3>
-                                <p className="text-slate-600 font-bold text-lg max-w-lg mx-auto uppercase tracking-widest">No matching patterns found</p>
+                                <h3 className="text-4xl font-black text-slate-800 mb-4 tracking-tighter uppercase">No Problems Found</h3>
+                                <p className="text-slate-500 font-bold text-lg max-w-lg mx-auto uppercase tracking-widest">No matching patterns found</p>
                                 <button
                                     onClick={() => {
                                         setSearchQuery("");

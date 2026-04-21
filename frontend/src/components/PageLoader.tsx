@@ -46,7 +46,7 @@ export default function PageLoader() {
     return (
         <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none">
             <div 
-                className="h-[2px] bg-primary transition-all duration-300 ease-out shadow-[0_0_10px_rgba(137,91,245,0.5)]"
+                className="h-[2px] bg-primary transition-all duration-300 ease-out shadow-[0_0_10px_rgba(14,113,219,0.5)]"
                 style={{ width: `${progress}%` }}
             />
         </div>

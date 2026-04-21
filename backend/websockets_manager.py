@@ -39,7 +39,11 @@ class ConnectionManager:
 
     async def listen_redis_events(self):
         import redis.asyncio as aioredis
-        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+        redis_url = os.getenv("REDIS_URL")
+        if not redis_url:
+            logger.info("REDIS_URL not provided, skipping Redis websocket listener")
+            return
+
         try:
             r = aioredis.from_url(redis_url)
             pubsub = r.pubsub()

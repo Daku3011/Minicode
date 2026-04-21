@@ -60,8 +60,13 @@ export default function LeaderboardPage() {
         u.username.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const topThree = filteredUsers.slice(0, 3);
-    const restOfUsers = filteredUsers.slice(3);
+    // Top 3 always come from the full list — searching never removes them
+    const topThree = users.slice(0, 3);
+    // The ranked table shows all users rank 4+ when no search,
+    // or all matching users (excluding the permanent top-3) when searching
+    const restOfUsers = searchQuery
+        ? filteredUsers.filter(u => !topThree.some(t => t.id === u.id))
+        : users.slice(3);
 
     const getTierLabel = (level: number) => {
         if (level >= 10) return "Master Scholar";
@@ -98,7 +103,7 @@ export default function LeaderboardPage() {
             <div className="max-w-[1600px] mx-auto relative z-10">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-4 leading-[0.95]">
-                        Community <span className="text-primary italic bg-gradient-to-r from-violet-700 via-violet-500 to-cyan-500 bg-clip-text text-transparent">Leaders</span>
+                        Community <span className="bg-gradient-to-r from-blue-700 via-violet-500 to-cyan-500 bg-clip-text text-transparent">Leaders</span>
                     </h1>
                     <p className="text-slate-600 text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed">
                         Celebrating the craft and consistency of our most dedicated students.
@@ -111,7 +116,7 @@ export default function LeaderboardPage() {
                             <div className="bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] rounded-[2.5rem] p-2">
                                 <div className="bg-white rounded-[2.2rem] p-6 border border-slate-50 relative">
                                     <div className="absolute -top-4 -right-4 w-16 h-16 flex items-center justify-center rounded-full border-4 border-white shadow-lg z-20 bg-gradient-to-br from-yellow-300 via-yellow-400 to-yellow-600">
-                                        <span className="font-mono font-bold italic text-lg text-white">#1</span>
+                                        <span className="font-mono font-bold italic text-lg text-black">#1</span>
                                     </div>
                                     <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
                                         <div className="relative flex-shrink-0">
@@ -123,7 +128,7 @@ export default function LeaderboardPage() {
                                                 )}
                                             </div>
                                             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary px-3 py-1 rounded-full shadow-lg">
-                                                <span className="text-[10px] text-white font-black uppercase tracking-widest whitespace-nowrap">Grandmaster</span>
+                                                <span className="text-[10px] text-black font-black uppercase tracking-widest whitespace-nowrap">Grandmaster</span>
                                             </div>
                                         </div>
                                         <div className="min-w-0 flex-grow text-center md:text-left pt-4">
@@ -138,9 +143,9 @@ export default function LeaderboardPage() {
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">XP Points</span>
                                                 </div>
                                             </div>
-                                            <button className="w-full py-4 px-6 rounded-2xl bg-primary text-white font-bold shadow-[0_10px_20px_-5px_rgba(124,58,237,0.35)] hover:translate-y-[-2px] transition-transform active:scale-95 text-sm uppercase tracking-widest">
+                                            {/* <button className="w-full py-4 px-6 rounded-2xl bg-primary text-black font-bold shadow-[0_10px_20px_-5px_rgba(124,58,237,0.35)] hover:translate-y-[-2px] transition-transform active:scale-95 text-sm uppercase tracking-widest">
                                                 Congratulate
-                                            </button>
+                                            </button> */}
                                         </div>
                                     </div>
                                 </div>
@@ -233,7 +238,7 @@ export default function LeaderboardPage() {
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={clsx(
                                         "px-6 py-2.5 rounded-lg text-sm font-medium transition-all",
-                                        activeTab === tab.id ? "bg-violet-600 text-white" : "text-slate-600 hover:text-slate-900"
+                                        activeTab === tab.id ? "bg-violet-600 text-black" : "text-slate-600 hover:text-slate-900"
                                     )}
                                 >
                                     {tab.label}
@@ -314,7 +319,7 @@ export default function LeaderboardPage() {
                                             <td className="py-5 px-4 text-right">
                                                 <Link
                                                     href={`/profile/${u.username}`}
-                                                    className="h-9 px-4 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium text-sm inline-flex items-center gap-2 hover:bg-violet-600 hover:border-violet-600 hover:text-white transition-all"
+                                                    className="h-9 px-4 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium text-sm inline-flex items-center gap-2 hover:bg-violet-600 hover:border-violet-600 hover:text-black transition-all"
                                                 >
                                                     View
                                                     <ArrowUpRight className="w-3.5 h-3.5" />

@@ -99,8 +99,8 @@ export default function Navbar() {
                                     className={clsx(
                                         "relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all",
                                         isActive 
-                                            ? "text-white bg-violet-600 shadow-sm" 
-                                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                                            ? "text-white bg-blue-600 shadow-sm" 
+                                            : "text-slate-500 hover:text-slate-900 hover:bg-blue-50"
                                     )}
                                 >
                                     <item.icon className="w-4 h-4" />
@@ -132,10 +132,10 @@ export default function Navbar() {
 
                             <Link 
                                 href={user.role === "faculty" || user.role === "admin" ? "/faculty/profile" : "/profile"} 
-                                className="h-10 w-10 rounded-xl border border-gray-200 p-0.5 hover:border-violet-400 transition-all bg-gray-50 hidden sm:block overflow-hidden"
+                                className="h-10 w-10 rounded-xl border border-gray-200 p-0.5 hover:border-blue-400 transition-all bg-gray-50 hidden sm:block overflow-hidden"
                             >
                                 {user.avatar_url ? (
-                                    <img src={user.avatar_url} alt="Profile" className="h-full w-full object-cover rounded-[0.6rem]" />
+                                    <img src={user.avatar_url} alt="Profile" className="h-full w-full object-cover rounded-[0.6rem]" referrerPolicy="no-referrer" />
                                 ) : (
                                     <div className="h-full w-full bg-gray-100 flex items-center justify-center text-gray-500 rounded-[0.6rem]">
                                         <User className="w-5 h-5" />
@@ -154,7 +154,7 @@ export default function Navbar() {
                     ) : !loading && !user ? (
                         <Link
                             href="/login"
-                            className="bg-violet-600 text-white hover:bg-violet-700 px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-md shadow-violet-200"
+                            className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-md shadow-blue-200"
                         >
                             Log In
                         </Link>

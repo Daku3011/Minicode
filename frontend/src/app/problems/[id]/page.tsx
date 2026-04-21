@@ -503,8 +503,8 @@ function ProblemDetailContent() {
                                     </>
                                 ) : (
                                     <div className="space-y-6 opacity-30">
-                                        <Brain className="w-20 h-20 text-slate-900 mx-auto" />
-                                        <p className="text-slate-800 font-black uppercase tracking-[0.4em]">Final Stream Pending</p>
+                                        <Brain className="w-20 h-20 text-white mx-auto" />
+                                        <p className="text-white font-black uppercase tracking-[0.4em]">Final Stream Pending</p>
                                     </div>
                                 )}
                             </div>

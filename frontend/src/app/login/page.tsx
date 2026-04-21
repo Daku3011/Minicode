@@ -69,8 +69,8 @@ export default function LoginPage() {
         <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-white text-gray-900 overflow-hidden select-none">
             {/* Subtle Background Decoration */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-30%] right-[-10%] w-[700px] h-[700px] bg-violet-100 rounded-full blur-[120px] opacity-60" />
-                <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-50 rounded-full blur-[100px] opacity-50" />
+                <div className="absolute top-[-30%] right-[-10%] w-[700px] h-[700px] bg-blue-100 rounded-full blur-[120px] opacity-60" />
+                <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-sky-50 rounded-full blur-[100px] opacity-50" />
             </div>
 
             <main className="w-full max-w-[1400px] z-10 flex flex-col min-h-screen px-10 py-16">
@@ -80,34 +80,36 @@ export default function LoginPage() {
                         <div className="flex flex-col items-center lg:items-start">
                             <div className="flex items-center gap-3 mb-8 group cursor-default">
                                 <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
-                                <span className="text-[15px] text-transparent uppercase  bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-white via-red-400/80 to-white">
+                                <span className="text-[15px] text-transparent uppercase bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-400">
                                     From the Students  &   For the Students
                                 </span>
                             </div>
 
                             {/* Main Heading */}
-                            <div className="space-y-3">
-                                <h2 className="text-7xl md:text-[8rem] font-extrabold tracking-tighter leading-[0.85]">
+                            <div className="space-y-3 overflow-visible">
+                                <h2 className="text-7xl md:text-[8rem] font-extrabold tracking-tighter leading-tight">
                                     <span className="text-gray-900">Coding</span>
                                     <br className="hidden lg:block" />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-500 to-blue-500">
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-500 py-4 -my-4">
                                         Club
                                     </span>
                                 </h2>
                             </div>
 
                             {/* Tagline */}
-                            <p className="text-xl md:text-2xl text-gray-400 italic font-light mt-6 tracking-tight">
+                            {/* <p className="text-xl md:text-2xl text-gray-400 italic font-light mt-6 tracking-tight underline underline-offset-3">
                                 Every line you write, writes you.
-                            </p>
+                            </p> */}
 
                             {/* Co-Powered Badge */}
-                            <div className="flex items-center gap-2 mt-10 bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200">
-                                <div className="px-3 py-1.5 rounded-lg bg-violet-600">
+                            <div className="flex items-center gap-2 mt-10 bg-blue-50 px-4 py-2.5 rounded-xl border border-blue-200">
+                                <div className="px-3 py-1 rounded-lg bg-blue-600/80">
                                     <span className="text-[10px] text-white font-semibold tracking-wider uppercase">Co-Powered by</span>
                                 </div>
                                 <span className="text-base font-bold text-gray-700 tracking-tight">
-                                    SCET Computer Dept
+                                    <a href="https://www.scet.ac.in/department/computer-engineering/#gsc.tab=0" target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                        SCET Computer Dept.
+                                    </a>
                                 </span>
                             </div>
                         </div>
@@ -116,7 +118,7 @@ export default function LoginPage() {
                         <div className="flex flex-col items-center lg:items-start px-8 py-7 rounded-2xl bg-gray-50 border border-gray-200 relative group cursor-default hover:bg-gray-100 transition-all duration-300">
                             <span className="text-xs font-medium text-gray-400 tracking-widest uppercase mb-2">Developed by</span>
                             <span className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight leading-snug">
-                                Dwarkesh Ramani <span className="text-violet-600">&</span> Jenil Gajera
+                                Dwarkesh Ramani <span className="text-blue-600">&</span> Jenil Gajera
                             </span>
                         </div>
 
@@ -125,7 +127,7 @@ export default function LoginPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setIsFeedbackOpen(true)}
-                            className="mt-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-green-800/60 border border-primary/20 text-primary hover:bg-primary/20 transition-all group cursor-pointer"
+                            className="mt-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-blue-500 border border-primary/20 text-primary hover:bg-primary/20 transition-all group cursor-pointer text-white"
                         >
                             <MessageSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Have Feedback? Share it here</span>
@@ -138,7 +140,7 @@ export default function LoginPage() {
                         <div className="flex flex-col items-center gap-4 mb-10">
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-primary/40 blur-3xl group-hover:blur-[60px] transition-all duration-700" />
-                                <div className="relative bg-[#05050a]/50 backdrop-blur-sm p-4 rounded-[2.5rem] shadow-l border-10 border-white/20 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                                <div className="relative bg-black backdrop-blur-sm p-4 rounded-[2.5rem] shadow-l border-10 border-white/20 transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
                                     <Logo className="w-16 h-16" variant="gradient" />
                                 </div>
                             </div>
@@ -148,9 +150,9 @@ export default function LoginPage() {
                         </div>
 
                         {/* Auth Card */}
-                        <div className="w-full bg-white border border-gray-200 rounded-2xl p-10 md:p-14 shadow-xl shadow-gray-100/80 relative overflow-hidden">
+                        <div className="w-full bg-white border border-blue-100 rounded-2xl p-10 md:p-14 shadow-xl shadow-blue-100/60 relative overflow-hidden">
                             {/* Top accent line */}
-                            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-violet-500 via-purple-500 to-blue-500" />
+                            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600" />
 
                             {!isStaffMode ? (
                                 <div className="space-y-10">
@@ -163,7 +165,7 @@ export default function LoginPage() {
                                         {/* GitHub Button */}
                                         <button
                                             onClick={handleGithubLogin}
-                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300  cursor-pointer"
+                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#05050a] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer border border-gray-500 hover:border-gray-300 hover:text-blue-600"
                                         >
                                             <Github className="w-5 h-5" />
                                             <span className="text-base font-semibold">Continue with GitHub</span>
@@ -180,26 +182,26 @@ export default function LoginPage() {
                                         {/* Staff Login Button */}
                                         <button
                                             onClick={() => setIsStaffMode(true)}
-                                            className="w-full py-7 rounded-[2rem] bg-white/[0.03] border border-white/10 text-slate-500 font-black cursor-pointer hover:border-primary/50 hover:bg-primary/5 hover:text-white transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic hover:border hover:border-white hover:underline underline-offset-4"
+                                            className="w-full py-7 rounded-[2rem] bg-blue-50 border border-blue-200 text-blue-600 font-black cursor-pointer hover:border-blue-400 hover:bg-blue-100 transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic"
                                         >
-                                            <Shield className="w-4 h-4" />
+                                             {/* <Shield className="w-4 h-4" /> */}
                                             Staff Login
                                         </button>
                                     </div>
 
                                     {/* Footer Links */}
-                                    <div className="pt-6 flex flex-col items-center gap-4 border-t border-gray-100">
+                                    <div className="pt-6 flex flex-col items-center gap-4 border-t border-blue-100">
                                         <div className="flex items-center gap-4">
-                                            <Link href="/terms" className="text-xs text-gray-400 hover:text-violet-600 transition-colors hover:underline underline-offset-4">Terms of Service</Link>
-                                            <div className="w-1 h-1 rounded-full bg-gray-300" />
-                                            <Link href="/privacy" className="text-xs text-gray-400 hover:text-violet-600 transition-colors hover:underline underline-offset-4">Privacy Policy</Link>
+                                            <Link href="/terms" className="text-xs text-gray-400 hover:text-blue-600 transition-colors hover:underline underline-offset-4">Terms of Service</Link>
+                                            <div className="w-1 h-1 rounded-full bg-blue-200" />
+                                            <Link href="/privacy" className="text-xs text-gray-400 hover:text-blue-600 transition-colors hover:underline underline-offset-4">Privacy Policy</Link>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
                                 <form onSubmit={handleStaffLogin} className="space-y-7">
                                     <div className="text-center">
-                                        <div className="inline-flex p-4 rounded-xl bg-violet-50 text-violet-600 mb-5 border border-violet-100">
+                                        <div className="inline-flex p-4 rounded-xl bg-blue-50 text-blue-600 mb-5 border border-blue-100">
                                             <Shield className="w-7 h-7" />
                                         </div>
                                         <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Staff Login</h2>
@@ -207,10 +209,11 @@ export default function LoginPage() {
                                     </div>
                                     
                                     <div className="space-y-4 mb-2 mt-4">
+                                        {/* Google Button */}
                                         <button
                                             type="button"
                                             onClick={handleGoogleLogin}
-                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-6 text-[#05050a] shadow-2xl shadow-white/5 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                                            className="group relative flex w-full items-center justify-center gap-6 rounded-[2rem] bg-white px-8 py-8 text-[#0a1628] shadow-2xl shadow-blue-100/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-blue-100 cursor-pointer"
                                         >
                                             <div className="absolute inset-0 bg-primary/10 rounded-[2rem] scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500" />
                                             {/* Minimal Google SVG Icon */}
@@ -224,9 +227,9 @@ export default function LoginPage() {
                                         </button>
 
                                         <div className="flex items-center gap-6 text-slate-800 py-4">
-                                            <div className="h-[1px] flex-1 bg-white/10" />
+                                            <div className="h-[2px] flex-3 bg-black/10" />
                                             <span className="text-[10px] font-black uppercase tracking-[0.6em] whitespace-nowrap">Or use credentials</span>
-                                            <div className="h-[1px] flex-1 bg-white/10" />
+                                            <div className="h-[2px] flex-3 bg-black/10" />
                                         </div>
                                     </div>
 
@@ -262,7 +265,7 @@ export default function LoginPage() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowPassword(!showPassword)}
-                                                    className="cursor-pointer absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/20 hover:text-white transition-colors"
+                                                    className="cursor-pointer absolute right-6 top-1/2 -translate-y-1/2 p-3 text-black/20 hover:text-black/40 transition-colors"
                                                 >
                                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
@@ -274,7 +277,7 @@ export default function LoginPage() {
                                         <button
                                             type="submit"
                                             disabled={submitting}
-                                            className="w-full py-3.5 bg-violet-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-violet-700 active:scale-[0.99] transition-all duration-200 disabled:opacity-50 shadow-md shadow-violet-200"
+                                            className="w-full py-3.5 bg-blue-600 text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-[0.99] transition-all duration-200 disabled:opacity-50 shadow-md shadow-blue-200"
                                         >
                                             {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                                 <>
@@ -287,7 +290,7 @@ export default function LoginPage() {
                                         <button
                                             type="button"
                                             onClick={() => setIsStaffMode(false)}
-                                            className="w-full text-center text-sm text-gray-500 hover:text-violet-600 transition-colors font-medium hover:underline underline-offset-4"
+                                            className="w-full text-center text-sm text-slate-500 hover:text-blue-600 transition-colors font-medium hover:underline underline-offset-4"
                                         >
                                             ← Back to main login
                                         </button>
@@ -298,7 +301,7 @@ export default function LoginPage() {
 
                         {/* Footer copyright */}
                         <p className="text-xs text-gray-400 mt-6 text-center">
-                            © {new Date().getFullYear()} Coding Club, SCET Computer Dept
+                            © {new Date().getFullYear()} Coding Club, SCET. All rights reserved.
                         </p>
                     </div>
                 </div>

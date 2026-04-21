@@ -49,6 +49,45 @@ def list_cohorts(
         results.append(c_dict)
     return results
     
+class JoinCohortReq(BaseModel):
+    cohort_id: int
+
+@router.get("/my")
+def my_cohorts(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    results = []
+    for c in user.cohorts:
+        c_dict = c.model_dump()
+        c_dict["faculty_name"] = c.faculty.full_name or c.faculty.username if c.faculty else "Unknown"
+        results.append(c_dict)
+    return results
+
+@router.post("/join")
+def join_cohort(
+    req: JoinCohortReq,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    cohort = session.get(Cohort, req.cohort_id)
+    if not cohort:
+        raise HTTPException(status_code=404, detail="Invalid Cohort ID (Invite Code)")
+        
+    # Check if already joined
+    existing_link = session.exec(select(UserCohortLink).where(
+        UserCohortLink.user_id == user.id,
+        UserCohortLink.cohort_id == req.cohort_id
+    )).first()
+    
+    if existing_link:
+        return {"message": "Already enrolled in this cohort", "cohort": {"id": cohort.id, "name": cohort.name}}
+        
+    new_link = UserCohortLink(user_id=user.id, cohort_id=cohort.id)
+    session.add(new_link)
+    session.commit()
+    return {"message": "Successfully joined cohort", "cohort": {"id": cohort.id, "name": cohort.name}}
+
 @router.get("/{cohort_id}")
 def get_cohort_detail(
     cohort_id: int,
@@ -110,42 +149,5 @@ def add_student_to_cohort(
     session.commit()
     return {"message": f"Added {student.username} to cohort."}
 
-class JoinCohortReq(BaseModel):
-    cohort_id: int
 
-@router.post("/join")
-def join_cohort(
-    req: JoinCohortReq,
-    user: User = Depends(get_current_user),
-    session: Session = Depends(get_session)
-):
-    cohort = session.get(Cohort, req.cohort_id)
-    if not cohort:
-        raise HTTPException(status_code=404, detail="Invalid Cohort ID (Invite Code)")
-        
-    # Check if already joined
-    existing_link = session.exec(select(UserCohortLink).where(
-        UserCohortLink.user_id == user.id,
-        UserCohortLink.cohort_id == req.cohort_id
-    )).first()
-    
-    if existing_link:
-        return {"message": "Already enrolled in this cohort", "cohort": {"id": cohort.id, "name": cohort.name}}
-        
-    new_link = UserCohortLink(user_id=user.id, cohort_id=cohort.id)
-    session.add(new_link)
-    session.commit()
-    return {"message": "Successfully joined cohort", "cohort": {"id": cohort.id, "name": cohort.name}}
-
-@router.get("/my")
-def my_cohorts(
-    user: User = Depends(get_current_user),
-    session: Session = Depends(get_session)
-):
-    results = []
-    for c in user.cohorts:
-        c_dict = c.model_dump()
-        c_dict["faculty_name"] = c.faculty.full_name or c.faculty.username if c.faculty else "Unknown"
-        results.append(c_dict)
-    return results
 
