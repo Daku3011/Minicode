@@ -81,7 +81,7 @@ export default function LoginPage() {
                             <div className="flex items-center gap-3 mb-8 group cursor-default">
                                 <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
                                 <span className="text-[15px] text-transparent uppercase  bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-white via-red-400/80 to-white">
-                                    From the Students  &   For the Studetns
+                                    From the Students  &   For the Students
                                 </span>
                             </div>
 
