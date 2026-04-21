@@ -12,6 +12,7 @@ import LoginSymbolBackground from "@/components/LoginSymbolBackground";
 import { Logo } from "@/components/Logo";
 import FeedbackModal from "@/components/FeedbackModal";
 import { motion } from "framer-motion";
+import StarBackground from "@/components/StarBackground";
 
 export default function LoginPage() {
     const { user, loading, login } = useAuth();
@@ -66,31 +67,27 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-white text-gray-900 overflow-hidden select-none">
-            {/* Subtle Background Decoration */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-30%] right-[-10%] w-[700px] h-[700px] bg-blue-100 rounded-full blur-[120px] opacity-60" />
-                <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-sky-50 rounded-full blur-[100px] opacity-50" />
-            </div>
+        <div className="relative min-h-screen w-full flex flex-col items-center justify-center text-gray-900 overflow-hidden select-none">
+            <StarBackground />
 
             <main className="w-full max-w-[1400px] z-10 flex flex-col min-h-screen px-10 py-16">
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                     {/* Left Column: Branding */}
-                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-10">
+                    <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-5">
                         <div className="flex flex-col items-center lg:items-start">
                             <div className="flex items-center gap-3 mb-8 group cursor-default">
                                 <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
-                                <span className="text-[15px] text-transparent uppercase bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-400">
-                                    From the Students  &   For the Students
+                                <span className="text-[15px] text-transparent uppercase bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-400 tracking-tight">
+                                    From the Students & For the Students
                                 </span>
                             </div>
 
                             {/* Main Heading */}
-                            <div className="space-y-3 overflow-visible">
-                                <h2 className="text-7xl md:text-[8rem] font-extrabold tracking-tighter leading-tight">
-                                    <span className="text-gray-900">Coding</span>
+                            <div className="space-y-1">
+                                <h2 className="text-7xl md:text-[8rem] font-extrabold tracking-tighter">
+                                    <span className="text-white">Coding</span>
                                     <br className="hidden lg:block" />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-500 py-4 -my-4">
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-500 font-black">
                                         Club
                                     </span>
                                 </h2>
@@ -144,7 +141,7 @@ export default function LoginPage() {
                                     <Logo className="w-16 h-16" variant="gradient" />
                                 </div>
                             </div>
-                            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
+                            <h1 className="text-3xl font-extrabold tracking-tight text-white/95">
                                 MiniCode
                             </h1>
                         </div>

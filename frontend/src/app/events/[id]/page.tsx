@@ -83,7 +83,7 @@ export default function EventDetailPage() {
     const [repoUrl, setRepoUrl] = useState("");
     const [submissionNotes, setSubmissionNotes] = useState("");
     const [showSubmitForm, setShowSubmitForm] = useState(false);
-    
+
     // Team system
     const [showTeamModal, setShowTeamModal] = useState(false);
     const [teamName, setTeamName] = useState("");
@@ -262,7 +262,7 @@ export default function EventDetailPage() {
         <div className="min-h-[calc(100vh-64px)] bg-slate-50 font-display">
             {/* Background */}
             <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-blue-50 via-transparent to-transparent pointer-events-none" />
-            
+
             <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Back Button */}
                 {user?.role === "faculty" ? (
@@ -300,11 +300,11 @@ export default function EventDetailPage() {
                                     {event.status}
                                 </span>
                             </div>
-                            
+
                             <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight uppercase leading-none">
                                 {event.title}
                             </h1>
-                            
+
                             <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500 uppercase tracking-widest font-black">
                                 <div className="flex items-center gap-2">
                                     <Users className="w-4 h-4 text-primary" />
@@ -320,7 +320,7 @@ export default function EventDetailPage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Action Buttons */}
                         <div className="flex flex-col gap-3">
                             {event.status === "active" && (
@@ -332,10 +332,10 @@ export default function EventDetailPage() {
                                                 <div className={clsx(
                                                     "px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2",
                                                     event.user_submission_status === "rewarded" ? "bg-green-500/20 text-green-400 border border-green-500/30" :
-                                                    event.user_submission_status === "disqualified" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
-                                                    event.user_submission_status === "withdrawn" ? "bg-slate-500/20 text-slate-400 border border-slate-500/30" :
-                                                    event.user_submission_status === "completed" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
-                                                    "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                                        event.user_submission_status === "disqualified" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                                            event.user_submission_status === "withdrawn" ? "bg-slate-500/20 text-slate-400 border border-slate-500/30" :
+                                                                event.user_submission_status === "completed" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                                                                    "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                                                 )}>
                                                     {event.user_submission_status === "rewarded" && <><Trophy className="w-4 h-4" /> +{event.user_xp_awarded} XP Awarded</>}
                                                     {event.user_submission_status === "disqualified" && <><X className="w-4 h-4" /> Disqualified</>}
@@ -395,14 +395,14 @@ export default function EventDetailPage() {
                                 <div className={clsx(
                                     "px-4 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2",
                                     event.status === "completed" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
-                                    "bg-slate-500/20 text-slate-400 border border-slate-500/30"
+                                        "bg-slate-500/20 text-slate-400 border border-slate-500/30"
                                 )}>
                                     {event.status === "completed" ? <><Check className="w-4 h-4" /> Event Completed</> : <><X className="w-4 h-4" /> Event {event.status}</>}
                                 </div>
                             )}
                         </div>
                     </div>
-                    
+
                     {/* Submit Form */}
                     {showSubmitForm && (
                         <div className="mt-6 p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
@@ -522,14 +522,14 @@ export default function EventDetailPage() {
                     <div className="bg-white border border-blue-100 rounded-3xl p-6 md:p-8 shadow-sm">
                         <div className="prose max-w-none">
                             <div className="text-slate-600 font-medium whitespace-pre-wrap">{event.description}</div>
-                            
+
                             {event.rules && (
                                 <>
                                     <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 mt-8 mb-4">Rules</h3>
                                     <div className="text-slate-600 font-medium whitespace-pre-wrap">{event.rules}</div>
                                 </>
                             )}
-                            
+
                             {event.prize_description && (
                                 <>
                                     <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 mt-8 mb-4">Prizes</h3>
@@ -539,7 +539,7 @@ export default function EventDetailPage() {
                                     </div>
                                 </>
                             )}
-                            
+
                             <div className="mt-8 grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
                                     <p className="text-xs uppercase tracking-widest font-bold text-slate-500">Start Date</p>
