@@ -48,6 +48,7 @@ def run_migrations():
                 ("last_news_viewed_at", "TIMESTAMP"),
                 ("unlocked_level", "INTEGER DEFAULT 1"),
                 ("google_id", "VARCHAR UNIQUE"),
+                ("last_engagement_email_sent", "TIMESTAMP"),
             ]
 
             for col_name, col_type in columns_to_add:

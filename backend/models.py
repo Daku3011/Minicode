@@ -35,6 +35,7 @@ class User(SQLModel, table=True):
     last_news_viewed_at: Optional[datetime] = Field(
         default=None
     )  # For unread news tracking
+    last_engagement_email_sent: Optional[datetime] = Field(default=None)  # For tracking inactivity spam
 
     submissions: List["Submission"] = Relationship(back_populates="user")
     created_problems: List["Problem"] = Relationship(back_populates="author")

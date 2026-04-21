@@ -174,7 +174,8 @@ def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
     inactive_users = session.exec(
         select(User).where(
             User.role == "student",
-            (User.last_login < cutoff_date) | (User.last_login == None)
+            (User.last_login < cutoff_date) | (User.last_login == None),
+            (User.last_engagement_email_sent == None) | (User.last_engagement_email_sent < cutoff_date)
         )
     ).all()
 
@@ -245,7 +246,12 @@ def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
             f"🚀 {student.username}, reclaim your ranking!",
             html
         ):
+            student.last_engagement_email_sent = datetime.now(timezone.utc)
+            session.add(student)
             sent_count += 1
+
+    if sent_count > 0:
+        session.commit()
 
     return {"sent": sent_count, "total": len(inactive_users)}
 

@@ -18,6 +18,7 @@ elif [ "$1" = "api" ]; then
 else
     echo "Starting all services..."
     celery -A worker.celery_app worker --loglevel=info --concurrency=1 &
+    celery -A worker.celery_app beat --loglevel=info -s /tmp/celerybeat-schedule &
     gunicorn main:app \
         --workers 1 \
         --worker-class uvicorn.workers.UvicornWorker \
