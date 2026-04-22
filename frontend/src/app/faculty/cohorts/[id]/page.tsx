@@ -6,6 +6,8 @@ import { Users, Library, PlusCircle, ArrowLeft, Trash2, Archive, X, FileText } f
 import LoadingSpinner from "@/components/LoadingSpinner";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function FacultyCohortDetailPage() {
     const { id } = useParams();
@@ -19,6 +21,11 @@ export default function FacultyCohortDetailPage() {
     const [isLabModalOpen, setIsLabModalOpen] = useState(false);
     const [newLab, setNewLab] = useState({ name: "", description: "" });
     const [isCreatingLab, setIsCreatingLab] = useState(false);
+    
+    // Notes State
+    const [isEditingNotes, setIsEditingNotes] = useState(false);
+    const [tempNotes, setTempNotes] = useState("");
+    const [isSavingNotes, setIsSavingNotes] = useState(false);
 
     const fetchCohort = async () => {
         try {
@@ -29,6 +36,19 @@ export default function FacultyCohortDetailPage() {
             router.push("/faculty/cohorts");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleUpdateNotes = async () => {
+        setIsSavingNotes(true);
+        try {
+            await api.patch(`/cohorts/${id}`, { notes: tempNotes });
+            setCohort({ ...cohort, notes: tempNotes });
+            setIsEditingNotes(false);
+        } catch (e: any) {
+            alert(e.response?.data?.detail || "Failed to update notes");
+        } finally {
+            setIsSavingNotes(false);
         }
     };
 
@@ -100,7 +120,8 @@ export default function FacultyCohortDetailPage() {
     if (!cohort) return null;
 
     return (
-        <div className="min-h-screen bg-[#05050a] text-white p-8 md:p-12 font-black">
+        <>
+            <div className="min-h-screen bg-[#05050a] text-white p-8 md:p-12 font-black">
             <button 
                 onClick={() => router.push("/faculty/cohorts")}
                 className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors mb-8 uppercase text-xs tracking-widest"
@@ -169,7 +190,45 @@ export default function FacultyCohortDetailPage() {
                         </div>
                     </div>
 
-                    {/* Students Section */}
+                    {/* Resources & Notes Section */}
+                    <div className="bg-white/[0.02] border border-white/5 p-8 rounded-[2.5rem] relative group">
+                        <div className="flex items-center justify-between mb-8">
+                            <h2 className="text-lg uppercase tracking-widest flex items-center gap-3">
+                                <PlusCircle className="w-5 h-5 text-blue-500" />
+                                Resources & Notes
+                            </h2>
+                            <button 
+                                onClick={() => {
+                                    setTempNotes(cohort.notes || "");
+                                    setIsEditingNotes(true);
+                                }}
+                                className="text-[10px] uppercase tracking-widest text-slate-500 hover:text-white transition-colors"
+                            >
+                                Edit Notes
+                            </button>
+                        </div>
+
+                        {cohort.notes ? (
+                            <div className="prose prose-invert prose-sm max-w-none">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {cohort.notes}
+                                </ReactMarkdown>
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 border border-dashed border-white/5 rounded-2xl">
+                                <p className="text-slate-500 uppercase tracking-widest text-xs">No resources or notes added yet</p>
+                                <button 
+                                    onClick={() => {
+                                        setTempNotes("");
+                                        setIsEditingNotes(true);
+                                    }}
+                                    className="text-primary text-[10px] uppercase tracking-widest mt-4 hover:underline"
+                                >
+                                    + Add Markdown Notes
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     <div>
                         <h2 className="text-lg uppercase tracking-widest mb-6 flex items-center gap-3">
                             <Users className="w-5 h-5 text-primary" />
@@ -222,7 +281,7 @@ export default function FacultyCohortDetailPage() {
                             </div>
                             <button 
                                 onClick={handleAddStudent}
-                                className="w-full bg-primary hover:bg-primary/90 text-white rounded-xl py-2 text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-primary/10"
+                                className="w-full bg-primary hover:bg-gray-800/90 text-white rounded-xl py-2 text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-primary/10 border border-white/10"
                             >
                                 Enroll Student
                             </button>
@@ -307,6 +366,59 @@ export default function FacultyCohortDetailPage() {
                     </div>
                 </div>
             )}
-        </div>
+            {/* Notes Edit Modal */}
+            {isEditingNotes && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-8 max-w-4xl w-full">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl uppercase tracking-tighter">Edit Cohort Notes</h2>
+                            <button onClick={() => setIsEditingNotes(false)} className="p-2 text-slate-500 hover:text-white transition-colors rounded-xl hover:bg-white/5">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <label className="block text-[10px] text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    Editor <span className="bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded text-[8px]">Markdown Supported</span>
+                                </label>
+                                <textarea 
+                                    value={tempNotes}
+                                    onChange={e => setTempNotes(e.target.value)}
+                                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500/50 focus:outline-none transition-colors h-[400px] font-mono resize-none"
+                                    placeholder="Add links, resources, or general instructions for the cohort..."
+                                />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="block text-[10px] text-slate-500 uppercase tracking-widest mb-2">Preview</label>
+                                <div className="w-full bg-white/[0.02] border border-white/10 rounded-xl px-6 py-6 h-[400px] overflow-y-auto prose prose-invert prose-sm max-w-none">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {tempNotes || "*Preview will appear here...*"}
+                                    </ReactMarkdown>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-8 flex gap-3 justify-end">
+                            <button 
+                                onClick={() => setIsEditingNotes(false)}
+                                className="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs uppercase tracking-widest transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleUpdateNotes}
+                                disabled={isSavingNotes}
+                                className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl text-xs uppercase tracking-widest transition-all disabled:opacity-50"
+                            >
+                                {isSavingNotes ? "Saving..." : "Update Notes"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            </div>
+        </>
     );
 }

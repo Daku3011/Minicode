@@ -100,8 +100,8 @@ def get_user_profile_logic(user: User, session: Session):
     user_level = calculate_unlocked_level_from_xp(total_score)
     level_name = LEVEL_NAMES.get(user_level, "Beginner")
 
-    # Fallback/Auto-sync: If stored level is behind calculated level, update it
-    if user.unlocked_level is None or user_level > user.unlocked_level:
+    # Keep stored unlocked_level aligned with XP-derived level to avoid stale unlock state.
+    if user.unlocked_level is None or user_level != user.unlocked_level:
         logger.info(f"Auto-syncing level for {user.username}: {user.unlocked_level} -> {user_level}")
         user.unlocked_level = user_level
         session.add(user)

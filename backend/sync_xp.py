@@ -75,9 +75,9 @@ def sync_all_users_xp():
 
             new_level = calculate_unlocked_level_from_xp(new_total_xp)
             current_level = student.unlocked_level or 1
-            if new_level > current_level:
+            if new_level != current_level:
                 logger.info(
-                    f"Leveling up {student.username}: Level {current_level} -> Level {new_level}"
+                    f"Adjusting {student.username} level: Level {current_level} -> Level {new_level}"
                 )
                 student.unlocked_level = new_level
                 session.add(student)

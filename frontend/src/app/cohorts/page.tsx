@@ -97,7 +97,7 @@ export default function StudentCohortsPage() {
                         <button 
                             onClick={handleJoinCohort}
                             disabled={isJoining || !inviteCode.trim()}
-                            className="bg-primary hover:bg-blue-600 text-white font-black w-full rounded-xl py-3 text-xs uppercase tracking-widest transition-all disabled:opacity-50 shadow-sm"
+                            className="bg-gray-500/90 hover:bg-blue-600 text-white font-black w-full rounded-xl py-3 text-xs uppercase tracking-widest transition-all disabled:opacity-50 shadow-sm cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {isJoining ? "Scanning..." : "Enroll Now"}
                         </button>

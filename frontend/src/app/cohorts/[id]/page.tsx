@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Users, Library, ArrowLeft, Lock, PlayCircle } from "lucide-react";
+import { Users, Library, ArrowLeft, Lock, PlayCircle, PlusCircle } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import api from "@/lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function StudentCohortDetailPage() {
     const { id } = useParams();
@@ -81,7 +83,7 @@ export default function StudentCohortDetailPage() {
                                     <div className="flex justify-end mt-4">
                                         <button 
                                             onClick={() => router.push(`/cohorts/${id}/labs/${lab.id}`)}
-                                            className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs uppercase tracking-widest transition-all"
+                                            className="px-6 py-2 bg-primary hover:bg-gray-500/90 text-white rounded-xl text-xs uppercase tracking-widest transition-all border border-white/10 flex items-center gap-2 cursor-pointer"
                                         >
                                             Enter Lab
                                         </button>
@@ -99,6 +101,22 @@ export default function StudentCohortDetailPage() {
 
                 {/* Info Sidebar */}
                 <div className="space-y-6">
+                    {cohort.notes && (
+                        <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <Library className="w-12 h-12" />
+                            </div>
+                            <h3 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-6 flex items-center gap-2 relative">
+                                <PlusCircle className="w-3.5 h-3.5 text-blue-500" /> Resources & Notes
+                            </h3>
+                            <div className="prose prose-invert prose-sm max-w-none relative">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {cohort.notes}
+                                </ReactMarkdown>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
                         <h3 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-4">Classroom ID</h3>
                         <div className="text-2xl font-mono text-primary bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">

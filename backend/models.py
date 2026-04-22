@@ -144,6 +144,7 @@ class Cohort(SQLModel, table=True):
     description: Optional[str] = None
     faculty_id: int = Field(foreign_key="users.id", index=True)
     status: str = Field(default="active", index=True)  # active, archived
+    notes: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     faculty: Optional["User"] = Relationship(back_populates="managed_cohorts")

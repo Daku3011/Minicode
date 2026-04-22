@@ -106,6 +106,17 @@ def run_migrations():
             except Exception as e:
                 print(f"Column status in cohorts: {e}")
 
+            # Add notes to cohorts table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE cohorts ADD COLUMN IF NOT EXISTS notes TEXT;"
+                    )
+                )
+                print("Added notes to cohorts")
+            except Exception as e:
+                print(f"Column notes in cohorts: {e}")
+
         elif dialect == "sqlite":
             SQLModel.metadata.create_all(engine, checkfirst=True)
             print("Tables created.")
@@ -161,6 +172,20 @@ def run_migrations():
                     print("Column status already exists in cohorts")
                 else:
                     print(f"Column status in cohorts: {e}")
+
+            # Add notes to cohorts table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE cohorts ADD COLUMN notes TEXT;"
+                    )
+                )
+                print("Added notes to cohorts")
+            except Exception as e:
+                if "duplicate column name" in str(e).lower():
+                    print("Column notes already exists in cohorts")
+                else:
+                    print(f"Column notes in cohorts: {e}")
 
             # Note: email_verifications table is already created by create_all if it's in SQLModel metadata.
 

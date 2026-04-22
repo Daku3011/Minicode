@@ -3,6 +3,11 @@ from sqlmodel import Session, select
 from typing import Optional
 
 from database import get_session
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session, select
+from typing import Optional
+
+from database import get_session
 from models import User, Cohort, UserCohortLink
 from auth import require_faculty, get_current_user
 from pydantic import BaseModel
@@ -12,6 +17,12 @@ router = APIRouter(prefix="/cohorts", tags=["cohorts"])
 class CohortCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    notes: Optional[str] = None
+
+class CohortUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    notes: Optional[str] = None
 
 class StudentAdd(BaseModel):
     username: str
@@ -25,6 +36,7 @@ def create_cohort(
     new_cohort = Cohort(
         name=cohort_data.name,
         description=cohort_data.description,
+        notes=cohort_data.notes,
         faculty_id=user.id
     )
     session.add(new_cohort)
@@ -242,3 +254,28 @@ def update_cohort_status(
     session.add(cohort)
     session.commit()
     return {"message": f"Cohort status updated to {data.status}."}
+
+@router.patch("/{cohort_id}")
+def update_cohort(
+    cohort_id: int,
+    data: CohortUpdate,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session)
+):
+    cohort = session.get(Cohort, cohort_id)
+    if not cohort:
+        raise HTTPException(status_code=404, detail="Cohort not found")
+    if user.role != "admin" and cohort.faculty_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    if data.name is not None:
+        cohort.name = data.name
+    if data.description is not None:
+        cohort.description = data.description
+    if data.notes is not None:
+        cohort.notes = data.notes
+        
+    session.add(cohort)
+    session.commit()
+    session.refresh(cohort)
+    return cohort

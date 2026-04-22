@@ -45,7 +45,7 @@ function ProblemsContent() {
     const compactTickingRef = useRef(false);
 
     const isFaculty = user?.role === "faculty" || user?.role === "admin";
-    const userUnlockedLevel = user?.unlocked_level || 1;
+    const userUnlockedLevel = user?.stats?.level || user?.unlocked_level || 1;
 
     useEffect(() => {
         const fetchProblems = async () => {
