@@ -78,7 +78,7 @@ export default function LoginPage() {
                             <div className="flex items-center gap-3 mb-8 group cursor-default">
                                 <div className="h-px w-6 bg-primary group-hover:w-12 transition-all duration-500" />
                                 <span className="text-[15px] text-transparent uppercase bg-clip-text font-black group-hover:tracking-[0.1em] transition-all duration-500 bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-400 tracking-tight">
-                                    From the Students & For the Students
+                                    By the Students & For the Students
                                 </span>
                             </div>
 
@@ -105,7 +105,7 @@ export default function LoginPage() {
                                 </div>
                                 <span className="text-base font-bold text-gray-700 tracking-tight">
                                     <a href="https://www.scet.ac.in/department/computer-engineering/#gsc.tab=0" target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                        SCET Computer Dept.
+                                        SCET Computer Engineering Dept.
                                     </a>
                                 </span>
                             </div>
@@ -117,18 +117,33 @@ export default function LoginPage() {
                             <span className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight leading-snug">
                                 Dwarkesh Ramani <span className="text-blue-600">&</span> Jenil Gajera
                             </span>
+                            <span className="text-xs text-slate-500">{new Date().getFullYear() == 2026 ? "B.tech 2nd year" : "B.tech 3rd year"}</span>
                         </div>
 
                         {/* Feedback Link */}
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setIsFeedbackOpen(true)}
-                            className="mt-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-blue-500 border border-primary/20 text-primary hover:bg-primary/20 transition-all group cursor-pointer text-white"
-                        >
-                            <MessageSquare className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Have Feedback? Share it here</span>
-                        </motion.button>
+                        <div className="relative mt-18 flex flex-col items-center justify-center group cursor-pointer">
+                            {/* Cat image behind button */}
+                            {/* <img 
+                                src="/cat-feedback.jpg" 
+                                alt="Cat mascot" 
+                                className="absolute pointer-events-none z-0 mix-blend-screen  transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-0 opacity-100" 
+                                style={{ 
+                                    width: '190px', 
+                                    height: 'auto',
+                                    filter: 'invert(1)'
+                                }} 
+                            /> */}
+                            
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setIsFeedbackOpen(true)}
+                                className="relative z-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-green-500/30 border border-blue-500/30 text-white hover:bg-[#1e293b] hover:border-blue-400/50 transition-all shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                            >
+                                <MessageSquare className="w-5 h-5 text-blue-400 group-hover:rotate-12 transition-transform" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Have Feedback? Share it here</span>
+                            </motion.button>
+                        </div>
                     </div>
 
                     {/* Right Column: Auth Card */}
@@ -147,14 +162,14 @@ export default function LoginPage() {
                         </div>
 
                         {/* Auth Card */}
-                        <div className="w-full bg-white border border-blue-100 rounded-2xl p-10 md:p-14 shadow-xl shadow-blue-100/60 relative overflow-hidden">
+                        <div className="w-full bg-white border border-blue-100 rounded-2xl p-10 md:p-14 shadow-lg  shadow-blue-100/60 relative overflow-hidden">
                             {/* Top accent line */}
-                            <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600" />
+                            <div className="absolute top-0 inset-x-0 h-[5px] bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600" />
 
                             {!isStaffMode ? (
                                 <div className="space-y-10">
                                     <div className="text-center space-y-2">
-                                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Get Started</h2>
+                                        <h2 className="text-3xl font-bold text-blue-500 tracking-tight">Get Started</h2>
                                         <p className="text-gray-500 text-sm font-medium">Continue with your account</p>
                                     </div>
 
@@ -179,9 +194,9 @@ export default function LoginPage() {
                                         {/* Staff Login Button */}
                                         <button
                                             onClick={() => setIsStaffMode(true)}
-                                            className="w-full py-7 rounded-[2rem] bg-blue-50 border border-blue-200 text-blue-600 font-black cursor-pointer hover:border-blue-400 hover:bg-blue-100 transition-all duration-500 text-[11px] uppercase tracking-[0.5em] italic"
+                                            className="w-full py-7 rounded-[2rem] bg-blue-100 border border-blue-200 text-blue-600 font-black cursor-pointer hover:border-blue-400 hover:bg-blue-100 transition-all duration-500 text-[15px] uppercase tracking-[0.5em] italic"
                                         >
-                                             {/* <Shield className="w-4 h-4" /> */}
+                                            {/* <Shield className="w-4 h-4" /> */}
                                             Staff Login
                                         </button>
                                     </div>

@@ -57,6 +57,7 @@ class Problem(SQLModel, table=True):
     constraints: Optional[str] = None  # Problem constraints
     hints: Optional[str] = None  # Optional hints for students
     xp_reward: int = Field(default=100)  # XP reward for solving
+    visibility: str = Field(default="public", index=True)  # public or private
     author_id: Optional[int] = Field(default=None, foreign_key="users.id")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -142,6 +143,7 @@ class Cohort(SQLModel, table=True):
     name: str = Field(index=True)
     description: Optional[str] = None
     faculty_id: int = Field(foreign_key="users.id", index=True)
+    status: str = Field(default="active", index=True)  # active, archived
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
     faculty: Optional["User"] = Relationship(back_populates="managed_cohorts")

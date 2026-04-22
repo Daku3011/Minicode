@@ -6,8 +6,8 @@ import logging
 from fastapi_cache.decorator import cache
 from pydantic import BaseModel
 from database import get_session
-from models import User, Problem, TestCase, NewsItem
-from auth import require_faculty
+from models import User, Problem, TestCase, NewsItem, LabProblemLink
+from auth import require_faculty, get_current_user
 from ai_generator import generate_problem_content, extract_text_from_file
 
 logger = logging.getLogger(__name__)
@@ -16,17 +16,60 @@ router = APIRouter(prefix="/problems", tags=["problems"])
 
 
 @router.get("", response_model=List[Problem])
-@cache(expire=300)
-def get_problems(session: Session = Depends(get_session)):
-    return session.exec(select(Problem)).all()
+def get_problems(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    if user.role in ["admin", "faculty"]:
+        return session.exec(select(Problem)).all()
+    
+    public_problems = session.exec(select(Problem).where(Problem.visibility == "public")).all()
+    
+    private_problems = []
+    if user.cohorts:
+        student_lab_ids = []
+        for cohort in user.cohorts:
+            for lab in cohort.labs:
+                student_lab_ids.append(lab.id)
+        
+        if student_lab_ids:
+            private_problems = session.exec(
+                select(Problem)
+                .join(LabProblemLink)
+                .where(Problem.visibility == "private")
+                .where(LabProblemLink.lab_id.in_(student_lab_ids))
+            ).all()
+            
+    all_problems = {p.id: p for p in public_problems + private_problems}.values()
+    return list(all_problems)
 
 
 @router.get("/{problem_id}")
-@cache(expire=300)
-def get_problem(problem_id: int, session: Session = Depends(get_session)):
+def get_problem(
+    problem_id: int, 
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
     problem = session.get(Problem, problem_id)
     if not problem:
         raise HTTPException(status_code=404, detail="Problem not found")
+        
+    if problem.visibility == "private" and user.role not in ["admin", "faculty"]:
+        has_access = False
+        for cohort in user.cohorts:
+            for lab in cohort.labs:
+                link = session.exec(select(LabProblemLink).where(
+                    LabProblemLink.lab_id == lab.id,
+                    LabProblemLink.problem_id == problem_id
+                )).first()
+                if link:
+                    has_access = True
+                    break
+            if has_access:
+                break
+        if not has_access:
+            raise HTTPException(status_code=403, detail="Not authorized to view this private problem")
+            
     return problem
 
 
@@ -60,6 +103,7 @@ class ProblemCreate(BaseModel):
     subject: Optional[str] = None
     level: int = 1
     xp_reward: int = 100
+    visibility: str = "public"
     hints: Optional[str] = None
     input_format: Optional[str] = None
     output_format: Optional[str] = None
@@ -102,7 +146,6 @@ def create_problem(
     user: User = Depends(require_faculty),
     session: Session = Depends(get_session),
 ):
-    # Create Problem instance
     problem = Problem(
         title=problem_data.title,
         description=problem_data.description,
@@ -110,6 +153,7 @@ def create_problem(
         subject=problem_data.subject,
         level=problem_data.level,
         xp_reward=problem_data.xp_reward,
+        visibility=problem_data.visibility,
         hints=problem_data.hints,
         input_format=problem_data.input_format,
         output_format=problem_data.output_format,
@@ -185,6 +229,8 @@ def update_problem(
         problem.level = update_data["level"]
     if "xp_reward" in update_data:
         problem.xp_reward = update_data["xp_reward"]
+    if "visibility" in update_data:
+        problem.visibility = update_data["visibility"]
     if "hints" in update_data:
         problem.hints = update_data["hints"]
     if "input_format" in update_data:

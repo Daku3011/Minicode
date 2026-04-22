@@ -59,23 +59,41 @@ export default function StudentCohortDetailPage() {
                     </h2>
 
                     <div className="space-y-4">
-                        {/* Placeholder Labs */}
-                        <div className="bg-white/[0.02] border border-white/5 p-8 rounded-2xl flex items-center justify-between opacity-50 grayscale">
-                            <div className="flex items-center gap-6">
-                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-                                    <Lock className="w-5 h-5 text-slate-500" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl uppercase tracking-tighter">Coming Soon</h3>
-                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Wait for Faculty to unlock labs</p>
-                                </div>
-                            </div>
-                        </div>
+                        {cohort.labs && cohort.labs.length > 0 ? (
+                            cohort.labs.map((lab: any) => (
+                                <div key={lab.id} className="bg-white/[0.02] border border-white/5 p-8 rounded-2xl flex flex-col gap-4 transition-all hover:bg-white/[0.04]">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                            <PlayCircle className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl uppercase tracking-tighter">{lab.name}</h3>
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{lab.problem_count} Problems Available</p>
+                                        </div>
+                                    </div>
+                                    
+                                    {lab.description && (
+                                        <div className="mt-4 p-4 bg-black/40 rounded-xl text-sm text-slate-300 font-medium font-mono whitespace-pre-wrap">
+                                            {lab.description}
+                                        </div>
+                                    )}
 
-                        <div className="py-20 text-center border border-dashed border-white/5 rounded-3xl">
-                            <PlayCircle className="w-12 h-12 text-slate-800 mx-auto mb-4" />
-                            <p className="text-slate-600 uppercase tracking-widest text-[10px]">No active lab sessions found</p>
-                        </div>
+                                    <div className="flex justify-end mt-4">
+                                        <button 
+                                            onClick={() => router.push(`/cohorts/${id}/labs/${lab.id}`)}
+                                            className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs uppercase tracking-widest transition-all"
+                                        >
+                                            Enter Lab
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="py-20 text-center border border-dashed border-white/5 rounded-3xl">
+                                <Lock className="w-12 h-12 text-slate-800 mx-auto mb-4" />
+                                <p className="text-slate-600 uppercase tracking-widest text-[10px]">Wait for Faculty to unlock labs</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

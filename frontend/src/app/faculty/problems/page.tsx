@@ -17,6 +17,7 @@ interface Problem {
     xp_reward: number;
     author_id: number | null;
     created_at: string;
+    visibility: string;
 }
 
 interface User {
@@ -54,7 +55,7 @@ export default function FacultyProblemsPage() {
     const [selectedDifficulty, setSelectedDifficulty] = useState("");
     const [selectedLevel, setSelectedLevel] = useState("");
     const [editingProblem, setEditingProblem] = useState<Problem | null>(null);
-    const [editForm, setEditForm] = useState({ title: "", difficulty: "", subject: "", level: 1, description: "" });
+    const [editForm, setEditForm] = useState({ title: "", difficulty: "", subject: "", level: 1, description: "", visibility: "public" });
     const [saving, setSaving] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
     const [showFilters, setShowFilters] = useState(false);
@@ -102,6 +103,7 @@ export default function FacultyProblemsPage() {
             subject: problem.subject || "",
             level: problem.level,
             description: problem.description,
+            visibility: problem.visibility || "public",
         });
     };
 
@@ -256,7 +258,12 @@ export default function FacultyProblemsPage() {
                                         <tr key={problem.id} className="hover:bg-blue-50/50 transition-colors group/row">
                                             <td className="px-10 py-8">
                                                 <div className="flex flex-col">
-                                                    <span className="text-slate-900 font-black text-lg tracking-tight group-hover/row:text-blue-600 transition-colors">{problem.title}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-slate-900 font-black text-lg tracking-tight group-hover/row:text-blue-600 transition-colors">{problem.title}</span>
+                                                        {problem.visibility === "private" && (
+                                                            <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-500 border border-rose-500/20">Classified</span>
+                                                        )}
+                                                    </div>
                                                     <div className="flex items-center gap-3 mt-2">
                                                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">{new Date(problem.created_at).toLocaleDateString()}</span>
                                                         <div className="h-1 w-1 rounded-full bg-slate-300" />
@@ -401,6 +408,17 @@ export default function FacultyProblemsPage() {
                                             ))}
                                         </select>
                                     </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Access Control (Visibility)</label>
+                                    <select
+                                        value={editForm.visibility}
+                                        onChange={(e) => setEditForm({ ...editForm, visibility: e.target.value })}
+                                        className="w-full bg-slate-50 border border-blue-200 rounded-2xl px-6 py-4 text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none"
+                                    >
+                                        <option value="public">Public Domain (Visible to all)</option>
+                                        <option value="private">Classified (Restricted to cohorts)</option>
+                                    </select>
                                 </div>
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2">Domain Sector</label>

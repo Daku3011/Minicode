@@ -161,7 +161,7 @@ export default function FacultyEventsPage() {
                     <div className="flex items-center gap-4">
                         <Link
                             href="/events/create"
-                            className="bg-primary text-white hover:bg-blue-600 hover:text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 transition-colors shadow-sm"
+                            className="bg-gray-500/30 text-black hover:bg-blue-600 hover:text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2.5 transition-colors shadow-sm"
                         >
                             <Plus className="w-4 h-4" /> New Event
                         </Link>

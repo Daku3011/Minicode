@@ -5,7 +5,7 @@ import {
     ChevronLeft, Send, Sparkles, BookOpen, 
     Lock, Loader2, FileText, Code2, Eye, PenLine, 
     Upload, Search, RotateCcw, Plus, Trash2, Lightbulb,
-    FileInput, FileOutput, ListOrdered
+    FileInput, FileOutput, ListOrdered, Globe, Shield
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,6 +58,7 @@ export default function CreateProblemPage() {
         subject: "algorithms",
         level: 1,
         xp_reward: 100,
+        visibility: "public",
         description: "",
         hints: "",
         input_format: "",
@@ -90,6 +91,7 @@ export default function CreateProblemPage() {
                 subject: formData.subject,
                 level: formData.level,
                 xp_reward: formData.xp_reward,
+                visibility: formData.visibility,
                 hints: formData.hints || null,
                 input_format: formData.input_format || null,
                 output_format: formData.output_format || null,
@@ -482,6 +484,46 @@ export default function CreateProblemPage() {
                                         {formData.subject === sub.id && <div className="size-1.5 rounded-full bg-primary" />}
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+
+                        {/* Visibility Selection */}
+                        <div className="bg-white/[0.02] border border-white/5 p-8 space-y-8 rounded-3xl">
+                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
+                                <Shield className="w-4 h-4 text-primary" />
+                                Access Control
+                            </h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    onClick={() => setFormData({ ...formData, visibility: "public" })}
+                                    className={clsx(
+                                        "py-4 rounded-xl border transition-all flex flex-col items-center justify-center gap-2",
+                                        formData.visibility === "public"
+                                            ? "border-emerald-500 bg-emerald-500/10 text-emerald-500"
+                                            : "border-white/5 bg-white/5 text-slate-600 hover:text-slate-400"
+                                    )}
+                                >
+                                    <Globe className="w-5 h-5" />
+                                    <div className="flex flex-col items-center">
+                                        <span className="font-black text-[10px] uppercase tracking-widest">Public Domain</span>
+                                        <span className="text-[8px] opacity-70 tracking-wider">Visible to all operatives</span>
+                                    </div>
+                                </button>
+                                <button
+                                    onClick={() => setFormData({ ...formData, visibility: "private" })}
+                                    className={clsx(
+                                        "py-4 rounded-xl border transition-all flex flex-col items-center justify-center gap-2",
+                                        formData.visibility === "private"
+                                            ? "border-rose-500 bg-rose-500/10 text-rose-500"
+                                            : "border-white/5 bg-white/5 text-slate-600 hover:text-slate-400"
+                                    )}
+                                >
+                                    <Lock className="w-5 h-5" />
+                                    <div className="flex flex-col items-center">
+                                        <span className="font-black text-[10px] uppercase tracking-widest">Classified</span>
+                                        <span className="text-[8px] opacity-70 tracking-wider">Restricted to cohorts</span>
+                                    </div>
+                                </button>
                             </div>
                         </div>
 

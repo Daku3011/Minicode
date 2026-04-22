@@ -51,7 +51,7 @@ function GithubCallbackContent() {
                     <p className="text-muted-foreground text-black mb-4">{error}</p>
                     <button
                         onClick={() => router.push("/login")}
-                        className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-all font-medium text-black"
+                        className="mt-6 px-6 py-2 bg-blue-300/50 hover:bg-blue-400 rounded-xl transition-all font-medium text-black hover:underline hover:underline-offset-4"
                     >
                         Return to Login
                     </button>

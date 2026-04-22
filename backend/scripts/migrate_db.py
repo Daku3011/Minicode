@@ -60,10 +60,18 @@ def run_migrations():
                     )
                     print(f"Added {col_name} to users")
                 except Exception as e:
-                    if "already exists" in str(e).lower():
-                        print(f"Column {col_name} already exists")
-                    else:
                         print(f"Column {col_name}: {e}")
+
+            # Add visibility to problem table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE problem ADD COLUMN IF NOT EXISTS visibility VARCHAR DEFAULT 'public';"
+                    )
+                )
+                print("Added visibility to problem")
+            except Exception as e:
+                print(f"Column visibility in problem: {e}")
 
             # Create email_verifications table
             try:
@@ -87,9 +95,74 @@ def run_migrations():
                 else:
                     print(f"email_verifications table: {e}")
 
+            # Add status to cohorts table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE cohorts ADD COLUMN IF NOT EXISTS status VARCHAR DEFAULT 'active';"
+                    )
+                )
+                print("Added status to cohorts")
+            except Exception as e:
+                print(f"Column status in cohorts: {e}")
+
         elif dialect == "sqlite":
             SQLModel.metadata.create_all(engine, checkfirst=True)
             print("Tables created.")
+
+            print("Running column migrations for sqlite...")
+            columns_to_add = [
+                ("last_login", "TIMESTAMP"),
+                ("faculty_report_email", "TEXT"),
+                ("last_news_viewed_at", "TIMESTAMP"),
+                ("unlocked_level", "INTEGER DEFAULT 1"),
+                ("google_id", "VARCHAR"),
+                ("last_engagement_email_sent", "TIMESTAMP"),
+            ]
+
+            for col_name, col_type in columns_to_add:
+                try:
+                    conn.execute(
+                        text(
+                            f"ALTER TABLE users ADD COLUMN {col_name} {col_type};"
+                        )
+                    )
+                    print(f"Added {col_name} to users")
+                except Exception as e:
+                    if "duplicate column name" in str(e).lower():
+                        print(f"Column {col_name} already exists")
+                    else:
+                        print(f"Column {col_name}: {e}")
+
+            # Add visibility to problem table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE problem ADD COLUMN visibility VARCHAR DEFAULT 'public';"
+                    )
+                )
+                print("Added visibility to problem")
+            except Exception as e:
+                if "duplicate column name" in str(e).lower():
+                    print("Column visibility already exists in problem")
+                else:
+                    print(f"Column visibility in problem: {e}")
+
+            # Add status to cohorts table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE cohorts ADD COLUMN status VARCHAR DEFAULT 'active';"
+                    )
+                )
+                print("Added status to cohorts")
+            except Exception as e:
+                if "duplicate column name" in str(e).lower():
+                    print("Column status already exists in cohorts")
+                else:
+                    print(f"Column status in cohorts: {e}")
+
+            # Note: email_verifications table is already created by create_all if it's in SQLModel metadata.
 
         conn.commit()
         print("Migrations completed.")

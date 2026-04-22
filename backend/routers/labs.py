@@ -5,7 +5,7 @@ from datetime import datetime
 
 from database import get_session
 from models import User, Cohort, Lab, LabProblemLink, Problem
-from auth import require_faculty
+from auth import require_faculty, get_current_user
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/labs", tags=["labs"])
@@ -61,6 +61,35 @@ def list_labs_for_cohort(
         results.append(lb_dict)
     return results
 
+@router.get("/{lab_id}")
+def get_lab_detail(
+    lab_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    lab = session.get(Lab, lab_id)
+    if not lab:
+        raise HTTPException(status_code=404, detail="Lab not found")
+        
+    cohort = session.get(Cohort, lab.cohort_id)
+    if not cohort:
+        raise HTTPException(status_code=404, detail="Cohort not found")
+        
+    from models import UserCohortLink
+    is_member = any(link.user_id == user.id for link in session.exec(select(UserCohortLink).where(UserCohortLink.cohort_id == cohort.id)).all())
+    is_faculty = cohort.faculty_id == user.id
+    
+    if user.role != "admin" and not is_faculty and not is_member:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    res = lab.model_dump()
+    res["problems"] = []
+    for p in lab.problems:
+        p_dict = p.model_dump()
+        res["problems"].append(p_dict)
+        
+    return res
+
 @router.post("/{lab_id}/problems")
 def add_problem_to_lab(
     lab_id: int,
@@ -92,3 +121,55 @@ def add_problem_to_lab(
     session.add(new_link)
     session.commit()
     return {"message": f"Added problem {problem.id} to lab."}
+
+
+@router.delete("/{lab_id}/problems/{problem_id}")
+def remove_problem_from_lab(
+    lab_id: int,
+    problem_id: int,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session)
+):
+    lab = session.get(Lab, lab_id)
+    if not lab:
+        raise HTTPException(status_code=404, detail="Lab not found")
+        
+    cohort = session.get(Cohort, lab.cohort_id)
+    if user.role != "admin" and getattr(cohort, "faculty_id", None) != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    link = session.exec(select(LabProblemLink).where(
+        LabProblemLink.lab_id == lab_id, 
+        LabProblemLink.problem_id == problem_id
+    )).first()
+    
+    if not link:
+        raise HTTPException(status_code=404, detail="Problem not found in lab")
+        
+    session.delete(link)
+    session.commit()
+    return {"message": f"Removed problem from lab."}
+
+
+@router.delete("/{lab_id}")
+def delete_lab(
+    lab_id: int,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session)
+):
+    lab = session.get(Lab, lab_id)
+    if not lab:
+        raise HTTPException(status_code=404, detail="Lab not found")
+        
+    cohort = session.get(Cohort, lab.cohort_id)
+    if user.role != "admin" and getattr(cohort, "faculty_id", None) != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+        
+    links = session.exec(select(LabProblemLink).where(LabProblemLink.lab_id == lab_id)).all()
+    for link in links:
+        session.delete(link)
+        
+    session.delete(lab)
+    session.commit()
+    return {"message": "Lab permanently deleted."}
+
