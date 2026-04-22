@@ -99,7 +99,7 @@ export default function FacultyStudentProfilePage() {
             <div className="fixed top-8 left-8 z-[60] group">
                 <button 
                     onClick={() => router.back()}
-                    className="bg-white/[0.03] backdrop-blur-3xl p-4 rounded-2xl border border-white/10 shadow-2xl hover:border-primary/40 hover:shadow-primary/20 transition-all text-white"
+                    className="bg-blue-500/50 backdrop-blur-3xl p-4 rounded-2xl border border-white/10 shadow-2xl hover:border-primary/40 hover:shadow-primary/20 transition-all text-white"
                     title="Return to Command"
                 >
                     <ChevronLeft className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />

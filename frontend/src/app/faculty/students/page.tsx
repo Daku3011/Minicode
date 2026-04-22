@@ -77,7 +77,7 @@ export default function FacultyStudentsPage() {
                         <p className="text-slate-500 text-lg font-medium">{students.length} candidates enrolled in the system</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href="/faculty/profile" className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-blue-600 transition-colors">
+                        <Link href="/faculty/profile" className=" border border-blue-200 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-blue-600 transition-colors px-4 py-2 rounded-xl hover:border-blue-600">
                             Back to Profile
                         </Link>
                     </div>

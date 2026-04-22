@@ -308,15 +308,27 @@ const MetricTile = memo(({ icon: Icon, label, value, trend }: any) => (
 export default function StudentProfileView({ data, isFacultyView = false }: StudentProfileViewProps) {
     const [activeTab, setActiveTab] = useState("dashboard");
 
-    const sidebarItems = useMemo(() => [
-        { id: "dashboard", label: "Dashboard", icon: Activity },
-        { id: "submissions", label: "Submissions", icon: Code2 },
-        { id: "achievements", label: "Achievements", icon: Trophy },
-        { id: "insights", label: "Insights", icon: Zap },
-        { id: "settings", label: "Settings", icon: Settings },
-        { id: "help", label: "Help Center", icon: BookOpen },
-        ...(isFacultyView ? [{ id: "sovereign", label: "Sovereign Override", icon: Shield }] : [])
-    ], [isFacultyView]);
+    const sidebarItems = useMemo(() => {
+        const items = [
+            { id: "dashboard", label: "Dashboard", icon: Activity },
+            { id: "submissions", label: "Submissions", icon: Code2 },
+            { id: "achievements", label: "Achievements", icon: Trophy },
+            { id: "insights", label: "Insights", icon: Zap },
+        ];
+
+        if (!isFacultyView) {
+            items.push(
+                { id: "settings", label: "Settings", icon: Settings },
+                { id: "help", label: "Help Center", icon: BookOpen }
+            );
+        }
+
+        if (isFacultyView) {
+            items.push({ id: "sovereign", label: "Sovereign Override", icon: Shield });
+        }
+
+        return items;
+    }, [isFacultyView]);
 
     const renderContent = () => {
         const props: StudentProfileViewProps = { data, isFacultyView };
@@ -410,8 +422,8 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                 <MetricTile icon={Code2} label="BURN_STREAK" value={data.stats.streak} trend="" />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-1">
-                <div className="xl:col-span-2 space-y-12">
+            <div className="grid  gap-12">
+                <div className=" space-y-12">
                     <div className="glass-card p-8 rounded-[2.5rem] border border-white/10 shadow-lg relative overflow-hidden group">
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-8">
@@ -434,7 +446,7 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                                 {data.recentSubmissions.slice(0, 5).map((sub, i) => (
                                     <div key={sub.id} className="group/item flex items-center justify-between p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer">
                                         <div className="flex items-center gap-6">
-                                            <div className={clsx("w-15 h-15 rounded-xl flex items-center justify-center font-black text-[9px]", statusColor(sub.status))}>
+                                            <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center font-black text-[10px]", statusColor(sub.status))}>
                                                 {statusLabel(sub.status)}
                                             </div>
                                             <div>
@@ -449,50 +461,6 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                         </div>
                     </div>
                 </div>
-
-                {/* <div className="space-y-12">
-                    <div className="glass-card p-10 rounded-[3.5rem] bg-primary shadow-xl relative overflow-hidden group">
-                        <div className="relative z-10 text-white">
-                            <p className="text-[10px] font-black uppercase tracking-[0.4em] mb-3 opacity-70">Strategic_Alliance</p>
-                            <h3 className="text-2xl font-black mb-8 leading-tight">Sync your neural interface with GitHub.</h3>
-                            <div className="bg-white/10 p-6 rounded-[2.5rem] backdrop-blur-xl border border-white/10">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
-                                        <Globe className="w-7 h-7" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[11px] font-black uppercase tracking-widest">Connection_Status</p>
-                                        <p className="text-[10px] font-bold text-white/50 tracking-wider">ENCRYPTED_UPLINK</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
-                    </div>
-
-                    <div className="glass-card p-10 rounded-[3.5rem] border border-white/10 shadow-xl bg-slate-900 overflow-hidden relative group">
-                        <div className="relative z-10">
-                            <h3 className="text-xl font-black text-white mb-8 uppercase tracking-tight flex items-center justify-between">
-                                Sector_Leaderboard
-                                <span className="text-[10px] font-black text-primary px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 tracking-widest">OMNI_GRID</span>
-                            </h3>
-                            <div className="space-y-6">
-                                {data.leaderboard?.slice(0, 5).map((entry, i) => (
-                                    <div key={entry.username} className={clsx("flex items-center justify-between p-4 rounded-2xl transition-all", entry.username === data.username ? "bg-primary/20 border border-primary/30" : "hover:bg-white/5")}>
-                                        <div className="flex items-center gap-5">
-                                            <span className={clsx("text-sm font-black w-6", i === 0 ? "text-amber-400" : i === 1 ? "text-slate-400" : i === 2 ? "text-amber-800" : "text-slate-600")}>{i + 1}</span>
-                                            <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10">
-                                                <img src={entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.username}`} className="w-full h-full object-cover" />
-                                            </div>
-                                            <span className={clsx("text-sm font-black tracking-tight transition-colors", entry.username === data.username ? "text-white" : "text-slate-400")}>@{entry.username}</span>
-                                        </div>
-                                        <span className="text-xs font-black text-slate-500 font-mono">{entry.score.toLocaleString()}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div> */}
             </div>
         </div>
     );
@@ -535,7 +503,7 @@ const AchievementsTab = memo(({ data }: StudentProfileViewProps) => {
     ];
 
     return (
-        <div className="bg-white p-10 rounded-[3.5rem] border border-blue-100 shadow-sm">
+        <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm">
             <div className="flex items-center justify-between mb-12">
                 <div>
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Honor_Logs</h3>
@@ -554,7 +522,7 @@ const AchievementsTab = memo(({ data }: StudentProfileViewProps) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
                         className={clsx(
-                            "group relative p-10 rounded-[3rem] border transition-all overflow-hidden",
+                            "group relative p-8 rounded-[2.5rem] border transition-all overflow-hidden",
                             ach.unlocked 
                                 ? "bg-white border-blue-100 hover:border-blue-300 shadow-sm hover:shadow-md" 
                                 : "bg-slate-50 border-slate-100 opacity-50 grayscale"
@@ -624,7 +592,7 @@ const InsightsTab = memo(({ data }: StudentProfileViewProps) => {
     return (
         <div className="space-y-12">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
-                <div className="xl:col-span-2 bg-white p-10 rounded-[3.5rem] border border-blue-100 text-slate-900 relative overflow-hidden shadow-sm group">
+                <div className="xl:col-span-2 bg-white p-8 rounded-[2.5rem] border border-blue-100 text-slate-900 relative overflow-hidden shadow-sm group">
                     <div className="absolute top-0 right-0 p-10 pointer-events-none opacity-10 group-hover:opacity-20 transition-opacity">
                         <TrendingUp className="w-32 h-32 text-blue-500" />
                     </div>
@@ -694,7 +662,7 @@ const InsightsTab = memo(({ data }: StudentProfileViewProps) => {
                     </div>
                 </div>
 
-                <div className="bg-white p-10 rounded-[3.5rem] border border-blue-100 shadow-sm flex flex-col justify-between group">
+                <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm flex flex-col justify-between group">
                     <div>
                         <h3 className="text-xl font-black text-slate-900 mb-10 uppercase tracking-tighter flex items-center gap-3">
                             Neural_Mapping
@@ -850,8 +818,8 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                     </div>
                 </div>
             )}
-
-            <div className="p-10 rounded-[2.5rem] border border-blue-100 bg-white shadow-sm">
+            
+            <div className="p-8 rounded-[2.5rem] border border-blue-100 bg-white shadow-sm">
                 <h3 className="text-xl font-black text-slate-900 mb-8 tracking-tight uppercase">Settings</h3>
                 <div className="grid grid-cols-1 md:grid-cols-1">
                     <div className="space-y-12">
@@ -939,24 +907,23 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                         </div>
                     </div>
 
-                    {/* <div className="space-y-8">
-                        <div className="glass-card p-10 rounded-[3.5rem] bg-slate-900 border border-white/10 overflow-hidden group">
-                        </div>
-
-                        <div className="bg-primary p-8 rounded-[2.5rem] text-white shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform">
+                    {/* <div className="space-y-8 py-10">
+                        <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-lg relative overflow-hidden group hover:scale-[1.01] transition-transform border border-white/5">
                             <div className="relative z-10">
-                                <h3 className="text-xl font-black mb-4 uppercase tracking-tight">Platform Status</h3>
-                                <div className="flex items-center gap-6 bg-white/10 p-6 rounded-[2.5rem] backdrop-blur-xl border border-white/10 group-hover:bg-white/20 transition-all">
-                                    <div className="p-4 rounded-2xl bg-white/10">
-                                        <Globe className="w-8 h-8" />
+                                <h3 className="text-xl font-black mb-4 uppercase tracking-tight text-blue-400">Platform Status</h3>
+                                <div className="flex items-center gap-6 bg-white/5 p-6 rounded-[2.5rem] border border-white/10 group-hover:bg-white/10 transition-all">
+                                    <div className="p-4 rounded-2xl bg-white/5">
+                                        <Globe className="w-8 h-8 text-blue-400" />
                                     </div>
                                     <div>
-                                        <p className="text-[11px] font-black uppercase tracking-widest">GitHub Vault</p>
-                                        <p className="text-[10px] font-bold text-white/50 tracking-wider">SYNCED_AS @{data.username}</p>
+                                        <p className="text-[11px] font-black uppercase tracking-widest text-slate-300">GitHub Vault</p>
+                                        <p className="text-[10px] font-bold text-slate-500 tracking-wider">
+                                            {data.github_id ? `SYNCED_AS @${data.username}` : "LINK_REQUIRED"}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="absolute -bottom-20 -right-10 w-64 h-64 bg-white/10 rounded-full blur-[100px] pointer-events-none" />
+                            <div className="absolute -bottom-20 -right-10 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
                         </div>
                     </div> */}
                 </div>
@@ -969,7 +936,7 @@ const HelpTab = memo((_props: StudentProfileViewProps) => (
     <div className="space-y-12 pb-12">
         <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-12">
             <div className="flex items-center gap-6">
-                {/* <div className="h-16 w-1.5 bg-primary rounded-full shadow-[0_0_20px_rgba(137,91,245,0.3)]" /> */}
+                <div className="h-16 w-1.5 bg-blue-600 rounded-full shadow-[0_0_20px_rgba(37,99,235,0.3)]" />
                 <div>
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Help Center</h1>
                     <p className="text-slate-500 font-medium text-base mt-2 uppercase tracking-wide">Documentation and support access</p>
@@ -1073,21 +1040,36 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                         onClick={handleAward}
                         disabled={isAwarding || amount <= 0}
                         className={clsx(
-                            "w-full py-6 rounded-[2rem] font-black text-sm uppercase tracking-widest transition-all relative overflow-hidden shadow-2xl",
-                            awardStatus === "success" ? "bg-emerald-500 text-white shadow-emerald-500/40" : "bg-primary text-white hover:shadow-primary/40"
+                            "w-full p-1 group relative rounded-[2rem] transition-all duration-300 shadow-2xl",
+                            awardStatus === "success" ? "bg-emerald-500 shadow-emerald-500/20" : "bg-blue-600 shadow-blue-600/20 hover:shadow-blue-600/40"
                         )}
                     >
-                        <span className="relative z-10 flex items-center justify-center gap-3 border border-white py-5 rounded-2xl">
-                            {isAwarding ? "INITIALIZING INFUSION..." : (
-                                awardStatus === "success" ? <><CheckCircle className="w-5 h-5" /> OVERRIDE_SUCCESSFUL</> : <><Zap className="w-5 h-5" /> Execute Sovereign Override</>
+                        <span className="relative z-10 flex items-center justify-center gap-3 w-full py-6 rounded-[1.8rem] bg-white/10 backdrop-blur-sm border border-white/20 text-white font-black text-sm uppercase tracking-widest transition-all group-hover:bg-white/20">
+                            {isAwarding ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    SYNCING_INFUSION...
+                                </>
+                            ) : (
+                                awardStatus === "success" ? (
+                                    <>
+                                        <CheckCircle className="w-5 h-5" />
+                                        OVERRIDE_SUCCESSFUL
+                                    </>
+                                ) : (
+                                    <>
+                                        <Zap className="w-5 h-5" />
+                                        Execute Sovereign Override
+                                    </>
+                                )
                             )}
                         </span>
                     </button>
                 </div>
 
-                {/* <div className="space-y-8">
-                    <div className="glass-card p-10 rounded-[3rem] bg-indigo-500/5 border border-indigo-500/10">
-                        <h4 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-3">
+                <div className="space-y-8">
+                    <div className="bg-slate-50 p-10 rounded-[3rem] border border-blue-100">
+                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3">
                             <AlertCircle className="w-5 h-5 text-amber-500" /> Administrative Protocol
                         </h4>
                         <ul className="space-y-4">
@@ -1097,14 +1079,14 @@ const SovereignTab = ({ data }: StudentProfileViewProps) => {
                                 "A Sovereign Override notification will be sent to the student.",
                                 "This action cannot be reverted via the standard interface."
                             ].map((note, i) => (
-                                <li key={i} className="flex gap-3 text-[11px] text-slate-400 font-medium leading-relaxed uppercase tracking-tight">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-slate-700 shrink-0 mt-1" />
+                                <li key={i} className="flex gap-3 text-[11px] text-slate-500 font-medium leading-relaxed uppercase tracking-tight">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-200 shrink-0 mt-1" />
                                     {note}
                                 </li>
                             ))}
                         </ul>
                     </div>
-                </div> */}
+                </div>
             </div>
         </div>
     );

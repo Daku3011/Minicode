@@ -5,7 +5,8 @@ import {
     ChevronLeft, Send, Sparkles, BookOpen, 
     Lock, Loader2, FileText, Code2, Eye, PenLine, 
     Upload, Search, RotateCcw, Plus, Trash2, Lightbulb,
-    FileInput, FileOutput, ListOrdered, Globe, Shield
+    FileInput, FileOutput, ListOrdered, Globe, Shield,
+    Trophy
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -173,281 +174,268 @@ export default function CreateProblemPage() {
     const selectedLevel = levels.find(l => l.level === formData.level);
 
     return (
-        <div className="min-h-[calc(100vh-64px)] bg-[#05050a] text-white font-black overflow-x-hidden relative">
-            {/* Minimal Grid - High Performance */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.02] bg-[url('/grid.svg')]" />
-            
-            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-                    <div className="space-y-4">
-                        <Link href="/faculty/problems" className="inline-flex items-center gap-2 text-slate-700 hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest">
-                            <ChevronLeft className="w-4 h-4" />
-                            Registry
-                        </Link>
-                        <h1 className="text-5xl md:text-6xl font-black text-white tracking-tighter leading-none uppercase">Forge Task</h1>
-                        <p className="text-slate-700 font-black text-[10px] uppercase tracking-widest leading-none">Architect logical challenges for the elite core</p>
-                    </div>
+        <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
+            {/* Header Section */}
+            <div className="bg-white border-b border-blue-100">
+                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-2">
+                            <Link href="/faculty/problems" className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors text-xs font-bold uppercase tracking-wider">
+                                <ChevronLeft className="w-4 h-4" />
+                                Back to Registry
+                            </Link>
+                            <h1 className="text-4xl font-black text-slate-900 tracking-tight leading-none">Forge <span className="text-blue-600">Problem</span></h1>
+                            <p className="text-slate-500 font-medium text-sm">Architect logical challenges for your students</p>
+                        </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
-                            <button 
-                                onClick={() => setActiveTab('editor')}
-                                className={clsx(
-                                    "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-black text-[10px] uppercase tracking-widest",
-                                    activeTab === 'editor' ? "bg-primary text-white" : "text-slate-600 hover:text-slate-400"
-                                )}
+                        <div className="flex items-center gap-4">
+                            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                <button 
+                                    onClick={() => setActiveTab('editor')}
+                                    className={clsx(
+                                        "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-bold text-xs uppercase tracking-wider",
+                                        activeTab === 'editor' ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                >
+                                    <PenLine className="w-4 h-4" />
+                                    Editor
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('preview')}
+                                    className={clsx(
+                                        "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-bold text-xs uppercase tracking-wider",
+                                        activeTab === 'preview' ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                >
+                                    <Eye className="w-4 h-4" />
+                                    Preview
+                                </button>
+                            </div>
+                            <button
+                                onClick={handlePublish}
+                                disabled={isPublishing || !formData.title || !formData.description}
+                                className="bg-blue-600 text-white hover:bg-blue-700 px-10 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-3 transition-all shadow-lg shadow-blue-200 disabled:opacity-50 disabled:shadow-none"
                             >
-                                <PenLine className="w-4 h-4" />
-                                Editor
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('preview')}
-                                className={clsx(
-                                    "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-black text-[10px] uppercase tracking-widest",
-                                    activeTab === 'preview' ? "bg-primary text-white" : "text-slate-600 hover:text-slate-400"
-                                )}
-                            >
-                                <Eye className="w-4 h-4" />
-                                Preview
+                                {isPublishing ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                <span>{isPublishing ? "Publishing..." : "Publish Problem"}</span>
                             </button>
                         </div>
-                        <button
-                            onClick={handlePublish}
-                            disabled={isPublishing || !formData.title || !formData.description}
-                            className="bg-primary text-white hover:bg-primary/90 px-10 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 transition-opacity disabled:opacity-50"
-                        >
-                            {isPublishing ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                            <span>{isPublishing ? "Syncing" : "Publish"}</span>
-                        </button>
                     </div>
                 </div>
+            </div>
 
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
                 {showSuccess && (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 mb-10 p-6 rounded-2xl flex items-center gap-6 text-emerald-500 font-black uppercase tracking-widest">
-                        <Sparkles className="w-5 h-5" />
-                        <p className="text-[10px]">Challenge integrated successfully. Redirecting...</p>
+                    <div className="bg-emerald-50 border border-emerald-100 mb-10 p-6 rounded-2xl flex items-center gap-6 text-emerald-700 font-bold">
+                        <div className="p-3 bg-emerald-100 rounded-xl">
+                            <Sparkles className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div>
+                            <p className="text-sm">Problem integrated successfully. Redirecting to registry...</p>
+                        </div>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Column */}
                     <div className="lg:col-span-8 space-y-8">
                         {activeTab === 'editor' ? (
-                            <div className="bg-white/[0.02] border border-white/5 p-10 space-y-12 rounded-3xl">
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] block ml-1 leading-none">Task Identifier</label>
+                            <div className="bg-white border border-blue-100 p-8 space-y-10 rounded-3xl shadow-sm">
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Problem Title</label>
                                     <input
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-2xl font-black text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 uppercase tracking-tighter"
-                                        placeholder="Enter Mission Label..."
+                                        className="w-full bg-slate-50 border border-blue-100 rounded-2xl px-6 py-5 text-xl font-bold text-slate-900 focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400"
+                                        placeholder="e.g. Invert a Binary Tree"
                                     />
                                 </div>
 
-                                <div className="space-y-4">
-                                    <label className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] block ml-1 leading-none">Logical Stream (Markdown)</label>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Problem Description (Markdown)</label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        rows={15}
-                                        className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-8 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
-                                        placeholder="# Specifications: Given an array of signals..."
+                                        rows={12}
+                                        className="w-full bg-slate-50 text-slate-900 border border-blue-100 rounded-2xl p-6 text-sm font-medium leading-relaxed focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400 resize-none"
+                                        placeholder="Describe the problem, input format, and output format..."
                                     />
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white/[0.02] border border-white/5 p-10 min-h-[600px] rounded-3xl">
+                            <div className="bg-white border border-blue-100 p-8 min-h-[600px] rounded-3xl shadow-sm overflow-hidden">
                                 {formData.description ? (
-                                    <div className="prose prose-invert prose-slate max-w-none prose-p:text-slate-400 prose-p:font-bold prose-p:uppercase prose-p:tracking-tight prose-headings:uppercase prose-headings:font-black prose-headings:tracking-tighter prose-strong:text-primary prose-code:text-primary prose-code:bg-primary/5 prose-pre:bg-black prose-pre:border prose-pre:border-white/5">
+                                    <div className="prose prose-slate max-w-none prose-p:text-slate-600 prose-headings:text-slate-900 prose-headings:font-black prose-strong:text-blue-600 prose-code:text-blue-600 prose-code:bg-blue-50 prose-pre:bg-slate-900 prose-pre:text-white prose-pre:rounded-xl">
                                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.description}</ReactMarkdown>
                                     </div>
                                 ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-slate-900 py-32 space-y-4">
+                                    <div className="h-full flex flex-col items-center justify-center text-slate-300 py-32 space-y-4">
                                         <FileText className="w-16 h-16 opacity-30" />
-                                        <p className="text-[15px] font-black uppercase tracking-[0.4em] text-slate-500">Signal Expected</p>
+                                        <p className="text-sm font-bold uppercase tracking-[0.2em]">No content to preview</p>
                                     </div>
                                 )}
                             </div>
                         )}
 
-                    {/* Test Cases Section */}
-                    <div className="bg-white/[0.02] border border-white/5 p-10 space-y-8 rounded-3xl">
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                                <Code2 className="w-4 h-4 text-primary" />
-                                Test Cases
-                            </h3>
-                            <button
-                                onClick={addTestCase}
-                                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10 transition-all"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Add
-                            </button>
-                        </div>
-                        
-                        <p className="text-[9px] text-slate-700 font-black uppercase tracking-widest">Add test cases to validate student solutions</p>
-                        
-                        <div className="space-y-6">
-                            {testCases.map((tc, index) => (
-                                <div key={tc.id} className="bg-white/[0.03] border border-white/5 p-6 rounded-2xl space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Test Case #{index + 1}</span>
-                                        <div className="flex items-center gap-4">
-                                            <label className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={tc.is_sample}
-                                                    onChange={(e) => updateTestCase(tc.id, 'is_sample', e.target.checked)}
-                                                    className="w-4 h-4 rounded border-white/10 bg-white/5 text-primary focus:ring-primary"
-                                                />
-                                                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Sample (Visible)</span>
-                                            </label>
-                                            {testCases.length > 1 && (
-                                                <button
-                                                    onClick={() => removeTestCase(tc.id)}
-                                                    className="p-2 text-slate-700 hover:text-rose-500 transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                                <FileInput className="w-3 h-3" />
-                                                Input
-                                            </label>
-                                            <textarea
-                                                value={tc.input_data}
-                                                onChange={(e) => updateTestCase(tc.id, 'input_data', e.target.value)}
-                                                rows={3}
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-600 resize-none"
-                                                placeholder="Enter input data..."
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                                <FileOutput className="w-3 h-3" />
-                                                Expected Output
-                                            </label>
-                                            <textarea
-                                                value={tc.expected_output}
-                                                onChange={(e) => updateTestCase(tc.id, 'expected_output', e.target.value)}
-                                                rows={3}
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-600 resize-none"
-                                                placeholder="Enter expected output..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Hints Section */}
-                    <div className="bg-white/[0.02] border border-white/5 p-10 space-y-8 rounded-3xl">
-                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                            <Lightbulb className="w-4 h-4 text-amber-400" />
-                            Hints (Optional)
-                        </h3>
-                        <p className="text-[9px] text-slate-700 font-black uppercase tracking-widest">Provide hints to help students who are stuck</p>
-                        <textarea
-                            value={formData.hints}
-                            onChange={(e) => setFormData({ ...formData, hints: e.target.value })}
-                            rows={4}
-                            className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-8 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
-                            placeholder="Enter hints for students (supports Markdown)..."
-                        />
-                    </div>
-
-                    {/* Input/Output Format & Constraints */}
-                    <div className="bg-white/[0.02] border border-white/5 p-10 space-y-8 rounded-3xl">
-                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                            <ListOrdered className="w-4 h-4 text-primary" />
-                            Format & Constraints
-                        </h3>
-                        
-                        <div className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                    <FileInput className="w-3 h-3" />
-                                    Input Format
-                                </label>
-                                <textarea
-                                    value={formData.input_format}
-                                    onChange={(e) => setFormData({ ...formData, input_format: e.target.value })}
-                                    rows={3}
-                                    className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-6 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
-                                    placeholder="Describe the input format (e.g., First line contains n, next line contains n integers)..."
-                                />
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                    <FileOutput className="w-3 h-3" />
-                                    Output Format
-                                </label>
-                                <textarea
-                                    value={formData.output_format}
-                                    onChange={(e) => setFormData({ ...formData, output_format: e.target.value })}
-                                    rows={3}
-                                    className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-6 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
-                                    placeholder="Describe the output format (e.g., Print a single integer representing the sum)..."
-                                />
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
-                                    <Search className="w-3 h-3" />
-                                    Constraints
-                                </label>
-                                <textarea
-                                    value={formData.constraints}
-                                    onChange={(e) => setFormData({ ...formData, constraints: e.target.value })}
-                                    rows={3}
-                                    className="w-full bg-white/5 text-white border border-white/10 rounded-2xl p-6 text-sm font-bold leading-relaxed focus:outline-none focus:border-primary/40 transition-all placeholder:text-slate-500 resize-none uppercase tracking-tight"
-                                    placeholder="List constraints (e.g., 1 ≤ n ≤ 10^5, 1 ≤ arr[i] ≤ 10^9)..."
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="lg:col-span-4 space-y-8">
-                        {/* AI Blueprinter - Minimalist Fix */}
-                        <div className="bg-white/[0.03] border border-primary/20 p-8 space-y-8 rounded-3xl">
+                        {/* Test Cases Section */}
+                        <div className="bg-white border border-blue-100 p-8 space-y-8 rounded-3xl shadow-sm">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-[10px] font-black text-white uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                                    <Sparkles className="w-4 h-4 text-primary" />
-                                    AI Architect
-                                </h3>
-                                {isAiGenerating && (
-                                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] leading-none">Syncing</span>
-                                )}
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2.5 bg-blue-50 rounded-xl border border-blue-100">
+                                        <Code2 className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">
+                                        Test Cases
+                                    </h3>
+                                </div>
+                                <button
+                                    onClick={addTestCase}
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-md shadow-blue-200"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add Case
+                                </button>
                             </div>
                             
-                            <p className="text-[9px] text-slate-700 font-black leading-relaxed uppercase tracking-widest">Upload logic documentation (PDF/TXT) to automatically forge a mission blueprint.</p>
+                            <p className="text-xs text-slate-500 font-medium">Add test cases to validate student solutions. Sample cases are visible to students.</p>
                             
-                            {isAiGenerating ? (
-                                <div className="space-y-4">
-                                    <div className="w-full h-[2px] bg-white/5 rounded-full overflow-hidden">
-                                        <div className="h-full bg-primary " style={{ width: '100%', animation: 'linear-loader 2s infinite' }} />
+                            <div className="space-y-6">
+                                {testCases.map((tc, index) => (
+                                    <div key={tc.id} className="bg-slate-50 border border-blue-100 p-6 rounded-2xl space-y-4 relative group">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Test Case #{index + 1}</span>
+                                            <div className="flex items-center gap-6">
+                                                <label className="flex items-center gap-3 cursor-pointer group/toggle">
+                                                    <div className="relative">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={tc.is_sample}
+                                                            onChange={(e) => updateTestCase(tc.id, 'is_sample', e.target.checked)}
+                                                            className="sr-only"
+                                                        />
+                                                        <div className={clsx(
+                                                            "w-10 h-5 rounded-full transition-colors duration-200",
+                                                            tc.is_sample ? "bg-blue-600" : "bg-slate-300"
+                                                        )} />
+                                                        <div className={clsx(
+                                                            "absolute left-1 top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
+                                                            tc.is_sample ? "translate-x-5" : "translate-x-0"
+                                                        )} />
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sample / Visible</span>
+                                                </label>
+                                                {testCases.length > 1 && (
+                                                    <button
+                                                        onClick={() => removeTestCase(tc.id)}
+                                                        className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                                    <FileInput className="w-3.5 h-3.5 text-blue-500" />
+                                                    Input Data
+                                                </label>
+                                                <textarea
+                                                    value={tc.input_data}
+                                                    onChange={(e) => updateTestCase(tc.id, 'input_data', e.target.value)}
+                                                    rows={3}
+                                                    className="w-full bg-white border border-blue-100 rounded-xl px-4 py-3 text-sm font-mono text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-300 resize-none"
+                                                    placeholder="Standard input string..."
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                                    <FileOutput className="w-3.5 h-3.5 text-blue-500" />
+                                                    Expected Output
+                                                </label>
+                                                <textarea
+                                                    value={tc.expected_output}
+                                                    onChange={(e) => updateTestCase(tc.id, 'expected_output', e.target.value)}
+                                                    rows={3}
+                                                    className="w-full bg-white border border-blue-100 rounded-xl px-4 py-3 text-sm font-mono text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-300 resize-none"
+                                                    placeholder="Expected standard output..."
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="text-center text-[9px] font-black text-primary uppercase tracking-widest leading-none">Analyzing Spectrum</p>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Format & Constraints */}
+                        <div className="bg-white border border-blue-100 p-8 space-y-8 rounded-3xl shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-blue-50 rounded-xl border border-blue-100">
+                                    <ListOrdered className="w-5 h-5 text-blue-600" />
                                 </div>
-                            ) : (
+                                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">
+                                    Constraints & Hints
+                                </h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Constraints</label>
+                                    <textarea
+                                        value={formData.constraints}
+                                        onChange={(e) => setFormData({ ...formData, constraints: e.target.value })}
+                                        rows={4}
+                                        className="w-full bg-slate-50 text-slate-900 border border-blue-100 rounded-2xl p-6 text-sm font-medium focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400 resize-none"
+                                        placeholder="e.g. 1 <= N <= 10^5"
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Hints</label>
+                                    <textarea
+                                        value={formData.hints}
+                                        onChange={(e) => setFormData({ ...formData, hints: e.target.value })}
+                                        rows={4}
+                                        className="w-full bg-slate-50 text-slate-900 border border-blue-100 rounded-2xl p-6 text-sm font-medium focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400 resize-none"
+                                        placeholder="Provide helpful hints for students..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Controls */}
+                    <div className="lg:col-span-4 space-y-8">
+                        {/* AI Generation */}
+                        <div className="bg-white border-2 border-blue-600 p-8 space-y-6 rounded-3xl shadow-xl shadow-blue-100 overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-4 opacity-5">
+                                <Sparkles className="w-20 h-20 text-blue-600" />
+                            </div>
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-sm font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <Sparkles className="w-5 h-5" />
+                                        AI Blueprint
+                                    </h3>
+                                    {isAiGenerating && (
+                                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                                    )}
+                                </div>
+                                <p className="text-xs text-slate-500 font-medium leading-relaxed mb-6">Upload a PDF or TXT problem statement and let AI draft the description and title for you.</p>
+                                
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="w-full bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-primary/5 text-slate-600 hover:text-primary p-10 rounded-2xl flex flex-col items-center gap-4 transition-all"
+                                    disabled={isAiGenerating}
+                                    className={clsx(
+                                        "w-full p-6 rounded-2xl border-2 border-dashed flex flex-col items-center gap-4 transition-all",
+                                        isAiGenerating 
+                                            ? "bg-slate-50 border-slate-200" 
+                                            : "bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-400"
+                                    )}
                                 >
                                     <Upload className="w-8 h-8" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Inject Blueprint</span>
+                                    <span className="text-xs font-black uppercase tracking-widest">Inject Blueprint</span>
                                     <input 
                                         type="file" 
                                         ref={fileInputRef}
@@ -456,106 +444,120 @@ export default function CreateProblemPage() {
                                         accept=".pdf,.txt"
                                     />
                                 </button>
-                            )}
+                            </div>
                         </div>
 
                         {/* Subject Selection */}
-                        <div className="bg-white/[0.02] border border-white/5 p-8 space-y-8 rounded-3xl">
-                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                                <BookOpen className="w-4 h-4 text-primary" />
-                                Classification
+                        <div className="bg-white border border-blue-100 p-8 space-y-6 rounded-3xl shadow-sm">
+                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 leading-none">
+                                <BookOpen className="w-4 h-4 text-blue-600" />
+                                Subject
                             </h3>
-                            <div className="grid grid-cols-1 gap-1.5">
+                            <div className="grid grid-cols-1 gap-2">
                                 {subjects.map((sub) => (
                                     <button
                                         key={sub.id}
                                         onClick={() => setFormData({ ...formData, subject: sub.id })}
                                         className={clsx(
-                                            "flex items-center justify-between p-4 rounded-xl border transition-all",
+                                            "flex items-center justify-between p-4 rounded-xl border transition-all group",
                                             formData.subject === sub.id
-                                                ? "border-primary bg-primary/10 text-white"
-                                                : "border-white/5 bg-white/5 text-slate-700 hover:text-slate-500"
+                                                ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                                                : "border-slate-100 bg-slate-50 text-slate-500 hover:border-blue-200 hover:bg-white hover:text-slate-700"
                                         )}
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-lg grayscale group-hover:grayscale-0">{sub.icon}</span>
-                                            <span className="font-black text-[10px] uppercase tracking-widest">{sub.name}</span>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-lg">{sub.icon}</span>
+                                            <span className="font-bold text-xs uppercase tracking-wider">{sub.name}</span>
                                         </div>
-                                        {formData.subject === sub.id && <div className="size-1.5 rounded-full bg-primary" />}
+                                        {formData.subject === sub.id && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                        )}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Visibility Selection */}
-                        <div className="bg-white/[0.02] border border-white/5 p-8 space-y-8 rounded-3xl">
-                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                                <Shield className="w-4 h-4 text-primary" />
-                                Access Control
+                        {/* Access & Visibility */}
+                        <div className="bg-white border border-blue-100 p-8 space-y-6 rounded-3xl shadow-sm">
+                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 leading-none">
+                                <Shield className="w-4 h-4 text-blue-600" />
+                                Visibility
                             </h3>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 gap-3">
                                 <button
                                     onClick={() => setFormData({ ...formData, visibility: "public" })}
                                     className={clsx(
-                                        "py-4 rounded-xl border transition-all flex flex-col items-center justify-center gap-2",
+                                        "p-5 rounded-2xl border transition-all flex items-center gap-4",
                                         formData.visibility === "public"
-                                            ? "border-emerald-500 bg-emerald-500/10 text-emerald-500"
-                                            : "border-white/5 bg-white/5 text-slate-600 hover:text-slate-400"
+                                            ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
+                                            : "border-slate-100 bg-slate-50 text-slate-400 hover:border-emerald-200"
                                     )}
                                 >
-                                    <Globe className="w-5 h-5" />
-                                    <div className="flex flex-col items-center">
-                                        <span className="font-black text-[10px] uppercase tracking-widest">Public Domain</span>
-                                        <span className="text-[8px] opacity-70 tracking-wider">Visible to all operatives</span>
+                                    <div className={clsx(
+                                        "p-2 rounded-lg",
+                                        formData.visibility === "public" ? "bg-emerald-100" : "bg-white"
+                                    )}>
+                                        <Globe className="w-5 h-5" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-black text-[10px] uppercase tracking-widest mb-0.5">Public Domain</p>
+                                        <p className="text-[9px] opacity-70 font-medium tracking-tight">Available to all students</p>
                                     </div>
                                 </button>
                                 <button
                                     onClick={() => setFormData({ ...formData, visibility: "private" })}
                                     className={clsx(
-                                        "py-4 rounded-xl border transition-all flex flex-col items-center justify-center gap-2",
+                                        "p-5 rounded-2xl border transition-all flex items-center gap-4",
                                         formData.visibility === "private"
-                                            ? "border-rose-500 bg-rose-500/10 text-rose-500"
-                                            : "border-white/5 bg-white/5 text-slate-600 hover:text-slate-400"
+                                            ? "border-rose-500 bg-rose-50 text-rose-700 shadow-sm"
+                                            : "border-slate-100 bg-slate-50 text-slate-400 hover:border-rose-200"
                                     )}
                                 >
-                                    <Lock className="w-5 h-5" />
-                                    <div className="flex flex-col items-center">
-                                        <span className="font-black text-[10px] uppercase tracking-widest">Classified</span>
-                                        <span className="text-[8px] opacity-70 tracking-wider">Restricted to cohorts</span>
+                                    <div className={clsx(
+                                        "p-2 rounded-lg",
+                                        formData.visibility === "private" ? "bg-rose-100" : "bg-white"
+                                    )}>
+                                        <Lock className="w-5 h-5" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="font-black text-[10px] uppercase tracking-widest mb-0.5">Restricted</p>
+                                        <p className="text-[9px] opacity-70 font-medium tracking-tight">Only visible to your cohorts</p>
                                     </div>
                                 </button>
                             </div>
                         </div>
 
-                        {/* Complexity Toggle */}
-                        <div className="bg-white/[0.02] border border-white/5 p-8 space-y-8 rounded-3xl">
-                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                                <Search className="w-4 h-4 text-primary" />
-                                Severity
-                            </h3>
-                            <div className="grid grid-cols-3 gap-2">
-                                {["Easy", "Medium", "Hard"].map((diff) => (
-                                    <button
-                                        key={diff}
-                                        onClick={() => setFormData({ ...formData, difficulty: diff })}
-                                        className={clsx(
-                                            "py-4 rounded-xl border transition-all font-black text-[10px] uppercase tracking-widest",
-                                            formData.difficulty === diff
-                                                ? "border-primary bg-primary/10 text-primary"
-                                                : "border-white/5 bg-white/5 text-slate-700 hover:text-slate-500"
-                                        )}
-                                    >
-                                        {diff}
-                                    </button>
-                                ))}
+                        {/* Difficulty & XP */}
+                        <div className="bg-white border border-blue-100 p-8 space-y-8 rounded-3xl shadow-sm">
+                            <div className="space-y-6">
+                                <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 leading-none">
+                                    <Search className="w-4 h-4 text-blue-600" />
+                                    Difficulty
+                                </h3>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {["Easy", "Medium", "Hard"].map((diff) => (
+                                        <button
+                                            key={diff}
+                                            onClick={() => setFormData({ ...formData, difficulty: diff })}
+                                            className={clsx(
+                                                "py-4 rounded-xl border transition-all font-black text-[10px] uppercase tracking-widest",
+                                                formData.difficulty === diff
+                                                    ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                                                    : "border-slate-100 bg-slate-50 text-slate-400 hover:bg-white hover:text-slate-600"
+                                            )}
+                                        >
+                                            {diff}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
-                            <div className="pt-8 border-t border-white/5 space-y-8">
+                            <div className="pt-8 border-t border-slate-100 space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest leading-none">Clearance Gate</p>
-                                    <span className="text-primary font-black text-xl leading-none">0{formData.level}</span>
+                                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest leading-none">Level Gate</p>
+                                    <span className="text-blue-600 font-black text-2xl tracking-tighter tabular-nums">0{formData.level}</span>
                                 </div>
-                                <div className="grid grid-cols-6 gap-1.5">
+                                <div className="grid grid-cols-6 gap-2">
                                     {levels.map((lvl) => (
                                         <button
                                             key={lvl.level}
@@ -563,25 +565,26 @@ export default function CreateProblemPage() {
                                             className={clsx(
                                                 "aspect-square rounded-lg flex items-center justify-center text-[10px] font-black transition-all",
                                                 formData.level === lvl.level
-                                                    ? "bg-primary text-white"
-                                                    : "bg-white/5 text-slate-800 hover:text-slate-600"
+                                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-200"
+                                                    : "bg-slate-50 text-slate-400 border border-slate-100 hover:text-slate-700"
                                             )}
                                         >
                                             {lvl.level}
                                         </button>
                                     ))}
                                 </div>
-                                <div className="p-4 bg-white/5 border border-white/5 rounded-xl flex items-center gap-4">
-                                    <Lock className="w-4 h-4 text-slate-800" />
-                                    <p className="text-[9px] text-slate-600 font-black uppercase tracking-widest leading-none">Min Requirement: {selectedLevel?.name}</p>
+                                <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
+                                    <Lock className="w-4 h-4 text-blue-600 opacity-50" />
+                                    <p className="text-[10px] text-blue-700 font-bold uppercase tracking-tight leading-none">
+                                        Required: {selectedLevel?.name}
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* XP Reward Selection */}
-                            <div className="pt-8 border-t border-white/5 space-y-8">
-                                <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] flex items-center gap-2 leading-none">
-                                    <Sparkles className="w-4 h-4 text-amber-400" />
-                                    XP Bounty
+                            <div className="pt-8 border-t border-slate-100 space-y-6">
+                                <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2 leading-none">
+                                    <Trophy className="w-4 h-4 text-amber-500" />
+                                    Reward Bounty
                                 </h3>
                                 <div className="grid grid-cols-2 gap-2">
                                     {xpRewards.map((xp) => (
@@ -591,8 +594,8 @@ export default function CreateProblemPage() {
                                             className={clsx(
                                                 "p-4 rounded-xl border transition-all font-black text-[10px] uppercase tracking-widest",
                                                 formData.xp_reward === xp.value
-                                                    ? "border-amber-400 bg-amber-400/10 text-amber-400"
-                                                    : "border-white/5 bg-white/5 text-slate-700 hover:text-slate-500"
+                                                    ? "border-amber-500 bg-amber-50 text-amber-700 shadow-sm shadow-amber-100"
+                                                    : "border-slate-100 bg-slate-50 text-slate-400 hover:bg-white hover:text-slate-600"
                                             )}
                                         >
                                             {xp.label}
