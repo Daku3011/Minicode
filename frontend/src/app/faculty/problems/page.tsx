@@ -337,9 +337,9 @@ export default function FacultyProblemsPage() {
                                                     <p className="text-xl font-black text-slate-700 uppercase tracking-wider">Registry Void</p>
                                                     <p className="text-sm text-slate-400 font-medium">No logical challenges detected in this sector</p>
                                                 </div>
-                                                <Link href="/problems/create" className="premium-btn py-4 px-8 mt-4">
+                                                {/* <Link href="/problems/create" className="premium-btn py-4 px-8 mt-4">
                                                     Forge First Entry
-                                                </Link>
+                                                </Link> */}
                                             </div>
                                         </td>
                                     </tr>

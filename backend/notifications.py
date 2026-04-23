@@ -85,12 +85,11 @@ def update_notification(
     notification = session.get(Notification, notification_id)
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
-    if notification.user_id != user.id:
+    if notification.user_id != user.id and user.role not in ["faculty", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    update_data = notification_data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(notification, key, value)
+    if notification_data.is_read is not None:
+        notification.is_read = notification_data.is_read
     session.add(notification)
     session.commit()
     return {"message": "Notification updated"}
@@ -141,7 +140,7 @@ def delete_notification(
     notification = session.get(Notification, notification_id)
     if not notification:
         raise HTTPException(status_code=404, detail="Notification not found")
-    if notification.user_id != user.id:
+    if notification.user_id != user.id and user.role not in ["faculty", "admin"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     session.delete(notification)

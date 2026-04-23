@@ -84,9 +84,20 @@ def update_news(
     item = session.get(NewsItem, news_id)
     if not item:
         raise HTTPException(status_code=404, detail="News item not found")
-    update_data = news_data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(item, key, value)
+    
+    if news_data.title is not None:
+        item.title = news_data.title
+    if news_data.content is not None:
+        item.content = news_data.content
+    if news_data.link is not None:
+        item.link = news_data.link
+    if news_data.priority is not None:
+        item.priority = news_data.priority
+    if news_data.is_active is not None:
+        item.is_active = news_data.is_active
+    if news_data.expires_at is not None:
+        item.expires_at = news_data.expires_at
+        
     session.add(item)
     session.commit()
     return {"message": "News item updated"}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ExternalLink, Megaphone, Code, Calendar, Link as LinkIcon, X, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, Megaphone, Code, Calendar, Link as LinkIcon, X, Plus, Trash2, Bell, Check, CheckCheck } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import api from "@/lib/api";
@@ -14,6 +14,17 @@ interface NewsItem {
     news_type: string;
     link: string | null;
     priority: number;
+    created_at: string;
+    expires_at: string | null;
+}
+
+interface Notification {
+    id: number;
+    title: string;
+    message: string;
+    notification_type: string;
+    is_read: boolean;
+    related_url: string | null;
     created_at: string;
     expires_at: string | null;
 }
@@ -67,8 +78,10 @@ function timeAgo(dateStr: string): string {
 export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
     const { user } = useAuth();
     const [news, setNews] = useState<NewsItem[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
+    const [showNotificationsTab, setShowNotificationsTab] = useState(false);
     const [newTitle, setNewTitle] = useState("");
     const [newContent, setNewContent] = useState("");
     const [newType, setNewType] = useState("announcement");
@@ -79,10 +92,14 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
 
     useEffect(() => {
         if (!isOpen) return;
-        const fetchNews = async () => {
+        const fetchData = async () => {
             try {
-                const res = await api.get("/news");
-                setNews(res.data);
+                const [newsRes, notifRes] = await Promise.all([
+                    api.get("/news"),
+                    api.get("/notifications")
+                ]);
+                setNews(newsRes.data);
+                setNotifications(notifRes.data);
                 
                 if (user) {
                     await api.post("/notifications/mark-all-read");
@@ -90,12 +107,12 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                     window.dispatchEvent(new CustomEvent('minicode:notificationsRead'));
                 }
             } catch (err) {
-                console.error("Failed to fetch news or mark notifications as read:", err);
+                console.error("Failed to fetch data:", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchNews();
+        fetchData();
     }, [isOpen, user?.role]);
 
     const handleCreate = async () => {
@@ -141,6 +158,24 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
         }
     };
 
+    const handleDeleteNotification = async (id: number) => {
+        try {
+            await api.delete(`/notifications/${id}`);
+            setNotifications((prev) => prev.filter((n) => n.id !== id));
+        } catch (err) {
+            console.error("Failed to delete notification:", err);
+        }
+    };
+
+    const handleMarkRead = async (id: number) => {
+        try {
+            await api.put(`/notifications/${id}`, { is_read: true });
+            setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
+        } catch (err) {
+            console.error("Failed to mark notification as read:", err);
+        }
+    };
+
     return (
         <div 
             className={clsx(
@@ -166,12 +201,20 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                    <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                        <Megaphone className="w-4 h-4 text-primary" />
-                        News & Updates
-                    </h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-bold text-white flex items-center gap-2">
+                            {showNotificationsTab ? <Bell className="w-4 h-4 text-primary" /> : <Megaphone className="w-4 h-4 text-primary" />}
+                            {showNotificationsTab ? "Notifications" : "News & Updates"}
+                        </h2>
+                    </div>
                     <div className="flex items-center gap-1">
-                        {isFaculty && (
+                        <span className={clsx(
+                            "text-[10px] px-2 py-1 rounded-full font-bold",
+                            isFaculty ? "bg-green-500/30 text-green-400" : "bg-slate-700 text-slate-400"
+                        )}>
+                            {isFaculty ? "FACULTY" : "STUDENT"}
+                        </span>
+                        {isFaculty && !showNotificationsTab && (
                             <button
                                 onClick={() => setShowCreate(!showCreate)}
                                 className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
@@ -180,6 +223,16 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                                 <Plus className="w-4 h-4" />
                             </button>
                         )}
+                        <button
+                            onClick={() => setShowNotificationsTab(!showNotificationsTab)}
+                            className={clsx(
+                                "p-1.5 rounded-lg transition-colors",
+                                showNotificationsTab ? "bg-primary text-white" : "text-slate-400 hover:text-white hover:bg-white/10"
+                            )}
+                            title="Notifications"
+                        >
+                            <Bell className="w-4 h-4" />
+                        </button>
                         <button
                             onClick={onClose}
                             className="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
@@ -230,8 +283,8 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                             className={clsx(
                                 "w-full py-2 rounded-lg text-sm font-semibold transition-all",
                                 creating || !newTitle.trim() || !newContent.trim()
-                                    ? "bg-white/5 text-slate-500 cursor-not-allowed"
-                                    : "bg-primary text-white"
+                                    ? "bg-gray-500/50 text-slate-300 cursor-not-allowed"
+                                    : "bg-blue-500/50 text-white cursor-pointer hover:bg-blue-600/70"
                             )}
                         >
                             {creating ? "Posting..." : "Post News"}
@@ -239,12 +292,58 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                     </div>
                 )}
 
-                {/* News List */}
+                {/* News or Notifications List */}
                 <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-hide">
                     {loading ? (
                         [1, 2, 3].map((i) => (
                             <div key={i} className="h-24 bg-white/5 rounded-xl border border-white/5" />
                         ))
+                    ) : showNotificationsTab ? (
+                        notifications.length === 0 ? (
+                            <div className="text-center py-10">
+                                <Bell className="w-8 h-8 text-slate-600 mx-auto mb-3" />
+                                <p className="text-xs text-slate-500">No notifications</p>
+                            </div>
+                        ) : (
+                            notifications.map((notif) => (
+                                <div key={notif.id} 
+                                    className={clsx(
+                                        "group relative bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/10 hover:border-white/20 cursor-pointer transition-colors duration-75",
+                                        !notif.is_read && "border-l-2 border-l-primary"
+                                    )}
+                                >
+                                    <div className="flex items-start justify-between gap-2 mb-1">
+                                        <div className="flex items-center gap-1.5">
+                                            {!notif.is_read && (
+                                                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                            )}
+                                            <span className="text-[10px] text-slate-500">{timeAgo(notif.created_at)}</span>
+                                        </div>
+                                        {isFaculty && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleDeleteNotification(notif.id);
+                                                }}
+                                                className="p-1.5 rounded-md bg-rose-500/80 text-white hover:bg-rose-600 transition-all z-10 shadow-lg"
+                                                title="Delete notification"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <h3 className="text-sm font-bold text-white mb-1 line-clamp-1">{notif.title}</h3>
+                                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{notif.message}</p>
+                                    {notif.related_url && (
+                                        <div className="mt-2 flex items-center gap-1 text-[10px] text-white font-medium">
+                                            <ExternalLink className="w-3 h-3" />
+                                            Open link
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )
                     ) : news.length === 0 ? (
                         <div className="text-center py-10">
                             <Megaphone className="w-8 h-8 text-slate-600 mx-auto mb-3" />
@@ -288,18 +387,19 @@ export default function NewsPanel({ isOpen, onClose }: NewsPanelProps) {
                                     ) : (
                                         content
                                     )}
-                                    {isFaculty && (
+                                    {isFaculty ? (
                                         <button
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 handleDelete(item.id);
                                             }}
-                                            className="absolute top-2 right-2 p-1 rounded-md bg-rose-500/10 text-rose-500 opacity-0 group-hover/item:opacity-100 transition-all"
+                                            className="absolute top-2 right-2 p-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-all z-50 shadow-xl"
+                                            title="Delete news item"
                                         >
-                                            <Trash2 className="w-3 h-3" />
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
-                                    )}
+                                    ) : null}
                                 </div>
                             );
                         })

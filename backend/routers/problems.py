@@ -263,6 +263,12 @@ def delete_problem(
             status_code=403, detail="Not authorized to delete this problem"
         )
 
+    # Delete related test cases first to avoid foreign key constraint violations
+    for test_case in problem.test_cases:
+        session.delete(test_case)
+    # Delete related submissions first to avoid foreign key constraint violations
+    for submission in problem.submissions:
+        session.delete(submission)
     session.delete(problem)
     session.commit()
     return {"message": "Problem deleted successfully"}
