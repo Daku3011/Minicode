@@ -7,14 +7,36 @@ import {
     Github, Terminal, Code2, User, Calendar, Trophy, 
     BookOpen, GraduationCap, Users, Settings, Search,
     ChevronRight, ChevronDown, Rocket, Zap, ArrowRight,
-    CheckCircle, MessageCircle, HelpCircle, Sparkles
+    CheckCircle, MessageCircle, HelpCircle, Sparkles,
+    LucideIcon
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { Logo } from "@/components/Logo";
+import FeedbackModal from "@/components/FeedbackModal";
 
-const studentTopics = [
+interface FAQStep {
+    text: string;
+    icon: LucideIcon;
+}
+
+interface FAQItem {
+    question: string;
+    answer: string;
+    steps?: FAQStep[];
+}
+
+interface FAQTopic {
+    title: string;
+    icon: LucideIcon;
+    color: string;
+    bg: string;
+    border: string;
+    items: FAQItem[];
+}
+
+const studentTopics: FAQTopic[] = [
     {
         title: "Getting Started",
         icon: Rocket,
@@ -143,7 +165,7 @@ const studentTopics = [
     }
 ];
 
-const facultyTopics = [
+const facultyTopics: FAQTopic[] = [
     {
         title: "Getting Started",
         icon: GraduationCap,
@@ -304,7 +326,7 @@ const facultyTopics = [
     }
 ];
 
-function AccordionItem({ item, index, isOpen, onToggle }: { item: any; index: number; isOpen: boolean; onToggle: () => void }) {
+function AccordionItem({ item, index, isOpen, onToggle }: { item: FAQItem; index: number; isOpen: boolean; onToggle: () => void }) {
     return (
         <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -343,9 +365,9 @@ function AccordionItem({ item, index, isOpen, onToggle }: { item: any; index: nu
                         <div className="px-5 pb-6">
                             <p className="text-slate-600 mb-6 leading-relaxed">{item.answer}</p>
                             
-                            {item.steps && (
+                            {item.steps && item.steps.length > 0 && (
                                 <div className="space-y-3">
-                                    {item.steps.map((step: any, stepIdx: number) => (
+                                    {item.steps.map((step, stepIdx) => (
                                         <motion.div
                                             key={stepIdx}
                                             initial={{ opacity: 0, x: -10 }}
@@ -357,7 +379,7 @@ function AccordionItem({ item, index, isOpen, onToggle }: { item: any; index: nu
                                                 <step.icon className="w-4 h-4 text-slate-600" />
                                             </div>
                                             <span className="text-sm text-slate-700 font-medium">{step.text}</span>
-                                            {stepIdx < item.steps.length - 1 && (
+                                            {stepIdx < (item.steps?.length ?? 0) - 1 && (
                                                 <ChevronRight className="w-4 h-4 text-slate-300" />
                                             )}
                                         </motion.div>
@@ -372,7 +394,7 @@ function AccordionItem({ item, index, isOpen, onToggle }: { item: any; index: nu
     );
 }
 
-function TopicSection({ topic, index }: { topic: any; index: number }) {
+function TopicSection({ topic, index }: { topic: FAQTopic; index: number }) {
     const [isOpen, setIsOpen] = useState(false);
     const [expandedItem, setExpandedItem] = useState<number | null>(null);
     
@@ -441,6 +463,7 @@ function TopicSection({ topic, index }: { topic: any; index: number }) {
 export default function FAQPage() {
     const [activeRole, setActiveRole] = useState<"student" | "faculty">("student");
     const [searchQuery, setSearchQuery] = useState("");
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     
     const { user } = useAuth();
     const router = useRouter();
@@ -631,18 +654,27 @@ export default function FAQPage() {
                 >
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">Still have questions?</h3>
                     <p className="text-slate-600 mb-6">Can't find what you're looking for? We're here to help.</p>
-                    <button className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-violet-700 transition-all">
+                    <button 
+                        onClick={() => setIsFeedbackOpen(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/50 text-white rounded-xl font-semibold hover:bg-violet-700 transition-all"
+                    >
                         <MessageCircle className="w-5 h-5" />
                         Contact Support
                     </button>
                 </motion.div>
 
-                {/* Footer */}
+                {/* Feedback Modal */}
+                <FeedbackModal 
+                    isOpen={isFeedbackOpen} 
+                    onClose={() => setIsFeedbackOpen(false)} 
+                />
+
+                {/* Footer
                 <div className="mt-12 text-center">
                     <p className="text-slate-500 text-sm">
                         MiniCode Documentation v1.0 • Built with 💜 by SCET Computer Engineering
                     </p>
-                </div>
+                </div> */}
             </main>
         </div>
     );
