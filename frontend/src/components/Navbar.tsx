@@ -69,7 +69,7 @@ export default function Navbar() {
         return () => window.removeEventListener('minicode:openNews', handleOpenNews);
     }, []);
 
-    if (pathname === "/login") return null;
+    if (pathname === "/login" || pathname === "/faq") return null;
 
     return (
         <header className="sticky top-0 z-50 px-4 md:px-8 py-3">

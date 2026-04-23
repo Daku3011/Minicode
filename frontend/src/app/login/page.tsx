@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 // import { Terminal, Github, ArrowRight, Loader2, Shield, Eye, EyeOff } from "lucide-react";
 import api from "@/lib/api";
-import { Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart, Terminal, MessageSquare } from "lucide-react";
+import { Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart, Terminal, MessageSquare, Linkedin } from "lucide-react";
 import { clsx } from "clsx";
 import LoginSymbolBackground from "@/components/LoginSymbolBackground";
 import { Logo } from "@/components/Logo";
@@ -112,16 +112,52 @@ export default function LoginPage() {
                         </div>
 
                         {/* Team Credits */}
-                        <div className="flex flex-col items-center lg:items-start px-8 py-7 rounded-2xl bg-gray-50 border border-gray-200 relative group cursor-default hover:bg-gray-100 transition-all duration-300">
-                            <span className="text-xs font-medium text-gray-400 tracking-widest uppercase mb-2">Developed by</span>
-                            <span className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight leading-snug">
-                                Dwarkesh Ramani <span className="text-blue-600">&</span> Jenil Gajera
-                            </span>
-                            <span className="text-xs text-slate-500">{new Date().getFullYear() == 2026 ? "B.tech 2nd year" : "B.tech 3rd year"}</span>
+                        <div className="flex flex-col items-center lg:items-start px-7 py-5 rounded-2xl bg-gray-50 border border-gray-200 relative cursor-default hover:bg-gray-100 transition-all duration-300 w-full max-w-md">
+                            <span className="text-xs font-medium text-gray-400 tracking-widest uppercase mb-3">Developed by</span>
+
+                            <div className="w-full space-y-2">
+                                <div className="flex items-center gap-5">
+                                    <span className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight leading-snug">Dwarkesh Ramani</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="group h-12 w-12 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-sm hover:border-zinc-500 hover:bg-zinc-700 transition-all cursor-pointer">
+                                            <a href="https://github.com/Daku3011" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+                                                <Github className="w-6 h-6 text-zinc-200 transition-all group-hover:fill-current" />
+                                            </a>
+                                        </div>
+                                        <div className="group h-12 w-12 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-sm hover:border-zinc-500 hover:bg-zinc-700 transition-all cursor-pointer">
+                                            <a href="https://www.linkedin.com/in/ramanidwarkesh" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+                                                <Linkedin className="w-6 h-6 text-zinc-200 transition-all group-hover:fill-current" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <span className="block text-xs text-slate-500">{new Date().getFullYear() == 2026 ? "B.tech 2nd year" : "B.tech 3rd year"}</span>
+
+                                {/* <span className="block text-base font-semibold text-blue-600">&</span> */}
+
+                                <div className="flex items-center gap-5">
+                                    <span className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight leading-snug">Jenil Gajera</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="group h-12 w-12 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-sm hover:border-zinc-500 hover:bg-zinc-700 transition-all cursor-pointer">
+                                            <a href="https://github.com/jenilgajera18" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+                                                <Github className="w-6 h-6 text-zinc-200 transition-all group-hover:fill-current" />
+                                            </a>
+                                        </div>
+                                        <div className="group h-12 w-12 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-sm hover:border-zinc-500 hover:bg-zinc-700 transition-all cursor-pointer">
+                                            <a href="https://www.linkedin.com/in/jenilgajera03" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center">
+                                                <Linkedin className="w-6 h-6 text-zinc-200 transition-all group-hover:fill-current" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <span className="block text-xs text-slate-500">{new Date().getFullYear() == 2026 ? "B.tech 2nd year" : "B.tech 3rd year"}</span>
+                            </div>
                         </div>
 
                         {/* Feedback Link */}
-                        <div className="relative mt-18 flex flex-col items-center justify-center group cursor-pointer">
+                        <div className="relative mt-10 flex flex-col items-center justify-center group cursor-pointer">
                             {/* Cat image behind button */}
                             {/* <img 
                                 src="/cat-feedback.jpg" 
@@ -207,6 +243,8 @@ export default function LoginPage() {
                                             <Link href="/terms" className="text-xs text-gray-400 hover:text-blue-600 transition-colors hover:underline underline-offset-4">Terms of Service</Link>
                                             <div className="w-1 h-1 rounded-full bg-blue-200" />
                                             <Link href="/privacy" className="text-xs text-gray-400 hover:text-blue-600 transition-colors hover:underline underline-offset-4">Privacy Policy</Link>
+                                            <div className="w-1 h-1 rounded-full bg-blue-200" />
+                                            <Link href="/faq" className="text-xs text-blue-600 font-semibold hover:text-blue-700 transition-colors hover:underline underline-offset-4">Help & FAQ</Link>
                                         </div>
                                     </div>
                                 </div>

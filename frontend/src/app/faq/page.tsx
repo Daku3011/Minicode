@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -8,7 +8,7 @@ import {
     BookOpen, GraduationCap, Users, Settings, Search,
     ChevronRight, ChevronDown, Rocket, Zap, ArrowRight,
     CheckCircle, MessageCircle, HelpCircle, Sparkles,
-    LucideIcon
+    LucideIcon, LogIn
 } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
@@ -465,8 +465,16 @@ export default function FAQPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const router = useRouter();
+    
+    useEffect(() => {
+        if (user?.role === "faculty" || user?.role === "admin") {
+            setActiveRole("faculty");
+        } else if (user?.role === "student") {
+            setActiveRole("student");
+        }
+    }, [user]);
     
     const topics = activeRole === "student" ? studentTopics : facultyTopics;
     
@@ -499,10 +507,10 @@ export default function FAQPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-12"
                 >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-50 border border-violet-200 rounded-full mb-6">
+                    {/* <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-50 border border-violet-200 rounded-full mb-6">
                         <HelpCircle className="w-4 h-4 text-violet-600" />
                         <span className="text-sm font-semibold text-violet-700">Help Center</span>
-                    </div>
+                    </div> */}
                     
                     <h1 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight mb-4">
                         How can we <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-blue-500 to-cyan-500">help you?</span>
@@ -525,110 +533,159 @@ export default function FAQPage() {
                     </div>
                 </motion.div>
 
-                {/* Role Selector */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="flex justify-center mb-12"
-                >
-                    <div className="inline-flex bg-slate-100 p-1.5 rounded-2xl">
-                        <button
-                            onClick={() => handleRoleChange("student")}
-                            className={clsx(
-                                "flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
-                                activeRole === "student" 
-                                    ? "bg-white text-slate-900 shadow-sm" 
-                                    : "text-slate-600 hover:text-slate-900"
-                            )}
-                        >
-                            <GraduationCap className="w-5 h-5" />
-                            I'm a Student
-                        </button>
-                        <button
-                            onClick={() => handleRoleChange("faculty")}
-                            className={clsx(
-                                "flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
-                                activeRole === "faculty" 
-                                    ? "bg-white text-slate-900 shadow-sm" 
-                                    : "text-slate-600 hover:text-slate-900"
-                            )}
-                        >
-                            <BookOpen className="w-5 h-5" />
-                            I'm Faculty
-                        </button>
-                    </div>
-                </motion.div>
+                {/* Role Selector - show only for logged in users */}
+                {user && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="flex justify-center mb-12"
+                    >
+                        <div className="inline-flex bg-slate-100 p-1.5 rounded-2xl">
+                            <button
+                                onClick={() => handleRoleChange("student")}
+                                className={clsx(
+                                    "flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
+                                    activeRole === "student" 
+                                        ? "bg-white text-slate-900 shadow-sm" 
+                                        : "text-slate-600 hover:text-slate-900"
+                                )}
+                            >
+                                <GraduationCap className="w-5 h-5" />
+                                I'm a Student
+                            </button>
+                            <button
+                                onClick={() => handleRoleChange("faculty")}
+                                className={clsx(
+                                    "flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
+                                    activeRole === "faculty" 
+                                        ? "bg-white text-slate-900 shadow-sm" 
+                                        : "text-slate-600 hover:text-slate-900"
+                                )}
+                            >
+                                <BookOpen className="w-5 h-5" />
+                                I'm Faculty
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
 
-                {/* Quick Links */}
+{/* Quick Links */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12"
                 >
-                    {activeRole === "student" ? (
+                    {user ? (
                         <>
-                            <Link href="/problems" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
-                                    <Code2 className="w-6 h-6 text-violet-600" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Explore Problems</h4>
-                                    <p className="text-sm text-slate-500">Start coding challenges</p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
-                            </Link>
-                            <Link href="/events" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
-                                    <Calendar className="w-6 h-6 text-amber-600" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">View Events</h4>
-                                    <p className="text-sm text-slate-500">Join coding events</p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
-                            </Link>
-                            <Link href="/leaderboard" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center">
-                                    <Trophy className="w-6 h-6 text-cyan-600" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Leaderboard</h4>
-                                    <p className="text-sm text-slate-500">See rankings</p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
-                            </Link>
+                            {activeRole === "student" ? (
+                                <>
+                                    <Link href="/problems" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
+                                            <Code2 className="w-6 h-6 text-violet-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">Explore Problems</h4>
+                                            <p className="text-sm text-slate-500">Start coding challenges</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                    <Link href="/events" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+                                            <Calendar className="w-6 h-6 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">View Events</h4>
+                                            <p className="text-sm text-slate-500">Join coding events</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                    <Link href="/leaderboard" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center">
+                                            <Trophy className="w-6 h-6 text-cyan-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">Leaderboard</h4>
+                                            <p className="text-sm text-slate-500">See rankings</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                    <Link href="/profile" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
+                                            <User className="w-6 h-6 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">My Profile</h4>
+                                            <p className="text-sm text-slate-500">View your stats</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                </>
+                            ) : (
+                                <>
+                                    <Link href="/faculty/problems" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
+                                            <Code2 className="w-6 h-6 text-violet-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">Create Problems</h4>
+                                            <p className="text-sm text-slate-500">Add new problems</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                    <Link href="/faculty/cohorts" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center">
+                                            <Users className="w-6 h-6 text-sky-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">Manage Cohorts</h4>
+                                            <p className="text-sm text-slate-500">Organize students</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                    <Link href="/faculty/events" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+                                            <Calendar className="w-6 h-6 text-amber-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">Create Events</h4>
+                                            <p className="text-sm text-slate-500">Host coding events</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                    <Link href="/faculty/profile" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                        <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
+                                            <User className="w-6 h-6 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-slate-900 group-hover:text-primary">My Profile</h4>
+                                            <p className="text-sm text-slate-500">View dashboard</p>
+                                        </div>
+                                        <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                                    </Link>
+                                </>
+                            )}
                         </>
                     ) : (
                         <>
-                            <Link href="/faculty/problems" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                            <Link href="/login" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                                    <LogIn className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Log In</h4>
+                                    <p className="text-sm text-slate-500">Sign in to account</p>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                            </Link>
+                            <Link href="/faq" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                 <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
-                                    <Code2 className="w-6 h-6 text-violet-600" />
+                                    <HelpCircle className="w-6 h-6 text-violet-600" />
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Create Problems</h4>
-                                    <p className="text-sm text-slate-500">Add new problems</p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
-                            </Link>
-                            <Link href="/faculty/cohorts" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center">
-                                    <Users className="w-6 h-6 text-sky-600" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Manage Cohorts</h4>
-                                    <p className="text-sm text-slate-500">Organize students</p>
-                                </div>
-                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
-                            </Link>
-                            <Link href="/faculty/events" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
-                                    <Calendar className="w-6 h-6 text-amber-600" />
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Create Events</h4>
-                                    <p className="text-sm text-slate-500">Host coding events</p>
+                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">How it Works</h4>
+                                    <p className="text-sm text-slate-500">Learn about MiniCode</p>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                             </Link>
