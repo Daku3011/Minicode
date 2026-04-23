@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Code2, Calendar, Trophy, Bell, User } from "lucide-react";
+import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -128,6 +128,14 @@ export default function Navbar() {
                                 )}
                             </button>
 
+                            <Link 
+                                href="/faq"
+                                className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
+                                title="Help"
+                            >
+                                <HelpCircle className="w-5 h-5" />
+                            </Link>
+
                             <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
 
                             <Link 
@@ -152,12 +160,21 @@ export default function Navbar() {
                             </button>
                         </>
                     ) : !loading && !user ? (
-                        <Link
-                            href="/login"
-                            className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-md shadow-blue-200"
-                        >
-                            Log In
-                        </Link>
+                        <>
+                            <Link
+                                href="/faq"
+                                className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
+                                title="Help"
+                            >
+                                <HelpCircle className="w-5 h-5" />
+                            </Link>
+                            <Link
+                                href="/login"
+                                className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 rounded-xl text-sm font-semibold transition-all shadow-md shadow-blue-200"
+                            >
+                                Log In
+                            </Link>
+                        </>
                     ) : (
                         <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-xl" />
                     )}
