@@ -1,195 +1,643 @@
 # MiniCode User Manual
 
-This manual explains how each role uses MiniCode in daily workflow.
+> **Welcome to MiniCode!** This comprehensive guide walks you through everything you need to know, organized in Notion-style pages for each role.
 
-## Who Should Read This
+---
 
-- Students: solve problems, join events, track progress
-- Faculty: create problems/events, monitor learners, award XP
-- Admins: manage users and platform operations
+## Quick Navigation
 
-## Before You Start
+| Role | Start Here | Key Actions |
+|------|-----------|-----------|
+| **Students** | [Getting Started](#getting-started) | Browse Problems → Start → Code → Submit |
+| **Faculty** | [Faculty Dashboard](#faculty-dashboard) | Create Problems → Track Students → Manage Events |
+| **Admins** | [Admin Panel](#admin-panel) | Manage Users → View Stats → Sync XP |
 
-- Open the app in browser: `http://localhost:3000` (or your deployed frontend URL)
-- Ensure backend is healthy: `http://localhost:8000/health`
+---
 
-## Login Guide
+## Getting Started
 
-## Student Login (GitHub)
+### System Requirements
 
-1. Go to `/login`.
-2. Click `Authorize GitHub`.
-3. Complete GitHub OAuth consent.
-4. You are redirected back and signed in.
+- Modern browser (Chrome, Firefox, Safari, Edge)
+- GitHub account (required for students)
+- Institutional email (required for faculty)
 
-What this enables:
+### Access Points
 
-- Creation of a private repository per problem.
-- Judge access to your repository code during submission.
+| Environment | URL |
+|-------------|-----|
+| Local Development | `http://localhost:3000` |
+| Staging/Production | `https://your-domain.com` |
+| API Health | `http://localhost:8000/health` |
 
-## Faculty/Admin Login (Google)
+### Login Methods
 
-1. Go to `/login`.
-2. Click `Faculty Authentication`.
-3. Click `Sign in with Google`.
-4. Use institutional Google account.
+#### Students: GitHub OAuth
+
+1. Navigate to `/login`
+2. Click **"Authorize with GitHub"**
+3. Grant repository permissions when prompted
+4. Complete GitHub OAuth consent
+5. Redirected back and signed in automatically
 
-Rules:
+> **Why GitHub?** MiniCode creates private repositories for each problem, enabling real coding workflows with git commits.
 
-- `@scet.ac.in` users are allowed and auto-created as faculty if new.
-- Existing admin/faculty can sign in if email is recognized.
+#### Faculty/Admin: Google OAuth
 
-## Faculty/Admin Login (Username + Password)
+1. Navigate to `/login`
+2. Click **"Faculty Authentication"**
+3. Select **"Sign in with Google"**
+4. Use institutional account (`@scet.ac.in` emails auto-create faculty role)
 
-1. Go to `/login`.
-2. Click `Faculty Authentication`.
-3. Enter credentials in `Control Room` form.
+#### Faculty/Admin: Username + Password
 
-Development defaults:
+1. Navigate to `/login`
+2. Click **"Faculty Authentication"**
+3. Enter credentials in Control Room form
 
-- Admin: `admin/admin123`
-- Faculty: `faculty/faculty123`
-- Student: `student/student123`
+**Development Credentials:**
 
-## Student Workflow
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | admin | admin123 |
+| Faculty | faculty | faculty123 |
+| Student | student | student123 |
 
-## 1. Browse Problems
+---
 
-- Open `Problems` from top navigation.
-- Read difficulty, description, constraints, and samples.
+## Student Portal
 
-## 2. Start a Problem
+### Dashboard Overview
 
-- Open problem details page.
-- Click start action.
-- MiniCode creates a private repository in your GitHub account.
+Your student dashboard provides:
 
-Repo naming pattern:
+- **XP & Level** - Current progress and rank
+- **Problems Solved** - Completion statistics
+- **Leaderboard Position** - Class ranking
+- **Activity Heatmap** - GitHub-style contribution graph
+- **Recent Activity** - Latest submissions and achievements
+
+### Page 1: Problem Browser
+
+#### Finding Problems
+
+1. Click **"Problems"** in the navigation bar
+2. Filter by difficulty: Easy / Medium / Hard
+3. Filter by subject area (Algorithms, Data Structures, etc.)
+4. Sort by XP reward or difficulty
+
+#### Understanding Problem Cards
+
+Each problem card displays:
+
+| Field | Description |
+|-------|-------------|
+| **Title** | Problem name |
+| **Difficulty** | Easy (green), Medium (yellow), Hard (red) |
+| **XP Reward** | Points earned for solving |
+| **Level Required** | Minimum level to unlock |
+| **Solved Count** | How many students completed it |
+
+#### Problem Details Page
 
-- `minicode-<username>-<problem-title-slug>`
+Click a problem to view:
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ Problem: Two Sum                                              │
+├────────────────────────────────────────────────────────────┤
+│ Difficulty: Easy    XP: 100    Level: 1                       │
+│                                                                │
+│ ## Description                                                  │
+│ Given an array of integers nums and a target integer target,  │
+│ return indices of the two numbers such that they add up to    │
+│ target.                                                        │
+│                                                                │
+│ ## Input Format                                                 │
+│ First line: n (array length)                                   │
+│ Second line: n space-separated integers                        │
+│ Third line: target integer                                     │
+│                                                                │
+│ ## Output Format                                               │
+│ Two space-separated indices                                    │
+│                                                                │
+│ ## Constraints                                                 │
+│ 2 ≤ n ≤ 10^4                                                  │
+│ -10^9 ≤ nums[i] ≤ 10^9                                         │
+│                                                                │
+│ ## Example                                                     │
+│ Input:                                                         │
+│ 4                                                               │
+│ 2 7 11 15                                                      │
+│ 9                                                               │
+│ Output:                                                        │
+│ 0 1                                                            │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Page 2: Starting a Problem
+
+#### Repository Creation
+
+1. Open problem details page
+2. Click the **"Start Problem"** button
+3. MiniCode creates a private repository in your GitHub:
+   - **Repo Name:** `minicode-{username}-{problem-slug}`
+   - **Visibility:** Private (only you can see)
+   - **Initial Files:** README.md (with problem description), solution.py (starter code)
+
+> **Note:** This requires GitHub OAuth permissions. If repo creation fails, re-login with GitHub.
+
+#### What Gets Created
+
+```
+minicode-student1/two-sum/
+├── README.md           # Problem statement
+├── solution.py        # Starter code template
+└── .git/             # Git repository (work locally)
+```
+
+### Page 3: Coding Workflow
+
+#### Local Development
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/username/minicode-username-problem.git
+   cd minicode-username-problem
+   ```
+
+2. **Write your solution:**
+   ```python
+   def solve(nums, target):
+       seen = {}
+       for i, num in enumerate(nums):
+           complement = target - num
+           if complement in seen:
+               return [seen[complement], i]
+           seen[num] = i
+       return []
+   ```
+
+3. **Commit your changes:**
+   ```bash
+   git add solution.py
+   git commit -m "Implement two-sum solution"
+   git push origin main
+   ```
+
+> **Tip:** Commit history is analyzed by the AI judge. Multiple meaningful commits show genuine effort.
+
+#### Code Editor (Optional)
+
+Some problems support in-browser editing:
+
+1. Open problem details page
+2. Click **"Edit Code"**
+3. Write code in the editor
+4. Click **"Save & Commit"** to sync to GitHub
+
+### Page 4: Submission
+
+#### Submitting Your Solution
+
+1. Open problem details page
+2. Click **"Submit Solution"**
+3. Select language (Python, JavaScript, etc.)
+4. Confirm submission
+
+#### Submission States
+
+| State | Meaning | Color |
+|-------|---------|-------|
+| `pending` | Queued for evaluation | Gray |
+| `processing` | Being judged | Blue |
+| `accepted` | All test cases passed | Green |
+| `wrong_answer` | Some outputs incorrect | Yellow |
+| `error` | Code has bugs or judge failed | Red |
+
+#### Real-time Updates
+
+Submission status updates in real-time via WebSocket. You can:
+
+- See processing stages: "Fetching code..." → "Analyzing..." → "Scoring..."
+- Receive notification when complete
+- View detailed feedback immediately
+
+### Page 5: Feedback & Improvement
+
+#### Understanding AI Feedback
+
+The AI judge provides:
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ Submission Results                                        │
+├────────────────────────────────────────────────────────────┤
+│ Status: Accepted ✓                                        │
+│ Score: 92/100                                             │
+│ AI Probability: 12% (Human-written)                        │
+│                                                                │
+│ ## Analysis                                                  │
+│ ✅ Correct algorithm implementation using hash map              │
+│ ✅ Optimal time complexity O(n)                             │
+│ ✅ Clean, readable variable names                           │
+│                                                                │
+│ ## Suggestions                                              │
+│ Consider early return optimization for empty arrays.         │
+│                                                                │
+│ ## Next Steps                                                │
+│ Great work! Try "Three Sum" for a harder challenge.        │
+└────────────────────────────────────────────────────────────┘
+```
+
+#### Resubmission
+
+1. View feedback and identify issues
+2. Improve code locally
+3. Commit and push changes
+4. Submit again
+
+> **Note:** You can submit unlimited times. Only the highest score counts toward XP.
+
+### Page 6: XP & Progression
+
+#### Leveling System
+
+| Level | XP Required | Unlock |
+|-------|-------------|--------|
+| 1 | 0 | Basic problems |
+| 2 | 100 | Medium problems |
+| 3 | 300 | Advanced topics |
+| 4 | 600 | Hard problems |
+| 5 | 1000 | Expert challenges |
+
+#### XP Awards
+
+- **First solve:** Full problem XP reward
+- **Score improvement:** Difference in XP (scaled by score %)
+- **Faculty bonus:** Additional XP awards from faculty
+
+#### Leaderboard
+
+View rankings at `/leaderboard`:
+
+| Rank | Student | XP | Level |
+|------|---------|-----|-------|
+| 🥇 | alice | 1,250 | 5 |
+| 🥈 | bob | 980 | 4 |
+| 🥉 | charlie | 750 | 4 |
+
+### Page 7: Events
+
+#### Event Types
+
+| Type | Description | Team Size |
+|------|-------------|---------|
+| **Solo** | Individual competition | 1 |
+| **Team** | Group submission | 2-5 |
+| **Hackathon** | Extended duration | 1-10 |
+
+#### Joining Events
+
+1. Navigate to `/events`
+2. Browse available events (active, upcoming)
+3. Click **"Join Event"**
+4. For team events: Receive/accept invitations
+
+#### Event Submissions
+
+1. Solve event-specific problems
+2. Submit deliverables
+3. View event leaderboard
+4. Receive event rewards and badges
+
+### Page 8: Notifications
+
+#### Notification Types
+
+| Type | Description | Icon |
+|------|-------------|------|
+| **XP Award** | Points received | ⭐ |
+| **Level Up** | Level progression | 🏆 |
+| **Submission** | Judge complete | ✅ |
+| **Event** | Event updates | 🎯 |
+| **System** | Platform announcements | 📢 |
+
+#### Managing Notifications
+
+1. Click the **bell icon** in navbar
+2. View unread count badge
+3. Mark individual or all as read
+4. Click to navigate to related content
+
+---
+
+## Faculty Dashboard
+
+### Page 1: Overview
+
+#### Faculty Home
+
+Your faculty dashboard provides:
+
+- **Class Statistics** - Total students, active today
+- **Problem Analytics** - Submissions, acceptance rates
+- **Recent Activity** - Student actions feed
+- **Event Status** - Active and upcoming events
+
+### Page 2: Problem Management
+
+#### Creating Problems
+
+1. Navigate to faculty problems section
+2. Click **"Create Problem"**
+3. Fill in required fields:
+
+| Field | Description | Required |
+|-------|-------------|---------|
+| Title | Problem name | Yes |
+| Description | Full problem statement | Yes |
+| Difficulty | Easy/Medium/Hard | Yes |
+| Subject | Topic area | No |
+| Level | Unlock level | Yes |
+| XP Reward | Points awarded | Yes |
+| Visibility | Public/Private | Yes |
+| Input Format | Input specification | No |
+| Output Format | Output specification | No |
+| Constraints | Problem limits | No |
+| Hints | Optional hints | No |
+
+4. Add test cases (input/expected output pairs)
+5. Mark sample test cases (shown to students)
+6. Click **"Create"**
 
-## 3. Write Your Solution
+#### AI Problem Generation
+
+1. Click **"Generate with AI"**
+2. Upload text file or paste problem description
+3. Review generated statement
+4. Edit and publish
+
+#### Test Case Management
 
-- Edit `solution.py` (or your chosen language strategy in your repo).
-- Commit your changes.
+**Adding Test Cases:**
 
-Tip:
+| Input Data | Expected Output | Sample |
+|-----------|----------------|--------|
+| `4`<br>`2 7 11 15`<br>`9` | `0 1` | ✅ |
+| `3`<br>`3 2 4`<br>`6` | `0 1` | ✅ |
+| `2`<br>`1 1`<br>`2` | `0 1` | ❌ |
 
-- Commit history is used as a judging context signal.
+> **Sample** test cases are visible to students. Hidden cases are for judging only.
 
-## 4. Submit for Evaluation
+### Page 3: Student Analytics
 
-- Click submit in MiniCode.
-- Submission enters `pending` state.
-- Worker picks it up and AI judge evaluates.
+#### Student Profiles
 
-Possible statuses:
+1. Navigate to student list (`/faculty/students`)
+2. Click a student to view:
+   - Profile overview
+   - XP and level
+   - Problems solved
+   - Submission history
+   - Activity timeline
 
-- `accepted`
-- `wrong_answer`
-- `error`
-- `pending`
+#### Problem Analytics
 
-## 5. Review Feedback
+1. Navigate to problem analytics (`/faculty/analytics`)
+2. Select a problem
+3. View detailed metrics:
 
-- View score, comments, and judge output in your submission details.
-- Improve code and resubmit.
+| Metric | Description |
+|--------|-------------|
+| Total Submissions | Count |
+| Acceptance Rate | % accepted |
+| Average Score | Mean score |
+| AI Detection Flag | Suspicious % |
 
-## 6. Track XP and Leaderboard
+### Page 4: XP Management
 
-- XP increases based on accepted score and problem reward.
-- Leaderboard ranking is based on XP.
-- Profile shows solved count, streak, level, and recent submissions.
+#### Awarding XP
 
-## Events (Student)
+1. Navigate to student profile
+2. Click **"Award XP"**
+3. Enter amount and reason
+4. Confirm
 
-- Open `Events`.
-- Join available event.
-- For team events, use invitations/workflow provided by event UI.
-- Submit event deliverables from event submission flow.
-- Check event leaderboard and rewards.
+> **Effect:** Student receives notification and XP update.
 
-## Notifications and News
+#### Bulk XP Operations
 
-- Use bell icon in navbar.
-- Notifications include XP awards, activity updates, and system messages.
-- Unread counter includes notifications and new news posts.
+Faculty can trigger XP sync for all students:
+- Navigate to dashboard stats
+- Click **"Sync XP"**
 
-## Faculty Workflow
+### Page 5: Events Management
 
-## 1. Manage Problems
+#### Creating Events
 
-- Open faculty problems area.
-- Create problem with:
-  - title, description, difficulty
-  - level, XP reward
-  - input/output format and optional hints/constraints
-- Add test cases and mark sample cases for students.
+1. Navigate to events (`/events`)
+2. Click **"Create Event"**
+3. Configure:
 
-## 2. Run AI Problem Generation
+| Setting | Description |
+|---------|-------------|
+| Name | Event title |
+| Description | Details |
+| Type | Solo/Team/Hackathon |
+| Start/End | Time window |
+| Problems | Linked problems |
+| Max Team Size | For team events |
 
-- Upload supported source file/text via problem generator.
-- Review generated statement before publishing.
+#### Event Dashboard
 
-## 3. View Students and Analytics
+- **Leaderboard** - Live rankings
+- **Submissions** - Entry list
+- **Analytics** - Participation metrics
 
-- Open student list and profiles.
-- Check problem analytics:
-  - total submissions
-  - accepted count
-  - average score
+### Page 6: Cohorts & Labs
 
-## 4. Award XP
+#### Managing Cohorts
 
-- Use faculty award XP action per student.
-- Optional reason can be included.
-- Student notification is generated automatically.
+**Cohort** = Group of students assigned to a faculty member
 
-## 5. Events and News
+1. Navigate to cohorts (`/cohorts`)
+2. Create new cohort
+3. Add students by username or bulk import
+4. View cohort analytics
 
-- Create and manage events.
-- Invite participants for team events.
-- Publish news updates/announcements.
+#### Managing Labs
 
-## Admin Workflow
+**Lab** = Timed practice session within a cohort
 
-## 1. User and Role Management
+1. Navigate to labs (`/labs`)
+2. Create lab within a cohort
+3. Set start/end time
+4. Link problems
+5. Monitor submissions in real-time
 
-- Access admin user management.
-- Promote/demote user roles as needed.
+### Page 7: Notifications & News
 
-## 2. System Stats
+#### News Posts
 
-- View admin stats endpoint-backed dashboard values.
+1. Navigate to news management
+2. Click **"Create Post"**
+3. Enter title, content, priority
+4. Set expiration (optional)
+5. Publish
 
-## 3. XP Synchronization
+#### Student Communication
 
-- Trigger global XP sync when needed.
+- News posts reach all students
+- Individual notifications for specific students
+- Batch notification for cohorts
 
-## Best Practices for Users
+---
 
-- Keep OAuth login token valid; re-login if actions fail.
-- For students, make meaningful commits before submission.
-- For faculty, create clear constraints and sample test cases.
-- For admins, avoid frequent role changes without audit trail.
+## Admin Panel
 
-## Common Issues
+### Page 1: System Overview
 
-- OAuth error page:
-  - Usually callback URL mismatch or client secret issue.
-- Submission stuck on pending:
-  - Worker not running or Redis unavailable.
-- Repo not found:
-  - Student did not start problem via MiniCode or repo naming mismatch.
-- Score or feedback looks wrong:
-  - AI judging is probabilistic; refine and resubmit.
+#### Admin Dashboard
 
-## Support Checklist
+Your admin dashboard shows:
 
-When reporting an issue, include:
+- **Platform Stats** - Total users, problems, submissions
+- **Active Users** - Online now
+- **System Health** - API, database, worker status
+- **Recent Activity** - Audit log
 
-- Role (`student`, `faculty`, or `admin`)
-- Page URL
+### Page 2: User Management
+
+#### User List
+
+Navigate to `/admin/users`:
+
+| Username | Email | Role | XP | Status |
+|----------|-------|------|-----|--------|
+| alice | alice@example.com | student | 1,250 | Active |
+| bob | bob@example.com | faculty | - | Active |
+| charlie | charlie@example.com | student | 0 | Inactive |
+
+#### Role Management
+
+1. Click user row
+2. Click **"Change Role"**
+3. Select new role: Student / Faculty / Admin
+4. Confirm
+
+> **Warning:** Role changes take effect immediately. Document changes for audit.
+
+#### User Actions
+
+| Action | Description |
+|--------|-------------|
+| Change Role | Promote/demote user |
+| Reset XP | Clear XP to zero |
+| Disable | Prevent login |
+| Delete | Remove user (soft delete) |
+
+### Page 3: System Configuration
+
+#### XP Synchronization
+
+Trigger global XP sync:
+
+1. Navigate to admin panel
+2. Click **"Sync All XP"**
+3. Confirm action
+4. View sync results
+
+#### Platform Stats
+
+View detailed statistics:
+
+- User growth over time
+- Problem completion rates
+- Submission patterns
+- System performance
+
+### Page 4: Platform Settings
+
+#### Configuration Options
+
+| Setting | Description |
+|---------|-------------|
+| Registration | Enable/disable new signups |
+| GitHub OAuth | Configure OAuth app |
+| Google OAuth | Configure OAuth app |
+| Gemini Settings | AI judge configuration |
+| Email Provider | Resend/SMTP settings |
+| Rate Limits | API rate limiting |
+
+---
+
+## Best Practices
+
+### For Students
+
+1. **Start Early** - Don't wait until deadline
+2. **Commit Often** - Show your problem-solving process
+3. **Read Feedback** - AI suggestions are valuable
+4. **Iterate** - Improve scores by resubmitting
+5. **Join Events** - Earn bonus XP and badges
+
+### For Faculty
+
+1. **Clear Problems** - Write detailed constraints
+2. **Test Cases** - Cover edge cases
+3. **Timely Feedback** - Review submissions regularly
+4. **Encourage** - Use XP awards for motivation
+5. **Monitor** - Watch for AI-generated submissions
+
+### For Admins
+
+1. **Audit Trail** - Document role changes
+2. **Monitor Health** - Check system metrics
+3. **Backup Data** - Schedule regular backups
+4. **Update Docs** - Keep this manual current
+
+---
+
+## Troubleshooting
+
+### Quick Fixes
+
+| Issue | Quick Solution |
+|-------|---------------|
+| Login fails | Clear cookies and re-login |
+| OAuth error | Verify callback URL matches |
+| Submissions pending | Check worker logs |
+| Repo not found | Re-start problem |
+| Score 0 | Check code for errors |
+| XP not updating | Trigger XP sync |
+
+### Error Codes
+
+| Code | Meaning | Action |
+|------|---------|--------|
+| `E001` | OAuth callback mismatch | Update callback URL |
+| `E002` | GitHub token expired | Re-login with GitHub |
+| `E003` | Worker down | Check Celery service |
+| `E004` | Judge timeout | Resubmit later |
+| `E005` | Redis unavailable | Check Redis connection |
+
+### Getting Help
+
+When reporting issues, include:
+
+- Your role (student/faculty/admin)
+- Page URL where issue occurred
 - Timestamp
-- Submission ID or event ID (if relevant)
-- Screenshot/error message
+- Submission ID or Event ID (if applicable)
+- Screenshot or error message
+- Steps to reproduce
+
+---
+
+<div align="center">
+
+**Need more help?** Check [backend/Dev.md](./backend/Dev.md) for technical details or open an issue.
+
+</div>

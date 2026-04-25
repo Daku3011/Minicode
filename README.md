@@ -1,248 +1,350 @@
 # MiniCode
 
-MiniCode is a full-stack coding arena for colleges and clubs. It combines real GitHub workflows with an AI-assisted judge, role-based learning paths, live events, XP progression, and faculty/admin operations.
+<div align="center">
 
-## What MiniCode Does
+![MiniCode](https://img.shields.io/badge/MiniCode-v2.0-8B5CF6?style=for-the-badge)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql)
 
-- Students solve coding problems in private GitHub repositories.
-- Submissions are queued and evaluated asynchronously by a Celery worker.
-- Faculty create problems, monitor student progress, run events, and award XP.
-- Admins manage users, roles, and system-level controls.
+**The Modern Coding Arena for Colleges & Clubs**
+
+A full-stack coding arena that combines real GitHub workflows with an AI-powered judge, role-based learning paths, live events, XP progression, and faculty/admin operations.
+
+[Features](#features) • [Quick Start](#quick-start) • [Documentation](#documentation) • [Contributing](#contributing)
+
+</div>
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Environment Variables](#environment-variables)
+- [Documentation](#documentation)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+
+---
+
+## Overview
+
+MiniCode transforms competitive programming from a cold, intimidating terminal experience into an engaging, gamified learning journey. Built for:
+
+- **Students** who want to practice coding with real GitHub workflows
+- **Clubs** that run hackathons and coding events
+- **Faculty** who need analytics and student tracking
+- **Admins** who manage the platform
+
+### What Makes MiniCode Different
+
+| Traditional Judges | MiniCode |
+|-------------------|----------|
+| Raw terminal aesthetics | Modern SaaS UI with animations |
+| Fear-based feedback | AI Mentor that empowers |
+| Solo practice | Real GitHub workflow integration |
+| Static problems | Dynamic events & team collaboration |
+| Mysterious scoring | Transparent XP & level progression |
+
+---
+
+## Features
+
+### Core Features
+
+- [x] **GitHub-Native Workflow** - Students code in their own private repositories
+- [x] **AI-Powered Judge** - Gemini-powered code evaluation with detailed feedback
+- [x] **Role-Based Access** - Student, Faculty, and Admin roles with distinct workflows
+- [x] **XP & Levels** - Gamified progression system with leaderboards
+- [x] **Events System** - Hackathons, contests, and team collaboration
+- [x] **Real-time Updates** - WebSocket-powered submission status
+- [x] **AI Plagiarism Detection** - Identifies AI-generated submissions
+- [x] **Cohorts & Labs** - Organized student groups for faculty management
+
+### Authentication
+
+- **GitHub OAuth** - Primary student login
+- **Google OAuth** - Faculty/Admin institutional login (`@scet.ac.in` auto-faculty)
+- **Username/Password** - Development and fallback
+
+### For Faculty
+
+- Problem creation with AI generation assistance
+- Student analytics and submission tracking
+- XP awarding and progress monitoring
+- Event management
+- Cohort and lab organization
+
+### For Admins
+
+- User role management
+- Global system statistics
+- XP synchronization
+- Platform configuration
+
+---
 
 ## Architecture
 
-```text
-Frontend (Next.js 16, React 19)
-  -> Backend API (FastAPI)
-  -> Redis (cache + Celery broker/result backend)
-  -> PostgreSQL or SQLite (SQLModel)
-  -> Celery worker + beat (background judging and scheduled jobs)
-  -> External APIs (GitHub OAuth/API, Google OAuth, Gemini)
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         MINICODE STACK                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌──────────────┐        ┌──────────────────────────────────────────┐ │
+│  │             │        │                                          │ │
+│  │   Student   │───────▶│           FRONTEND                       │ │
+│  │   Browser  │        │     Next.js 16 + React 19                  │ │
+│  │             │        │     - App Router                         │ │
+│  └──────────────┘        │     - Tailwind CSS                     │ │
+│                          │     - Real-time WebSockets            │ │
+│                          └─────────────────┬──────────────────────┘ │
+│                                            │                      │
+│                          ┌─────────────────▼──────────────────────┐ │
+│                          │                                    │ │
+│                          │          BACKEND API                │ │
+│                          │     FastAPI + SQLModel            │ │
+│                          │     - REST Endpoints           │ │
+│                          │     - Auth Middleware       │ │
+│                          │     - Rate Limiting        │ │
+│                          └──────────────┬─────────────────┘ │
+│                                     │                │
+│     ┌──────────────────────────────────────────────┤
+│     │                    │                     │                │
+│     ▼                    ▼                     ▼                │
+│  ┌──────────┐     ┌──────────┐          ┌──────────────┐     │
+│  │          │     │          │          │              │     │
+│  │  Redis   │     │PostgreSQL│          │ GitHub API  │     │
+│  │ (Cache + │◀───▶│ (Data)  │          │ (OAuth +    │     │
+│  │  Broker)│     │         │          │  Repos)    │     │
+│  └────┬────┘     └──────────┘          └──────┬─────┘     │
+│       │                                        │            │
+│       ▼                                        │            │
+│  ┌──────────────┐                              │            │
+│  │            │                              │            │
+│  │   Celery   │◀─────────────────────────────┘            │
+│  │  Worker   │                                         │
+│  │ (Judge)  │         ┌──────────────────────────┐      │
+│  └────┬─────┘         │                          │      │
+│       │               │      Gemini AI           │      │
+│       └──────────────▶│      (AI Judge)        │      │
+│                       │                          │      │
+│                       └──────────────────────────┘      │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-## Repository Structure
+### Tech Stack
 
-```text
-frontend/   Next.js App Router UI + auth context + pages
-backend/    FastAPI app, routers, judge, DB models, worker, scripts
-docker-compose.yml  Full local stack (frontend, backend, postgres, redis, worker, beat)
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| **Frontend** | Next.js | 15+ |
+| **UI Framework** | React | 19 |
+| **Styling** | Tailwind CSS | 3.4+ |
+| **Backend** | FastAPI | 0.100+ |
+| **Database** | SQLModel + PostgreSQL | 15 |
+| **Cache/Broker** | Redis + Celery | 7+ |
+| **AI Judge** | Google Gemini | 2.5 |
+| **Auth** | JWT + OAuth2 | - |
+| **Container** | Docker | 24+ |
+
+### Repository Structure
+
+```
+Minicode/
+├── frontend/                  # Next.js application
+│   ├── src/
+│   │   ├── app/            # App Router pages
+│   │   ├── components/      # React components
+│   │   ├── lib/           # Utilities
+│   │   └── styles/        # Global styles
+│   └── public/            # Static assets
+├── backend/                 # FastAPI application
+│   ├── routers/           # API route handlers
+│   ├── models.py          # SQLModel definitions
+│   ├── auth.py           # Authentication logic
+│   ├── judge.py         # AI judge integration
+│   ├── worker.py        # Celery worker
+│   └── scripts/          # DB migration & seeding
+├── docker-compose.yml       # Full local stack
+├── .env.example         # Environment template
+└── README.md            # This file
 ```
 
-## Core Features
+---
 
-- Role-based auth and access control (`student`, `faculty`, `admin`)
-- GitHub OAuth login for coding workflow
-- Google OAuth login path for faculty/admin (`@scet.ac.in` auto-faculty rule)
-- Problem lifecycle: create, start (repo provision), submit, async judge result
-- Events, team participation, invitations, and event leaderboard
-- News + notifications + unread tracking
-- XP, levels, leaderboard, faculty XP rewards
-- Redis-backed caching and rate-limiting middleware support
+## Quick Start
 
-## Quick Start (Docker Recommended)
+### Prerequisites
 
-## 1. Prerequisites
+- Docker & Docker Compose
+- GitHub OAuth App credentials
+- Google OAuth credentials (optional for faculty)
+- Gemini API key
 
-- Docker
-- Docker Compose
-
-## 2. Configure Environment
-
-From project root:
+### 1. Clone & Configure
 
 ```bash
+git clone https://github.com/your-repo/Minicode.git
+cd Minicode
 cp .env.example .env
 ```
 
-Update required values in `.env`:
+### 2. Set Environment Variables
 
-- `GITHUB_CLIENT_ID`
-- `GITHUB_CLIENT_SECRET`
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- `GEMINI_API_KEY`
-- `JWT_SECRET`
-- `FERNET_KEY`
+Edit `.env` with your credentials:
 
-Generate secure values:
+```env
+# Essential
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+GEMINI_API_KEY=your_gemini_api_key
+JWT_SECRET=your_jwt_secret
 
-```bash
-openssl rand -hex 32   # JWT_SECRET
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"  # FERNET_KEY
+# Security (generate with)
+# openssl rand -hex 32
+FERNET_KEY=your_fernet_key
+
+# Optional
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
-## 3. Start the Stack
+### 3. Start the Stack
 
 ```bash
 docker-compose up -d --build
 ```
 
-Services:
+Access points:
+- Frontend: http://localhost:3000
+- API Docs: http://localhost:8000/docs
+- Health: http://localhost:8000/health
 
-- Frontend: `http://localhost:3000`
-- Backend API docs: `http://localhost:8000/docs`
-- Backend health: `http://localhost:8000/health`
+### 4. Development Accounts
 
-## 4. Default Development Accounts
+Seed data provides:
 
-Seeded automatically by backend startup script:
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | admin | admin123 |
+| Faculty | faculty | faculty123 |
+| Student | student | student123 |
 
-- Admin: `admin` / `admin123`
-- Faculty: `faculty` / `faculty123`
-- Student: `student` / `student123`
-
-## Local Development (Without Docker)
-
-## Backend
-
-**Linux/macOS:**
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp ../.env.example .env  # then edit values
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Windows (PowerShell):**
-```powershell
-cd backend
-python -m venv venv
-.\venv\Scripts\activate
-pip install -r requirements.txt
-copy ..\.env.example .env  # then edit values
-python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-## Worker (required for submission judging)
-
-**Linux/macOS:**
-```bash
-cd backend
-source venv/bin/activate
-celery -A worker.celery_app worker --loglevel=info
-```
-
-**Windows:**
-```bash
-cd backend
-.\venv\Scripts\activate
-celery -A worker.celery_app worker --loglevel=info -P solo
-```
-
-Optional scheduler:
-
-**Linux/macOS:**
-```bash
-cd backend
-source venv/bin/activate
-celery -A worker.celery_app beat --loglevel=info
-```
-
-**Windows:**
-```bash
-cd backend
-.\venv\Scripts\activate
-celery -A worker.celery_app beat --loglevel=info
-```
-
-## Frontend
-
-```bash
-cd frontend
-npm install
-copy ..\.env.example .env.local  # Use 'cp' on Linux
-# set NEXT_PUBLIC_API_URL=http://localhost:8000
-npm run dev
-```
+---
 
 ## Environment Variables
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | SQLModel database connection string |
-| `REDIS_URL` | Redis connection for cache |
-| `CELERY_BROKER_URL` | Celery broker and backend |
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth |
-| `GEMINI_API_KEY` | AI judge backend |
-| `JWT_SECRET` | JWT signing key |
-| `FERNET_KEY` | Encryption key for stored GitHub access tokens |
+### Essential
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://...` |
+| `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
+| `CELERY_BROKER_URL` | Celery broker URL | `redis://...` |
+| `GITHUB_CLIENT_ID` | GitHub OAuth App ID | `Iv1.xxx` |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth App Secret | `xxx` |
+| `GEMINI_API_KEY` | Google AI API Key | `AIza.xxx` |
+| `JWT_SECRET` | JWT signing secret (32+ bytes) | `hex-encoded` |
+| `FERNET_KEY` | Token encryption key | `FernetKey` |
+
+### Optional
+
+| Variable | Description |
+|----------|-------------|
+| `GOOGLE_CLIENT_ID` | Google OAuth App ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth App Secret |
 | `CORS_ORIGINS` | Allowed frontend origins |
-| `NEXT_PUBLIC_API_URL` | Frontend API base URL |
-| `RESEND_API_KEY` | API Key for Resend email provider |
-| `SMTP_EMAIL` / `SMTP_PASSWORD` | Fallback SMTP credentials (if Resend not used) |
+| `FRONTEND_API_URL` | Backend URL for frontend |
+| `RESEND_API_KEY` | Email provider API key |
+| `SMTP_EMAIL` / `SMTP_PASSWORD` | SMTP fallback credentials |
 
-## Authentication and Roles
+---
 
-- Student path:
-  - Usually GitHub OAuth.
-  - Can use seeded credentials in development.
-- Faculty/Admin path:
-  - Username/password (`/auth/login`) or Google OAuth callback.
-  - Google flow auto-creates `faculty` users for `@scet.ac.in` emails.
+## Documentation
 
-Role guards are enforced in backend dependencies (`require_faculty`, `require_admin`).
+| Document | Description |
+|----------|-------------|
+| [USER_MANUAL.md](./USER_MANUAL.md) | Complete user guide by role |
+| [backend/Dev.md](./backend/Dev.md) | Backend developer reference |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Deployment guide |
+| [DESIGN_VISION.md](./DESIGN_VISION.md) | UI/UX design philosophy |
+| [SKILLS.md](./SKILLS.md) | Development skills library |
+
+---
 
 ## Submission Pipeline
 
-1. Student starts a problem: backend creates private GitHub repo.
-2. Student codes in that repository.
-3. Student submits from UI.
-4. API creates `Submission(status="pending")` and queues Celery task.
-5. Worker fetches code and commit history from GitHub.
-6. AI judge analyzes correctness, quality, and AI-likelihood signal.
-7. Submission updated with score, status, and feedback.
-
-Important: This judge is AI-analysis based and does not execute the code in a local sandbox.
-
-## Testing
-
-## Backend
-
-```bash
-cd backend
-pytest
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Start    │───▶│    Code    │───▶│   Submit   │───▶│   Pending  │
+│  Problem   │    │   Locally   │    │   Code     │    │   Queue    │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────┬─────┘
+                                                           │
+         ┌──────────────────────────────────────────────────┘
+         ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Fetch    │───▶│   AI Judge  │───▶│   Update   │───▶│   Notify   │
+│  from GitHub│    │  (Gemini)  │    │  & Score  │    │  (WebSocket│
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
 ```
 
-## Frontend
+1. **Start Problem** - Creates private GitHub repository
+2. **Code Locally** - Student writes solution with Git commits
+3. **Submit** - Triggers async evaluation pipeline
+4. **Pending** - Celery worker picks up task
+5. **Fetch** - Worker retrieves code from GitHub
+6. **AI Judge** - Gemini analyzes code and test cases
+7. **Update** - Stores score, feedback, and XP
+8. **Notify** - Real-time WebSocket update to UI
 
-```bash
-cd frontend
-npm run lint
-npm run test
-```
-
-## Useful Operations
-
-```bash
-# logs
-docker-compose logs -f backend
-docker-compose logs -f celery_worker
-
-# restart core services
-docker-compose restart backend frontend
-
-# stop everything
-docker-compose down
-```
-
-## Documentation Map
-
-- User guide: `USER_MANUAL.md`
-- Backend deep dive: `backend/Dev.md`
-- Deployment specifics: `DEPLOYMENT.md`
-- Product/design direction: `DESIGN_VISION.md`
+---
 
 ## Troubleshooting
 
-- Login fails after OAuth:
-  - Verify callback URLs exactly match frontend routes.
-  - Ensure client IDs/secrets are correctly set in environment.
-- Submissions stay `pending`:
-  - Celery worker is not running or cannot reach Redis.
-- GitHub repo creation fails:
-  - Ensure user logged in through GitHub and token encryption key (`FERNET_KEY`) is stable.
-- AI judge returns error:
-  - Check `GEMINI_API_KEY` and worker logs.
+### Common Issues
+
+| Issue | Solution |
+|-------|---------|
+| OAuth login fails | Verify callback URLs match frontend origin |
+| Submissions stuck pending | Check Celery worker and Redis |
+| Repo creation fails | Ensure FERNET_KEY is stable |
+| AI judge error | Verify GEMINI_API_KEY and quota |
+| WebSocket disconnect | Check Redis connectivity |
+
+### Debug Commands
+
+```bash
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f celery_worker
+
+# Restart services
+docker-compose restart backend frontend
+
+# Check health
+curl http://localhost:8000/health
+```
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+<div align="center">
+
+**Built with passion for the next generation of developers**
+
+
+</div>

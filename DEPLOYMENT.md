@@ -18,20 +18,20 @@ MiniCode's architecture is built on modern, scalable cloud primitives:
 │  Vercel/Render  │       │   Render/Railway   │       │   w/ PgBouncer   │
 │                 │       │                    │       │                  │
 └─────────────────┘       └─────────┬──────────┘       └──────────────────┘
-                                    │
-    ┌───────────────────────────────┼───────────────────────────────┐
-    ▼                               ▼                               ▼
-┌──────────────┐             ┌──────────────┐               ┌──────────────┐
-│  GitHub API  │             │   Redis DB   │               │ Celery Fleet │
-│ (OAuth, Repos│             │ (Rate Limits,│               │ (Async Judge │
-│  & Commits)  │             │  Caching)    │               │  Execution)  │
-└──────────────┘             └──────────────┘               └──────────────┘
-                                    │
-                                    ▼
-                             ┌──────────────┐
-                             │  Gemini 2.5  │
-                             │ (AI Judging) │
-                             └──────────────┘
+                                     │
+     ┌───────────────────────────────┼───────────────────────────────┐
+     ▼                               ▼                               ▼
+ ┌──────────────┐             ┌──────────────┐               ┌──────────────┐
+ │  GitHub API  │             │   Redis DB   │               │ Celery Fleet │
+ │ (OAuth, Repos│             │ (Rate Limits,│               │ (Async Judge │
+ │  & Commits)  │             │  Caching)    │               │  Execution)  │
+ └──────────────┘             └──────────────┘               └──────────────┘
+                                     │
+                                     ▼
+                              ┌──────────────┐
+                              │  Gemini 2.5  │
+                              │ (AI Judging) │
+                              └──────────────┘
 ```
 
 ---
@@ -83,7 +83,7 @@ If you are a student, you can run the **Production Tier for FREE** using the [Gi
 1. Create a project on [Supabase.com](https://supabase.com/).
 2. Navigate to **Project Settings → Database**.
 3. Copy the **Connection Pooling URI** (Port `6543`).
-   *Format:* `postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
+   - *Format:* `postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
 4. Set **Pool Mode** to **Transaction**.
 
 ### 2️⃣ OAuth (GitHub)
@@ -94,7 +94,8 @@ If you are a student, you can run the **Production Tier for FREE** using the [Gi
 
 ### 3️⃣ AI Engine (Gemini)
 1. Open [Google AI Studio](https://aistudio.google.com/apikey).
-2. Generate an API Key. Note: The free tier allows 15 RPM, meaning 15 students can submit code simultaneously every minute.
+2. Generate an API Key.
+   - Note: The free tier allows 15 RPM, meaning 15 students can submit code simultaneously every minute.
 
 ### 4️⃣ The Zero-Cost Stack (100% Free)
 If you want to deploy MiniCode without spending a dime, follow this "Multi-Cloud" approach.
@@ -123,7 +124,7 @@ Render's Free Tier only allows one Web Service. We have optimized the code to ru
   - `GEMINI_API_KEY`
   - `SMTP_EMAIL` / `SMTP_PASSWORD`
   - `PORT`: `8000`
-- **Memory Limit**: Ensure `WEB_CONCURRENCY=1` to stay within the 512MB free RAM limit.
+- **Memory Limit:** Ensure `WEB_CONCURRENCY=1` to stay within the 512MB free RAM limit.
 
 #### 4. Frontend: [Vercel](https://vercel.com/) (Hobby Tier)
 - Connect your GitHub repo.
@@ -138,7 +139,7 @@ Render's Free Tier spins down after 15 minutes of inactivity. To keep it respons
 2. Set it to ping your backend's `/health` endpoint every **14 minutes**.
 3. Target URL: `https://your-app.onrender.com/health`
 
-#### 5. 🛠 Troubleshooting: Common Errors
+#### 🛠 Troubleshooting: Common Errors
 
 > [!IMPORTANT]
 > **Error: "could not translate host name... Name does not resolve"**
@@ -152,34 +153,3 @@ Render's Free Tier spins down after 15 minutes of inactivity. To keep it respons
 > This means your `minicode-worker` is trying to look for a local Redis. Ensure you have set **both** of these in your Render Environment:
 > - `REDIS_URL`: `rediss://...` (from Upstash)
 > - `CELERY_BROKER_URL`: `rediss://...` (same as above)
-
-### 6️⃣ Advanced: Render Blueprint (Infrastructure as Code)
-If you have a **Render Starter** ($7/mo) or higher plan, you can use the `render.yaml` file in the root directory. This will automate the creation of all services:
-1. Go to **Blueprints** in your Render Dashboard.
-2. Connect your MiniCode repository.
-3. Render will auto-detect `render.yaml` and provision:
-   - **PostgreSQL Database**
-   - **Redis Cache** (Key Value instance)
-   - **Backend API**
-   - **Celery Worker & Beat**
-   - **Frontend**
-4. Your entire stack is now synchronized and production-ready in one click.
-
----
-
-## 🐳 Self-Hosted Docker Deployment
-For full control or utilizing a DigitalOcean student droplet, use the provided `docker-compose.yml`:
-
-```bash
-# Clone the repository
-git clone https://github.com/Daku3011/MiniCode.git
-cd MiniCode
-
-# Setup variables
-cp .env.example .env
-nano .env # Fill in your DB, API keys, and GitHub credentials
-
-# Build and run the entire ecosystem (Frontend, DB, Backend, Redis, Celery)
-docker-compose up -d --build
-```
-Ensure you set your server's IP or Domain in the GitHub OAuth callback configurations.
