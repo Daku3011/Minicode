@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import InteractiveBackground from "@/components/InteractiveBackground";
 import PageLoader from "@/components/PageLoader";
+import DesktopEnforcer from "@/components/DesktopEnforcer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -28,16 +29,18 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
         <AuthProvider>
-          <Suspense fallback={null}>
-            <PageLoader />
-          </Suspense>
-          <InteractiveBackground />
-          <Navbar/>
-          <main>
+          <DesktopEnforcer>
             <Suspense fallback={null}>
-              {children}
+              <PageLoader />
             </Suspense>
-          </main>
+            <InteractiveBackground />
+            <Navbar/>
+            <main>
+              <Suspense fallback={null}>
+                {children}
+              </Suspense>
+            </main>
+          </DesktopEnforcer>
         </AuthProvider>
         <Analytics />
         <SpeedInsights />

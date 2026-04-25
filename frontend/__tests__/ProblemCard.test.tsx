@@ -9,6 +9,7 @@ describe('ProblemCard', () => {
             title: 'Two Sum',
             difficulty: 'Easy',
             points: 100,
+            level: 1,
             description: 'Find two numbers that add up to a target'
         }
         
@@ -25,6 +26,7 @@ describe('ProblemCard', () => {
             id: 2,
             title: 'Reverse String',
             difficulty: 'Medium',
+            level: 2,
             points: 200
         }
         
@@ -34,3 +36,4 @@ describe('ProblemCard', () => {
         expect(screen.getByText(/Build a highly optimized solution for Reverse String/)).toBeInTheDocument()
     })
 })
+
