@@ -2,9 +2,8 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, Upload } from "lucide-react";
+import { X, Send, Loader2, CheckCircle2, AlertCircle, Upload } from "lucide-react";
 import api from "@/lib/api";
-import { clsx } from "clsx";
 
 interface FeedbackModalProps {
     isOpen: boolean;
@@ -108,7 +107,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                             <div className="flex items-center justify-between mb-8">
                                 <div>
                                     <h2 className="text-3xl font-black text-white tracking-tighter uppercase italic">Feedback</h2>
-                                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-1">Help us improve the Arena</p>
+                                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] mt-1">Help us improve Minicode</p>
                                 </div>
                                 <button
                                     onClick={handleClose}
@@ -127,57 +126,58 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                                     <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6 border border-emerald-500/30">
                                         <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Transmission Successful</h3>
-                                    <p className="text-slate-400 mt-2 font-medium">Thank you for your valuable input.</p>
+                                    <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Feedback Sent</h3>
+                                    <p className="text-slate-400 mt-2 font-medium">Thanks! We received your message.</p>
                                 </motion.div>
                             ) : (
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Source Protocol (Email)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Email Address</label>
                                             <input
                                                 type="email"
                                                 required
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary focus:bg-white/[0.05] transition-all placeholder:text-white/10 font-bold"
-                                                placeholder="your@email.com"
+                                                placeholder="you@example.com"
                                             />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Signal Header (Subject)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Subject</label>
                                             <input
                                                 type="text"
                                                 required
                                                 value={subject}
                                                 onChange={(e) => setSubject(e.target.value)}
                                                 className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary focus:bg-white/[0.05] transition-all placeholder:text-white/10 font-bold"
-                                                placeholder="What's this about?"
+                                                placeholder="What is this about?"
                                             />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Data Payload (Message)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Message</label>
                                             <textarea
                                                 required
                                                 value={message}
                                                 onChange={(e) => setMessage(e.target.value)}
                                                 rows={4}
                                                 className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary focus:bg-white/[0.05] transition-all placeholder:text-white/10 font-bold resize-none"
-                                                placeholder="Describe your feedback or report an issue..."
+                                                placeholder="Tell us your feedback or describe the issue..."
                                             />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Visual Evidence (Optional Image)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 ml-4">Screenshot (Optional)</label>
                                             <div className="flex gap-4 items-start">
                                                 <div 
                                                     onClick={() => fileInputRef.current?.click()}
                                                     className="flex-1 border-2 border-dashed border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group"
                                                 >
                                                     <Upload className="w-8 h-8 text-slate-500 group-hover:text-primary transition-colors" />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Select Image</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-white transition-colors">Choose Image</span>
+                                                    <span className="text-[9px] uppercase tracking-[0.25em] text-slate-600">Max size: 5MB</span>
                                                     <input 
                                                         type="file" 
                                                         ref={fileInputRef} 
@@ -223,7 +223,7 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
                                             <Loader2 className="w-6 h-6 animate-spin" />
                                         ) : (
                                             <>
-                                                <span className="relative z-10">Initialize Transmission</span>
+                                                <span className="relative z-10">Send Feedback</span>
                                                 <Send className="w-5 h-5 relative z-10 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                             </>
                                         )}

@@ -695,7 +695,7 @@ export default function FAQPage() {
 
                 {/* Topics */}
                 <div className="space-y-6">
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence>
                         {filteredTopics.map((topic, index) => (
                             <TopicSection key={topic.title} topic={topic} index={index} />
                         ))}

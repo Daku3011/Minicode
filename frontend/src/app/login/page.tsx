@@ -156,29 +156,32 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        {/* Feedback Link */}
-                        <div className="relative mt-10 flex flex-col items-center justify-center group cursor-pointer">
-                            {/* Cat image behind button */}
-                            {/* <img 
-                                src="/cat-feedback.jpg" 
-                                alt="Cat mascot" 
-                                className="absolute pointer-events-none z-0 mix-blend-screen  transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-0 opacity-100" 
-                                style={{ 
-                                    width: '190px', 
-                                    height: 'auto',
-                                    filter: 'invert(1)'
-                                }} 
-                            /> */}
-                            
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setIsFeedbackOpen(true)}
-                                className="relative z-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-green-500/30 border border-blue-500/30 text-white hover:bg-[#1e293b] hover:border-blue-400/50 transition-all shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-                            >
-                                <MessageSquare className="w-5 h-5 text-blue-400 group-hover:rotate-12 transition-transform" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Have Feedback? Share it here</span>
-                            </motion.button>
+                        {/* Help & Feedback Links */}
+                        <div className="flex flex-col items-center lg:items-start gap-4 mt-8">
+                            {/* Help & FAQ Button */}
+                            <Link href="/faq">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="group relative flex items-center gap-3 px-6 py-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-white hover:bg-blue-500/20 hover:border-blue-500/40 transition-all duration-300 shadow-lg shadow-blue-500/5 group"
+                                >
+                                    <BookOpen className="w-5 h-5 text-blue-400 group-hover:rotate-6 transition-transform" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Help & FAQ</span>
+                                </motion.button>
+                            </Link>
+
+                            {/* Feedback Button */}
+                            <div className="group cursor-pointer">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setIsFeedbackOpen(true)}
+                                    className="relative z-10 flex items-center gap-2 px-7 py-3 rounded-2xl bg-green-500/30 border border-blue-500/30 text-white hover:bg-[#1e293b] hover:border-blue-400/50 transition-all shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+                                >
+                                    <MessageSquare className="w-5 h-5 text-blue-400 group-hover:rotate-12 transition-transform" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Have Feedback? Share it here</span>
+                                </motion.button>
+                            </div>
                         </div>
                     </div>
 
@@ -243,8 +246,6 @@ export default function LoginPage() {
                                             <Link href="/terms" className="text-xs text-gray-400 hover:text-blue-600 transition-colors hover:underline underline-offset-4">Terms of Service</Link>
                                             <div className="w-1 h-1 rounded-full bg-blue-200" />
                                             <Link href="/privacy" className="text-xs text-gray-400 hover:text-blue-600 transition-colors hover:underline underline-offset-4">Privacy Policy</Link>
-                                            <div className="w-1 h-1 rounded-full bg-blue-200" />
-                                            <Link href="/faq" className="text-xs text-blue-600 font-semibold hover:text-blue-700 transition-colors hover:underline underline-offset-4">Help & FAQ</Link>
                                         </div>
                                     </div>
                                 </div>
