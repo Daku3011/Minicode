@@ -30,7 +30,7 @@ def generate_otp() -> str:
 
 
 def send_verification_email(to_email: str, otp: str) -> bool:
-    from email_service import send_email
+    from services.email_service import send_email
 
     html = f"""
     <!DOCTYPE html>

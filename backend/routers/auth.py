@@ -7,9 +7,9 @@ import httpx
 import logging
 from typing import Optional
 
-from database import get_session
-from models import User
-from auth import (
+from core.database import get_session
+from core.models import User
+from services.auth import (
     verify_password,
     create_access_token,
     get_github_user_info,

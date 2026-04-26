@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, BackgroundTasks
 from typing import Optional
 import logging
-from email_service import send_email
+from services.email_service import send_email
 
 logger = logging.getLogger(__name__)
 

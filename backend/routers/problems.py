@@ -5,10 +5,10 @@ import bleach
 import logging
 from fastapi_cache.decorator import cache
 from pydantic import BaseModel
-from database import get_session
-from models import User, Problem, TestCase, NewsItem, LabProblemLink
-from auth import require_faculty, get_current_user
-from ai_generator import generate_problem_content, extract_text_from_file
+from core.database import get_session
+from core.models import User, Problem, TestCase, NewsItem, LabProblemLink
+from services.auth import require_faculty, get_current_user
+from services.ai_generator import generate_problem_content, extract_text_from_file
 
 logger = logging.getLogger(__name__)
 

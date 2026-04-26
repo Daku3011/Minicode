@@ -433,7 +433,7 @@
 - `/backend/routers/cohorts.py`
 - `/backend/routers/faculty.py`
 - `/backend/routers/admin.py`
-- `/backend/models.py`
+- `/backend/core/models.py`
 
 ## 10. Files to Inspect Further
 

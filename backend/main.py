@@ -14,7 +14,7 @@ from redis import asyncio as aioredis
 from dotenv import load_dotenv
 from fastapi import WebSocket, WebSocketDisconnect
 import asyncio
-from websockets_manager import manager
+from services.websockets_manager import manager
 
 # Load environment variables
 load_dotenv()
@@ -154,9 +154,9 @@ from routers.admin import router as admin_router
 from routers.faculty import router as faculty_router
 from routers.leaderboard import router as leaderboard_router
 from routers.users import router as users_router
-from events import router as events_router
-from news import router as news_router
-from notifications import router as notifications_router
+from routers.events import router as events_router
+from routers.news import router as news_router
+from routers.notifications import router as notifications_router
 from routers.feedback import router as feedback_router
 from routers.cohorts import router as cohorts_router
 from routers.labs import router as labs_router

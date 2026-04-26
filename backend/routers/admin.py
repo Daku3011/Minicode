@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 import logging
 
-from database import get_session
-from models import User, Submission
-from auth import require_admin
+from core.database import get_session
+from core.models import User, Submission
+from services.auth import require_admin
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def admin_sync_all_xp(admin: User = Depends(require_admin)):
     Manually trigger XP synchronization for all users.
     Only accessible by admins.
     """
-    from sync_xp import sync_all_users_xp
+    from services.sync_xp import sync_all_users_xp
     updated_count = sync_all_users_xp()
     return {"message": f"XP synchronization completed. Updated {updated_count} users."}
 

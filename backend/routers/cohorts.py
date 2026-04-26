@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import Optional
 
-from database import get_session
+from core.database import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import Optional
 
-from database import get_session
-from models import User, Cohort, UserCohortLink
-from auth import require_faculty, get_current_user
+from core.database import get_session
+from core.models import User, Cohort, UserCohortLink
+from services.auth import require_faculty, get_current_user
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/cohorts", tags=["cohorts"])
@@ -218,7 +218,7 @@ def delete_cohort(
         session.delete(link)
         
     # Later we might also delete associated labs, but we will delete them here
-    from models import Lab, LabProblemLink
+    from core.models import Lab, LabProblemLink
     labs = session.exec(select(Lab).where(Lab.cohort_id == cohort_id)).all()
     for lab in labs:
         # delete lab problem links

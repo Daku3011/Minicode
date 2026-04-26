@@ -3,7 +3,7 @@ import base64
 from datetime import datetime, timezone, timedelta
 from sqlmodel import Session, select, func
 from typing import List, Dict, Any
-from models import User, Problem, Submission
+from core.models import User, Problem, Submission
 import logging
 import os
 

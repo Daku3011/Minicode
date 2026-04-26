@@ -3,9 +3,9 @@ from sqlmodel import Session, select
 from typing import Optional
 from datetime import datetime
 
-from database import get_session
-from models import User, Cohort, Lab, LabProblemLink, Problem
-from auth import require_faculty, get_current_user
+from core.database import get_session
+from core.models import User, Cohort, Lab, LabProblemLink, Problem
+from services.auth import require_faculty, get_current_user
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/labs", tags=["labs"])
@@ -75,7 +75,7 @@ def get_lab_detail(
     if not cohort:
         raise HTTPException(status_code=404, detail="Cohort not found")
         
-    from models import UserCohortLink
+    from core.models import UserCohortLink
     is_member = any(link.user_id == user.id for link in session.exec(select(UserCohortLink).where(UserCohortLink.cohort_id == cohort.id)).all())
     is_faculty = cohort.faculty_id == user.id
     

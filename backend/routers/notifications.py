@@ -4,8 +4,8 @@ from typing import List, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel
 
-from models import User, Notification, NewsItem
-from auth import get_current_user, get_session
+from core.models import User, Notification, NewsItem
+from services.auth import get_current_user, get_session
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 

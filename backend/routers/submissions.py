@@ -3,10 +3,10 @@ from sqlmodel import Session
 from pydantic import BaseModel, field_validator
 import logging
 
-from database import get_session
-from models import User, Problem, Submission
-from auth import get_current_user
-from repo_manager import create_student_repo, build_repo_name
+from core.database import get_session
+from core.models import User, Problem, Submission
+from services.auth import get_current_user
+from services.repo_manager import create_student_repo, build_repo_name
 
 logger = logging.getLogger(__name__)
 

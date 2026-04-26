@@ -2,8 +2,8 @@ import logging
 import re
 from github import Github
 from sqlmodel import Session
-from models import User, Problem
-from auth import decrypt_token
+from core.models import User, Problem
+from services.auth import decrypt_token
 
 logger = logging.getLogger(__name__)
 

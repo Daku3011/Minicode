@@ -8,9 +8,9 @@ import json
 import logging
 from jose import JWTError, jwt
 
-from models import User, NewsItem
-from models_events import Event, EventParticipant, EventSubmission, TeamInvitation
-from auth import get_current_user, require_faculty, get_session, JWT_SECRET, ALGORITHM
+from core.models import User, NewsItem
+from core.models_events import Event, EventParticipant, EventSubmission, TeamInvitation
+from services.auth import get_current_user, require_faculty, get_session, JWT_SECRET, ALGORITHM
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -1036,7 +1036,7 @@ async def award_participant(
     session.commit()
 
     # Invalidate leaderboard cache
-    from utils_cache import invalidate_leaderboard_cache
+    from utils.utils_cache import invalidate_leaderboard_cache
 
     invalidate_leaderboard_cache()
 

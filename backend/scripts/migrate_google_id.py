@@ -5,7 +5,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlmodel import Session, text
-from database import engine
+from core.database import engine
 
 def migrate():
     print("Running migration to add google_id column...")

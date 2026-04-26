@@ -5,12 +5,12 @@ import logging
 from datetime import datetime, timezone
 from pydantic import BaseModel
 
-from database import get_session
-from models import User, Problem, Submission, Notification
-from auth import require_faculty
+from core.database import get_session
+from core.models import User, Problem, Submission, Notification
+from services.auth import require_faculty
 from routers.users import get_user_profile_logic
-from sync_xp import calculate_unlocked_level_from_xp
-from utils_cache import invalidate_leaderboard_cache
+from services.sync_xp import calculate_unlocked_level_from_xp
+from utils.utils_cache import invalidate_leaderboard_cache
 
 
 logger = logging.getLogger(__name__)

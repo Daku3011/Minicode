@@ -165,10 +165,10 @@ Minicode/
 │   └── public/            # Static assets
 ├── backend/                 # FastAPI application
 │   ├── routers/           # API route handlers
-│   ├── models.py          # SQLModel definitions
-│   ├── auth.py           # Authentication logic
-│   ├── judge.py         # AI judge integration
-│   ├── worker.py        # Celery worker
+│   ├── core/              # Database & SQLModel definitions
+│   ├── services/          # Business logic (auth, judge, email)
+│   ├── utils/             # Shared utilities (caching)
+│   ├── worker.py          # Celery worker
 │   └── scripts/          # DB migration & seeding
 ├── docker-compose.yml       # Full local stack
 ├── .env.example         # Environment template

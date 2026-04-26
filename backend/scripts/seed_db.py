@@ -3,12 +3,12 @@ import os
 from sqlmodel import Session, select
 from datetime import datetime, timezone
 
-# Add the parent directory to sys.path to allow importing from database and models
+# Add the parent directory to sys.path to allow importing from core.database and models
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import engine
-from models import User, Problem, TestCase
-from auth import get_password_hash
+from core.database import engine
+from core.models import User, Problem, TestCase
+from services.auth import get_password_hash
 
 
 def seed_database():

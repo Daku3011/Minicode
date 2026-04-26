@@ -26,10 +26,10 @@ Backend responsibilities:
 ## 3. Runtime Entry Points
 
 - API app: `backend/main.py`
-- DB engine/session: `backend/database.py`
-- Auth primitives: `backend/auth.py`
+- DB engine/session: `backend/core/database.py`
+- Auth primitives: `backend/services/auth.py`
 - Celery worker app/tasks: `backend/worker.py`
-- Judge logic: `backend/judge.py`
+- Judge logic: `backend/services/judge.py`
 
 ## 4. Startup Lifecycle (`main.py`)
 
@@ -47,7 +47,7 @@ Middlewares and security:
 - CORS from `CORS_ORIGINS` env.
 - SlowAPI limiter configured globally.
 
-## 5. Database Model Map (`models.py`)
+## 5. Database Model Map (`core/models.py`)
 
 Core tables:
 
@@ -64,10 +64,10 @@ Additional feature tables:
 
 - `NewsItem`
 - `Notification`
-- Event models are in `models_events.py`:
+- Event models are in `core/models_events.py`:
   - `Event`, `EventParticipant`, `EventSubmission`, `TeamInvitation`
 
-## 6. Authentication and Authorization (`auth.py` + `routers/auth.py`)
+## 6. Authentication and Authorization (`services/auth.py` + `routers/auth.py`)
 
 Supported auth flows:
 

@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-from models import Problem
-from auth import get_current_user, require_faculty
+from core.models import Problem
+from services.auth import get_current_user, require_faculty
 
 def test_health_check(client: TestClient):
     response = client.get("/health")
@@ -30,6 +30,8 @@ def test_create_problem(client: TestClient, session: Session, test_faculty):
     response = client.post("/problems", json=payload)
     app.dependency_overrides.clear()
     
+    print("RESPONSE STATUS:", response.status_code)
+    print("RESPONSE JSON:", response.json())
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == "Two Sum"

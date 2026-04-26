@@ -8,12 +8,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Add parent directory to path to allow importing from database and models
+# Add parent directory to path to allow importing from core.database and models
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import engine
-from models import User, Submission
-from email_service import send_engagement_lure_emails, send_faculty_report
+from core.database import engine
+from core.models import User, Submission
+from services.email_service import send_engagement_lure_emails, send_faculty_report
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

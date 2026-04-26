@@ -2,11 +2,11 @@ import os
 import logging
 import json
 from google import genai
-from models import Submission, TestCase, User, Problem
+from core.models import Submission, TestCase, User, Problem
 from github import Github
-from auth import decrypt_token
-from utils_cache import invalidate_leaderboard_cache
-from sync_xp import calculate_unlocked_level_from_xp
+from services.auth import decrypt_token
+from utils.utils_cache import invalidate_leaderboard_cache
+from services.sync_xp import calculate_unlocked_level_from_xp
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)

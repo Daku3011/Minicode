@@ -3,9 +3,9 @@ from sqlmodel import Session, select, func
 import logging
 from fastapi_cache.decorator import cache
 
-from database import get_session
-from models import User, Submission
-from utils_cache import leaderboard_cache_key_builder
+from core.database import get_session
+from core.models import User, Submission
+from utils.utils_cache import leaderboard_cache_key_builder
 
 logger = logging.getLogger(__name__)
 

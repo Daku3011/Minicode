@@ -5,10 +5,10 @@ from pydantic import BaseModel
 import logging
 from datetime import datetime, timezone, timedelta
 
-from database import get_session
-from models import User, Problem, Submission, Notification, QuestRewardClaim
-from auth import get_current_user
-from sync_xp import calculate_unlocked_level_from_xp, LEVEL_NAMES
+from core.database import get_session
+from core.models import User, Problem, Submission, Notification, QuestRewardClaim
+from services.auth import get_current_user
+from services.sync_xp import calculate_unlocked_level_from_xp, LEVEL_NAMES
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +273,7 @@ async def send_verification_email(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    from email_verification import (
+    from services.email_verification import (
         generate_otp,
         send_verification_email as send_email_func,
         EmailVerification,
@@ -318,7 +318,7 @@ async def verify_email(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    from email_verification import EmailVerification
+    from services.email_verification import EmailVerification
 
     verification = session.exec(
         select(EmailVerification).where(

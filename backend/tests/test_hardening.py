@@ -1,6 +1,6 @@
 import pytest
-from auth import encrypt_token, decrypt_token
-from models import User, Problem, Submission
+from services.auth import encrypt_token, decrypt_token
+from core.models import User, Problem, Submission
 from sqlmodel import Session, select
 
 def test_token_encryption():

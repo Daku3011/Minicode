@@ -12,9 +12,9 @@ if _backend_dir not in sys.path:
 
 load_dotenv()
 
-from models import Submission, Problem, TestCase, User
-from database import engine
-from judge import judge_submission
+from core.models import Submission, Problem, TestCase, User
+from core.database import engine
+from services.judge import judge_submission
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ celery_app.conf.update(**celery_config)
 
 @celery_app.task(name="sync_xp_task")
 def sync_xp_task():
-    from sync_xp import sync_all_users_xp
+    from services.sync_xp import sync_all_users_xp
 
     logger.info("Starting automated XP synchronization task...")
     try:
@@ -64,7 +64,7 @@ def sync_xp_task():
 
 @celery_app.task(name="refresh_leaderboard_task")
 def refresh_leaderboard_task():
-    from utils_cache import invalidate_leaderboard_cache
+    from utils.utils_cache import invalidate_leaderboard_cache
 
     logger.info("Refreshing leaderboard cache...")
     try:
@@ -99,7 +99,7 @@ def process_submission_task(submission_id: int):
             )
             logger.info(f"Successfully evaluated submission {submission_id}")
 
-            from utils_cache import invalidate_leaderboard_cache
+            from utils.utils_cache import invalidate_leaderboard_cache
 
             invalidate_leaderboard_cache()
             logger.info("Leaderboard cache invalidated after submission.")
@@ -122,8 +122,8 @@ def process_submission_task(submission_id: int):
 
 @celery_app.task(name="send_inactive_reminders_task")
 def send_inactive_reminders_task():
-    from email_service import send_engagement_lure_emails
-    from database import engine
+    from services.email_service import send_engagement_lure_emails
+    from core.database import engine
     from sqlmodel import Session
 
     logger.info("Sending inactive student reminder emails...")
@@ -139,10 +139,10 @@ def send_inactive_reminders_task():
 
 @celery_app.task(name="send_faculty_reports_task")
 def send_faculty_reports_task():
-    from email_service import send_faculty_report
-    from database import engine
+    from services.email_service import send_faculty_report
+    from core.database import engine
     from sqlmodel import Session, select, func
-    from models import User, Submission
+    from core.models import User, Submission
     from datetime import datetime, timezone
 
     logger.info("Sending faculty weekly reports...")

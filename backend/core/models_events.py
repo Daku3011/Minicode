@@ -1,7 +1,7 @@
 from datetime import datetime,timezone
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
-from models import User
+from core.models import User
 
 
 class Event(SQLModel, table=True):

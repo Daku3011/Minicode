@@ -1,8 +1,8 @@
 import logging
 from sqlmodel import Session, select, func
-from database import engine
-from models import User, Submission, Problem, QuestRewardClaim
-from utils_cache import invalidate_leaderboard_cache
+from core.database import engine
+from core.models import User, Submission, Problem, QuestRewardClaim
+from utils.utils_cache import invalidate_leaderboard_cache
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ def sync_all_users_xp():
                 session.add(student)
                 needs_commit = True
                 if new_level > current_level:
-                    from models import Notification
+                    from core.models import Notification
                     from datetime import datetime, timezone
 
                     notification = Notification(

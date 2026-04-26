@@ -7,10 +7,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlmodel import Session, select
-from database import engine, get_session
+from core.database import engine, get_session
 from dotenv import load_dotenv
 from passlib.context import CryptContext
-from models import User
+from core.models import User
 
 load_dotenv()
 

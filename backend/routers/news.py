@@ -4,8 +4,8 @@ from typing import List, Optional
 from datetime import datetime, timezone
 from pydantic import BaseModel
 
-from models import User, NewsItem
-from auth import require_faculty, get_session
+from core.models import User, NewsItem
+from services.auth import require_faculty, get_session
 
 router = APIRouter(prefix="/news", tags=["news"])
 

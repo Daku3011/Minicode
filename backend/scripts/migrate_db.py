@@ -7,10 +7,10 @@ load_dotenv()
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database import engine
-from models import User, Problem, Submission, TestCase, NewsItem, Notification
-from models_events import Event, EventParticipant, EventSubmission
-from email_verification import EmailVerification
+from core.database import engine
+from core.models import User, Problem, Submission, TestCase, NewsItem, Notification
+from core.models_events import Event, EventParticipant, EventSubmission
+from services.email_verification import EmailVerification
 
 
 def run_migrations():
