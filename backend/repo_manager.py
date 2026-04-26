@@ -1,11 +1,24 @@
-import os
 import logging
+import re
 from github import Github
 from sqlmodel import Session
 from models import User, Problem
 from auth import decrypt_token
 
 logger = logging.getLogger(__name__)
+
+
+def build_repo_name(user: User, problem: Problem) -> str:
+    """Build a deterministic, GitHub-safe repository name for a user's problem."""
+    raw_title = (problem.title or "problem").lower().strip()
+    # Keep alphanumerics and hyphens only; collapse repeated separators.
+    slug = re.sub(r"[^a-z0-9]+", "-", raw_title)
+    slug = re.sub(r"-+", "-", slug).strip("-")
+    if not slug:
+        slug = f"problem-{problem.id}"
+
+    # Include problem id to prevent collisions for identical titles.
+    return f"minicode-{user.username}-{problem.id}-{slug}"
 
 
 def create_student_repo(user: User, problem: Problem, session: Session):
@@ -27,11 +40,13 @@ def create_student_repo(user: User, problem: Problem, session: Session):
         )
 
     g = Github(decrypted_token)
-    repo_name = f"minicode-{user.username}-{problem.title.lower().replace(' ', '-')}"
+    repo_name = build_repo_name(user, problem)
+    gh_user = g.get_user()
+    owner_login = gh_user.login
 
     try:
         # Create the repository
-        repo = g.get_user().create_repo(
+        repo = gh_user.create_repo(
             repo_name,
             description=f"Solution for {problem.title} on MiniCode",
             private=True,
@@ -65,10 +80,16 @@ def create_student_repo(user: User, problem: Problem, session: Session):
         logger.error(f"Error creating repo: {e}")
         # If repo already exists, just return its URL or handle accordingly
         try:
-            repo = g.get_repo(f"{user.username}/{repo_name}")
+            # Prefer authenticated owner login over local username to avoid mismatch issues.
+            repo = g.get_repo(f"{owner_login}/{repo_name}")
             return repo.html_url
-        except:
-            raise e
+        except Exception:
+            try:
+                # Fallback path for some token scopes/providers.
+                repo = gh_user.get_repo(repo_name)
+                return repo.html_url
+            except Exception:
+                raise e
 
 
 def commit_code_to_repo(

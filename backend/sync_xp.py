@@ -1,7 +1,7 @@
 import logging
 from sqlmodel import Session, select, func
 from database import engine
-from models import User, Submission, Problem
+from models import User, Submission, Problem, QuestRewardClaim
 from utils_cache import invalidate_leaderboard_cache
 
 logging.basicConfig(level=logging.INFO)
@@ -64,16 +64,26 @@ def sync_all_users_xp():
                     xp_earned = int((max_score / 100.0) * xp_reward)
                     new_total_xp += xp_earned
 
-            needs_commit = False
-            if student.xp != new_total_xp:
-                logger.info(
-                    f"Updating {student.username}: {student.xp} -> {new_total_xp} XP"
+            quest_bonus_xp = session.exec(
+                select(func.coalesce(func.sum(QuestRewardClaim.xp_awarded), 0)).where(
+                    QuestRewardClaim.user_id == student.id
                 )
-                student.xp = new_total_xp
+            ).one()
+            baseline_xp = new_total_xp + int(quest_bonus_xp or 0)
+
+            # Preserve manual/faculty/event XP awards that are not derivable from submissions.
+            effective_xp = max(student.xp or 0, baseline_xp)
+
+            needs_commit = False
+            if student.xp != effective_xp:
+                logger.info(
+                    f"Updating {student.username}: {student.xp} -> {effective_xp} XP (baseline={baseline_xp})"
+                )
+                student.xp = effective_xp
                 session.add(student)
                 needs_commit = True
 
-            new_level = calculate_unlocked_level_from_xp(new_total_xp)
+            new_level = calculate_unlocked_level_from_xp(effective_xp)
             current_level = student.unlocked_level or 1
             if new_level != current_level:
                 logger.info(

@@ -6,7 +6,7 @@ import logging
 from database import get_session
 from models import User, Problem, Submission
 from auth import get_current_user
-from repo_manager import create_student_repo
+from repo_manager import create_student_repo, build_repo_name
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ async def submit_problem(
     if not problem:
         raise HTTPException(status_code=404, detail="Problem not found")
 
-    repo_name = f"minicode-{user.username}-{problem.title.lower().replace(' ', '-')}"
+    repo_name = build_repo_name(user, problem)
     repo_url = f"https://github.com/{user.username}/{repo_name}"
 
     submission = Submission(
