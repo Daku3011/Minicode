@@ -37,7 +37,12 @@ import {
     Code2,
     Mail,
     Loader2,
-    KeyRound
+    KeyRound,
+    Sparkles,
+    Target,
+    Play,
+    Rocket,
+    Crown
 } from "lucide-react";
 import { clsx } from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -314,6 +319,7 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
             { id: "submissions", label: "Submissions", icon: Code2 },
             { id: "achievements", label: "Achievements", icon: Trophy },
             { id: "insights", label: "Insights", icon: Zap },
+            { id: "progress", label: "Progress Guide", icon: Target },
         ];
 
         if (!isFacultyView) {
@@ -340,6 +346,7 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
             case "settings": return <SettingsTab {...props} />;
             case "help": return <HelpTab {...props} />;
             case "sovereign": return <SovereignTab {...props} />;
+            case "progress": return <ProgressGuideTab {...props} />;
             default: return <DashboardTab {...props} />;
         }
     };
@@ -929,6 +936,102 @@ const SettingsTab = ({ data }: StudentProfileViewProps) => {
                 </div>
             </div>
         </>
+    );
+};
+
+const ProgressGuideTab = ({ data }: StudentProfileViewProps) => {
+    return (
+        <div className="space-y-12 pb-12">
+            <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-12">
+                <div className="flex items-center gap-6">
+                    <div className="h-16 w-1.5 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full shadow-[0_0_20px_rgba(168,85,247,0.3)]" />
+                    <div>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">Learning Adventure</h1>
+                        <p className="text-slate-500 font-medium text-base mt-2 uppercase tracking-wide">Track your MiniCode journey with gamified quests</p>
+                    </div>
+                </div>
+                <a href="/progress" className="flex items-center gap-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-10 py-5 rounded-[2.5rem] font-black text-sm hover:shadow-2xl hover:shadow-blue-600/20 transition-all shadow-xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Rocket className="w-5 h-5 pr-1" />
+                    VIEW FULL PROGRESS
+                </a>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-[2.5rem] border border-blue-100 hover:border-blue-300 transition-all group flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform shadow-lg shadow-blue-500/20">
+                            <Sparkles className="w-7 h-7 text-white" />
+                        </div>
+                        <h4 className="text-xl font-black text-slate-900 mb-4 uppercase tracking-tight">Quest System</h4>
+                        <p className="text-[12px] text-slate-500 leading-relaxed font-medium uppercase tracking-wide">Complete progressive challenges to earn XP and unlock achievements</p>
+                    </div>
+                    <div className="mt-8 pt-8 border-t border-blue-200">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                            <Target className="w-4 h-4" />
+                            4 Active Quests
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-[2.5rem] border border-purple-100 hover:border-purple-300 transition-all group flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform shadow-lg shadow-purple-500/20">
+                            <Trophy className="w-7 h-7 text-white" />
+                        </div>
+                        <h4 className="text-xl font-black text-slate-900 mb-4 uppercase tracking-tight">Achievement Hall</h4>
+                        <p className="text-[12px] text-slate-500 leading-relaxed font-medium uppercase tracking-wide">Unlock bronze, silver, and gold achievements as you progress</p>
+                    </div>
+                    <div className="mt-8 pt-8 border-t border-purple-200">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-purple-600 uppercase tracking-widest">
+                            <Award className="w-4 h-4" />
+                            6 Achievement Tiers
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-8 rounded-[2.5rem] border border-amber-100 hover:border-amber-300 transition-all group flex flex-col justify-between shadow-sm">
+                    <div>
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform shadow-lg shadow-amber-500/20">
+                            <Crown className="w-7 h-7 text-white" />
+                        </div>
+                        <h4 className="text-xl font-black text-slate-900 mb-4 uppercase tracking-tight">Level System</h4>
+                        <p className="text-[12px] text-slate-500 leading-relaxed font-medium uppercase tracking-wide">Progress through Explorer, Adventurer, and Master levels</p>
+                    </div>
+                    <div className="mt-8 pt-8 border-t border-amber-200">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                            <TrendingUp className="w-4 h-4" />
+                            3 Mastery Levels
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-[2.5rem] border border-blue-100 shadow-sm">
+                <h3 className="text-xl font-black text-slate-900 mb-8 tracking-tight uppercase flex items-center gap-3">
+                    <Play className="w-6 h-6 text-blue-500" />
+                    Quick Start Guide
+                </h3>
+                <div className="space-y-6">
+                    {[
+                        { step: 1, title: "Start Your First Quest", desc: "Click on any available quest and begin completing mission steps" },
+                        { step: 2, title: "Earn Experience Points", desc: "Complete quests to earn XP and level up your account" },
+                        { step: 3, title: "Unlock Achievements", desc: "Achieve milestones to unlock bronze, silver, and gold achievements" },
+                        { step: 4, title: "Track Your Progress", desc: "Watch your stats grow and compete on the leaderboard" }
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-6 p-6 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-100 hover:border-blue-200 transition-all">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center font-black text-white text-lg">
+                                {item.step}
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-black text-slate-900 uppercase tracking-tight">{item.title}</h4>
+                                <p className="text-sm text-slate-500 font-medium mt-1">{item.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
     );
 };
 

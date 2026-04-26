@@ -177,6 +177,7 @@ export default function FacultyProfilePage() {
                                 { label: "Student Roster", href: "/faculty/students", icon: <Users className="w-4 h-4" /> },
                                 { label: "Cohorts", href: "/faculty/cohorts", icon: <Award className="w-4 h-4" /> },
                                 { label: "Events", href: "/faculty/events", icon: <Trophy className="w-4 h-4" /> },
+                                { label: "Student Progress", href: "/progress", icon: <Activity className="w-4 h-4" /> },
                             ].map((link) => (
                                 <Link
                                     key={link.href}

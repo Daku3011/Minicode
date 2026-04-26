@@ -1,22 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 // import { Terminal, Github, ArrowRight, Loader2, Shield, Eye, EyeOff } from "lucide-react";
 import api from "@/lib/api";
-import { Github, ArrowRight, Loader2, Shield, UserCircle2, Eye, EyeOff, Globe, BookOpen, Heart, Terminal, MessageSquare, Linkedin } from "lucide-react";
-import { clsx } from "clsx";
-import LoginSymbolBackground from "@/components/LoginSymbolBackground";
+import { Github, ArrowRight, Loader2, Shield, Eye, EyeOff, BookOpen, MessageSquare, Linkedin, Sparkles } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import FeedbackModal from "@/components/FeedbackModal";
 import { motion } from "framer-motion";
 import StarBackground from "@/components/StarBackground";
+import axios from "axios";
 
 export default function LoginPage() {
     const { user, loading, login } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const [isStaffMode, setIsStaffMode] = useState(false);
     const [username, setUsername] = useState("");
@@ -26,8 +26,26 @@ export default function LoginPage() {
     const [submitting, setSubmitting] = useState(false);
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
+    const isSafeInternalPath = (path: string | null): path is string => {
+        return Boolean(path && path.startsWith("/") && !path.startsWith("//"));
+    };
+
+    useEffect(() => {
+        const redirectParam = searchParams.get("redirect");
+        if (isSafeInternalPath(redirectParam)) {
+            localStorage.setItem("minicode_post_login_redirect", redirectParam);
+        }
+    }, [searchParams]);
+
     useEffect(() => {
         if (!loading && user) {
+            const pendingRedirect = localStorage.getItem("minicode_post_login_redirect");
+            if (isSafeInternalPath(pendingRedirect)) {
+                localStorage.removeItem("minicode_post_login_redirect");
+                router.push(pendingRedirect);
+                return;
+            }
+
             if (user.role === "admin") router.push("/admin/users");
             else if (user.role === "faculty") router.push("/faculty/profile");
             else router.push("/problems");
@@ -60,8 +78,11 @@ export default function LoginPage() {
             });
 
             await login(response.data.access_token);
-        } catch (err: any) {
-            setError(err.response?.data?.detail || "Invalid login credentials.");
+        } catch (err: unknown) {
+            const detail = axios.isAxiosError(err)
+                ? (err.response?.data as { detail?: string } | undefined)?.detail
+                : undefined;
+            setError(detail || "Invalid login credentials.");
             setSubmitting(false);
         }
     };
@@ -158,6 +179,18 @@ export default function LoginPage() {
 
                         {/* Help & Feedback Links */}
                         <div className="flex flex-col items-center lg:items-start gap-4 mt-8">
+                            {/* Progress Guide Link */}
+                            {/* <Link href="/progress">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="group relative flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 text-white hover:bg-purple-500/20 hover:border-purple-500/40 transition-all duration-300 shadow-lg shadow-purple-500/5 group"
+                                >
+                                    <Sparkles className="w-5 h-5 text-purple-400 group-hover:rotate-6 transition-transform" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Track Your Progress</span>
+                                </motion.button>
+                            </Link> */}
+
                             {/* Help & FAQ Button */}
                             <Link href="/faq">
                                 <motion.button

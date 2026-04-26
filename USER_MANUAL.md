@@ -103,36 +103,36 @@ Each problem card displays:
 Click a problem to view:
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│ Problem: Two Sum                                              │
-├────────────────────────────────────────────────────────────┤
-│ Difficulty: Easy    XP: 100    Level: 1                       │
-│                                                                │
-│ ## Description                                                  │
-│ Given an array of integers nums and a target integer target,  │
-│ return indices of the two numbers such that they add up to    │
-│ target.                                                        │
-│                                                                │
-│ ## Input Format                                                 │
-│ First line: n (array length)                                   │
-│ Second line: n space-separated integers                        │
-│ Third line: target integer                                     │
-│                                                                │
-│ ## Output Format                                               │
-│ Two space-separated indices                                    │
-│                                                                │
-│ ## Constraints                                                 │
-│ 2 ≤ n ≤ 10^4                                                  │
-│ -10^9 ≤ nums[i] ≤ 10^9                                         │
-│                                                                │
-│ ## Example                                                     │
-│ Input:                                                         │
-│ 4                                                               │
-│ 2 7 11 15                                                      │
-│ 9                                                               │
-│ Output:                                                        │
-│ 0 1                                                            │
-└────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│ Problem: Two Sum                                            │
+├─────────────────────────────────────────────────────────────┤
+│ Difficulty: Easy    XP: 100    Level: 1                     │
+│                                                             │
+│ ## Description                                              │
+│ Given an array of integers nums and a target integer target,│
+│ return indices of the two numbers such that they add up to  │
+│ target.                                                     │
+│                                                             │
+│ ## Input Format                                             │
+│ First line: n (array length)                                │
+│ Second line: n space-separated integers                     │
+│ Third line: target integer                                  │
+│                                                             │
+│ ## Output Format                                            │
+│ Two space-separated indices                                 │
+│                                                             │
+│ ## Constraints                                              │
+│ 2 ≤ n ≤ 10^4                                                │
+│ -10^9 ≤ nums[i] ≤ 10^9                                      │
+│                                                             │
+│ ## Example                                                  │
+│ Input:                                                      │
+│ 4                                                           │
+│ 2 7 11 15                                                   │
+│ 9                                                           │
+│ Output:                                                     │
+│ 0 1                                                         │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Page 2: Starting a Problem
@@ -232,21 +232,21 @@ The AI judge provides:
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│ Submission Results                                        │
+│ Submission Results                                         │
 ├────────────────────────────────────────────────────────────┤
-│ Status: Accepted ✓                                        │
-│ Score: 92/100                                             │
+│ Status: Accepted ✓                                         │
+│ Score: 92/100                                              │
 │ AI Probability: 12% (Human-written)                        │
-│                                                                │
-│ ## Analysis                                                  │
-│ ✅ Correct algorithm implementation using hash map              │
+│                                                            │
+│ ## Analysis                                                │
+│ ✅ Correct algorithm implementation using hash map          │
 │ ✅ Optimal time complexity O(n)                             │
 │ ✅ Clean, readable variable names                           │
-│                                                                │
-│ ## Suggestions                                              │
-│ Consider early return optimization for empty arrays.         │
-│                                                                │
-│ ## Next Steps                                                │
+│                                                            │
+│ ## Suggestions                                             │
+│ Consider early return optimization for empty arrays.       │
+│                                                            │
+│ ## Next Steps                                              │
 │ Great work! Try "Three Sum" for a harder challenge.        │
 └────────────────────────────────────────────────────────────┘
 ```

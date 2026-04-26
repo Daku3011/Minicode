@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { 
     Github, Terminal, Code2, User, Calendar, Trophy, 
     BookOpen, GraduationCap, Users, Settings, Search,
@@ -13,7 +12,6 @@ import {
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { Logo } from "@/components/Logo";
 import FeedbackModal from "@/components/FeedbackModal";
 
 interface FAQStep {
@@ -461,24 +459,15 @@ function TopicSection({ topic, index }: { topic: FAQTopic; index: number }) {
 }
 
 export default function FAQPage() {
-    const [activeRole, setActiveRole] = useState<"student" | "faculty">("student");
     const [searchQuery, setSearchQuery] = useState("");
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
     
-    const { user, loading } = useAuth();
-    const router = useRouter();
-    
-    useEffect(() => {
-        if (user?.role === "faculty" || user?.role === "admin") {
-            setActiveRole("faculty");
-        } else if (user?.role === "student") {
-            setActiveRole("student");
-        }
-    }, [user]);
-    
-    const topics = activeRole === "student" ? studentTopics : facultyTopics;
-    
-    const filteredTopics = topics.map(topic => ({
+    const { user } = useAuth();
+
+    const activeRole: "student" | "faculty" =
+        user?.role === "faculty" || user?.role === "admin" ? "faculty" : "student";
+
+    const filterTopics = (topics: FAQTopic[]) => topics.map(topic => ({
         ...topic,
         items: topic.items.filter(item => 
             item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -486,9 +475,13 @@ export default function FAQPage() {
         )
     })).filter(topic => topic.items.length > 0);
 
-    const handleRoleChange = (role: "student" | "faculty") => {
-        setActiveRole(role);
-        setSearchQuery("");
+    const filteredTopics = filterTopics(activeRole === "student" ? studentTopics : facultyTopics);
+    const studentFilteredTopics = filterTopics(studentTopics);
+    const facultyFilteredTopics = filterTopics(facultyTopics);
+
+    const getProtectedHref = (path: string) => {
+        if (user) return path;
+        return `/login?redirect=${encodeURIComponent(path)}`;
     };
 
     return (
@@ -533,7 +526,7 @@ export default function FAQPage() {
                     </div>
                 </motion.div>
 
-                {/* Role Selector - show only for logged in users */}
+                {/* Role Overview */}
                 {user && (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -541,31 +534,15 @@ export default function FAQPage() {
                         transition={{ delay: 0.1 }}
                         className="flex justify-center mb-12"
                     >
-                        <div className="inline-flex bg-slate-100 p-1.5 rounded-2xl">
-                            <button
-                                onClick={() => handleRoleChange("student")}
-                                className={clsx(
-                                    "flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
-                                    activeRole === "student" 
-                                        ? "bg-white text-slate-900 shadow-sm" 
-                                        : "text-slate-600 hover:text-slate-900"
-                                )}
-                            >
-                                <GraduationCap className="w-5 h-5" />
-                                I'm a Student
-                            </button>
-                            <button
-                                onClick={() => handleRoleChange("faculty")}
-                                className={clsx(
-                                    "flex items-center gap-3 px-8 py-3 rounded-xl text-sm font-semibold transition-all duration-200",
-                                    activeRole === "faculty" 
-                                        ? "bg-white text-slate-900 shadow-sm" 
-                                        : "text-slate-600 hover:text-slate-900"
-                                )}
-                            >
-                                <BookOpen className="w-5 h-5" />
-                                I'm Faculty
-                            </button>
+                        <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-100 border border-slate-200">
+                            {activeRole === "student" ? (
+                                <GraduationCap className="w-5 h-5 text-emerald-600" />
+                            ) : (
+                                <BookOpen className="w-5 h-5 text-blue-600" />
+                            )}
+                            <span className="text-sm font-semibold text-slate-800">
+                                Personalized for {activeRole === "student" ? "Student" : "Faculty"} role
+                            </span>
                         </div>
                     </motion.div>
                 )}
@@ -581,7 +558,7 @@ export default function FAQPage() {
                         <>
                             {activeRole === "student" ? (
                                 <>
-                                    <Link href="/problems" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/problems")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
                                             <Code2 className="w-6 h-6 text-violet-600" />
                                         </div>
@@ -591,7 +568,7 @@ export default function FAQPage() {
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                                     </Link>
-                                    <Link href="/events" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/events")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
                                             <Calendar className="w-6 h-6 text-amber-600" />
                                         </div>
@@ -601,7 +578,7 @@ export default function FAQPage() {
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                                     </Link>
-                                    <Link href="/leaderboard" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/leaderboard")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center">
                                             <Trophy className="w-6 h-6 text-cyan-600" />
                                         </div>
@@ -611,7 +588,7 @@ export default function FAQPage() {
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                                     </Link>
-                                    <Link href="/profile" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/profile")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
                                             <User className="w-6 h-6 text-green-600" />
                                         </div>
@@ -624,7 +601,7 @@ export default function FAQPage() {
                                 </>
                             ) : (
                                 <>
-                                    <Link href="/faculty/problems" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/faculty/problems")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
                                             <Code2 className="w-6 h-6 text-violet-600" />
                                         </div>
@@ -634,7 +611,7 @@ export default function FAQPage() {
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                                     </Link>
-                                    <Link href="/faculty/cohorts" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/faculty/cohorts")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center">
                                             <Users className="w-6 h-6 text-sky-600" />
                                         </div>
@@ -644,7 +621,7 @@ export default function FAQPage() {
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                                     </Link>
-                                    <Link href="/faculty/events" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/faculty/events")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
                                             <Calendar className="w-6 h-6 text-amber-600" />
                                         </div>
@@ -654,7 +631,7 @@ export default function FAQPage() {
                                         </div>
                                         <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                                     </Link>
-                                    <Link href="/faculty/profile" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                    <Link href={getProtectedHref("/faculty/profile")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                         <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
                                             <User className="w-6 h-6 text-green-600" />
                                         </div>
@@ -679,13 +656,35 @@ export default function FAQPage() {
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                             </Link>
-                            <Link href="/faq" className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                            <Link href={getProtectedHref("/problems")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
                                 <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
-                                    <HelpCircle className="w-6 h-6 text-violet-600" />
+                                    <Code2 className="w-6 h-6 text-violet-600" />
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">How it Works</h4>
-                                    <p className="text-sm text-slate-500">Learn about MiniCode</p>
+                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Student Dashboard</h4>
+                                    <p className="text-sm text-slate-500">Login to continue coding</p>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                            </Link>
+
+                            <Link href={getProtectedHref("/faculty/profile")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center">
+                                    <GraduationCap className="w-6 h-6 text-cyan-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Faculty Dashboard</h4>
+                                    <p className="text-sm text-slate-500">Login for teaching tools</p>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
+                            </Link>
+
+                            <Link href={getProtectedHref("/events")} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-primary hover:shadow-md transition-all group">
+                                <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <Calendar className="w-6 h-6 text-amber-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold text-slate-900 group-hover:text-primary">Join Events</h4>
+                                    <p className="text-sm text-slate-500">Sign in to participate</p>
                                 </div>
                                 <ChevronRight className="w-5 h-5 text-slate-300 ml-auto group-hover:text-primary" />
                             </Link>
@@ -694,13 +693,41 @@ export default function FAQPage() {
                 </motion.div>
 
                 {/* Topics */}
-                <div className="space-y-6">
-                    <AnimatePresence>
-                        {filteredTopics.map((topic, index) => (
-                            <TopicSection key={topic.title} topic={topic} index={index} />
-                        ))}
-                    </AnimatePresence>
-                </div>
+                {user ? (
+                    <div className="space-y-6">
+                        <AnimatePresence>
+                            {filteredTopics.map((topic, index) => (
+                                <TopicSection key={topic.title} topic={topic} index={index} />
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                ) : (
+                    <div className="space-y-12">
+                        <section className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <GraduationCap className="w-6 h-6 text-emerald-600" />
+                                <h2 className="text-2xl font-black text-slate-900">Student FAQ</h2>
+                            </div>
+                            <AnimatePresence>
+                                {studentFilteredTopics.map((topic, index) => (
+                                    <TopicSection key={`student-${topic.title}`} topic={topic} index={index} />
+                                ))}
+                            </AnimatePresence>
+                        </section>
+
+                        <section className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <BookOpen className="w-6 h-6 text-blue-600" />
+                                <h2 className="text-2xl font-black text-slate-900">Faculty FAQ</h2>
+                            </div>
+                            <AnimatePresence>
+                                {facultyFilteredTopics.map((topic, index) => (
+                                    <TopicSection key={`faculty-${topic.title}`} topic={topic} index={index} />
+                                ))}
+                            </AnimatePresence>
+                        </section>
+                    </div>
+                )}
 
                 {/* Contact Support */}
                 <motion.div 
@@ -710,7 +737,7 @@ export default function FAQPage() {
                     className="mt-16 text-center p-8 bg-gradient-to-br from-violet-50 to-blue-50 rounded-2xl border border-violet-200"
                 >
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">Still have questions?</h3>
-                    <p className="text-slate-600 mb-6">Can't find what you're looking for? We're here to help.</p>
+                    <p className="text-slate-600 mb-6">Can&apos;t find what you&apos;re looking for? We&apos;re here to help.</p>
                     <button 
                         onClick={() => setIsFeedbackOpen(true)}
                         className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/50 text-white rounded-xl font-semibold hover:bg-violet-700 transition-all"

@@ -6,8 +6,6 @@ import InteractiveBackground from "@/components/InteractiveBackground";
 import PageLoader from "@/components/PageLoader";
 import DesktopEnforcer from "@/components/DesktopEnforcer";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "MiniCode | Code. Compete. Evolve.",
@@ -42,8 +40,6 @@ export default function RootLayout({
             </main>
           </DesktopEnforcer>
         </AuthProvider>
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

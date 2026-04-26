@@ -22,6 +22,8 @@ api.interceptors.request.use(
 
 export const userApi = {
     me: () => api.get("/user/me"),
+    questClaims: () => api.get("/user/quests/claims"),
+    claimQuestReward: (questId: string) => api.post("/user/quests/claim", { quest_id: questId }),
     settings: (data: { faculty_report_email?: string }) => api.put("/user/me/settings", data),
     sendVerificationEmail: (email: string) => api.post("/user/send-verification-email", { email }),
     verifyEmail: (email: string, otp: string) => api.post("/user/verify-email", { email, otp }),
