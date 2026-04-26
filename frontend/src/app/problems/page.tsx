@@ -20,14 +20,52 @@ interface Problem {
     description?: string;
 }
 
-const SUBJECTS = [
-    { id: "data-structures", name: "Data Structures", icon: "🌳" },
-    { id: "algorithms", name: "Algorithms", icon: "⚙️" },
-    { id: "dp", name: "Dynamic Programming", icon: "📊" },
-    { id: "graphs", name: "Graph Theory", icon: "🔗" },
-    { id: "math", name: "Mathematics", icon: "🔢" },
-    { id: "strings", name: "Strings", icon: "📝" },
+const SUBJECT_CATEGORIES = [
+    {
+        title: "1. Core DSA Subjects",
+        items: [
+            { id: "data-structures", name: "Data Structures", icon: "🌳" },
+            { id: "algorithms", name: "Algorithms", icon: "⚙️" },
+            { id: "strings", name: "Arrays & Strings", icon: "📝" },
+            { id: "linked-list", name: "Linked List", icon: "🔗" },
+            { id: "stack-queue", name: "Stack & Queue", icon: "📚" },
+            { id: "trees-binary-trees", name: "Trees & Binary Trees", icon: "🌲" },
+            { id: "heap-priority-queue", name: "Heap / Priority Queue", icon: "📊" },
+            { id: "graphs", name: "Graph Theory", icon: "⚙️" },
+            { id: "dp", name: "Dynamic Programming", icon: "📉" },
+            { id: "greedy-algorithms", name: "Greedy Algorithms", icon: "🍕" },
+            { id: "backtracking", name: "Backtracking", icon: "↩️" },
+            { id: "bit-manipulation", name: "Bit Manipulation", icon: "🔢" },
+            { id: "math", name: "Mathematics", icon: "🔢" },
+        ]
+    },
+    {
+        title: "2. Real-World Problem Domains",
+        items: [
+            { id: "logistics-routing", name: "Logistics & Routing Systems", icon: "🚚" },
+            { id: "fintech-payment", name: "Fintech & Payment Systems", icon: "💳" },
+            { id: "social-media", name: "Social Media Systems", icon: "📱" },
+            { id: "ecommerce", name: "E-commerce Systems", icon: "🛒" },
+            { id: "gaming-simulation", name: "Gaming & Simulation", icon: "🎮" },
+            { id: "healthcare", name: "Healthcare Systems", icon: "🏥" },
+            { id: "networking-systems", name: "Networking & Systems", icon: "🌐" },
+            { id: "cybersecurity", name: "Cybersecurity & Cryptography", icon: "🔐" },
+        ]
+    },
+    {
+        title: "3. Trending / Future Tech",
+        items: [
+            { id: "ai-ml", name: "AI / Machine Learning Basics", icon: "🤖" },
+            { id: "data-analytics", name: "Data Analytics & Big Data", icon: "📊" },
+            { id: "blockchain", name: "Blockchain & Web3", icon: "⛓️" },
+            { id: "cloud-distributed", name: "Cloud & Distributed Systems", icon: "☁️" },
+            { id: "realtime-systems", name: "Real-time Systems", icon: "📡" },
+            { id: "search-ranking", name: "Search & Ranking Systems", icon: "🔍" },
+        ]
+    }
 ];
+
+const SUBJECTS = SUBJECT_CATEGORIES.flatMap(c => c.items);
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
@@ -193,39 +231,59 @@ function ProblemsContent() {
                         </div>
 
                         {showFilters && (
-                            <div className="bg-white rounded-2xl p-8 border border-slate-200 space-y-8 shadow-sm relative z-20">
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
-                                    <div className="space-y-5">
+                            <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative z-20">
+                                <div className="space-y-8">
+                                    {/* Subject Categories */}
+                                    <div className="space-y-6">
                                         <div className="flex items-center gap-3">
                                             <Layers className="w-4 h-4 text-slate-500" />
-                                            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Subject</h3>
+                                            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Subject Categories</h3>
                                         </div>
-                                        <div className="flex flex-wrap gap-3">
+                                        
+                                        <div className="mb-4">
                                             <button
                                                 onClick={() => setSelectedSubject("")}
                                                 className={clsx(
-                                                    "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                    !selectedSubject ? "bg-primary text-blue-500 border-gray-400/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
+                                                    "px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 shadow-sm",
+                                                    !selectedSubject 
+                                                        ? "bg-blue-600 text-white border-blue-600 shadow-blue-100" 
+                                                        : "bg-white border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
                                                 )}
                                             >
-                                                All
+                                                🎯 All Subjects
                                             </button>
-                                            {SUBJECTS.map(s => (
-                                                <button
-                                                    key={s.id}
-                                                    onClick={() => setSelectedSubject(s.id)}
-                                                    className={clsx(
-                                                        "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                        selectedSubject === s.id ? "bg-blue-500/19 text-black border-gray-500/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
-                                                    )}
-                                                >
-                                                    <span className="mr-2">{s.icon}</span>
-                                                    {s.name}
-                                                </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {SUBJECT_CATEGORIES.map((category, catIdx) => (
+                                                <div key={catIdx} className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 space-y-4">
+                                                    <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                                        {category.title}
+                                                    </h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {category.items.map(s => (
+                                                            <button
+                                                                key={s.id}
+                                                                onClick={() => setSelectedSubject(s.id)}
+                                                                className={clsx(
+                                                                    "px-3.5 py-2 rounded-lg text-xs font-medium border transition-all duration-200 shadow-sm",
+                                                                    selectedSubject === s.id 
+                                                                        ? "bg-blue-600 text-white border-blue-600 shadow-blue-100" 
+                                                                        : "bg-white border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
+                                                                )}
+                                                            >
+                                                                <span className="mr-1.5">{s.icon}</span>
+                                                                {s.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="space-y-5">
+
+                                    {/* Difficulty */}
+                                    <div className="space-y-4 pt-6 border-t border-slate-100">
                                         <div className="flex items-center gap-3">
                                             <Target className="w-4 h-4 text-slate-500" />
                                             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Difficulty</h3>
@@ -234,8 +292,10 @@ function ProblemsContent() {
                                             <button
                                                 onClick={() => setSelectedDifficulty("")}
                                                 className={clsx(
-                                                    "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                    !selectedDifficulty ? "bg-primary text-blue-500 border-gray-500/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
+                                                    "px-4 py-2 rounded-xl text-sm font-medium border transition-all duration-200 shadow-sm",
+                                                    !selectedDifficulty 
+                                                        ? "bg-blue-600 text-white border-blue-600 shadow-blue-100" 
+                                                        : "bg-white border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
                                                 )}
                                             >
                                                 All
@@ -245,8 +305,10 @@ function ProblemsContent() {
                                                     key={d}
                                                     onClick={() => setSelectedDifficulty(d)}
                                                     className={clsx(
-                                                        "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all duration-200",
-                                                        selectedDifficulty === d ? "bg-blue-500/19 text-black border-gray-500/20" : "bg-slate-50 border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
+                                                        "px-4 py-2 rounded-xl text-sm font-medium border transition-all duration-200 shadow-sm",
+                                                        selectedDifficulty === d 
+                                                            ? "bg-blue-600 text-white border-blue-600 shadow-blue-100" 
+                                                            : "bg-white border-slate-200 text-slate-600 hover:border-blue-200 hover:text-blue-700"
                                                     )}
                                                 >
                                                     {d}

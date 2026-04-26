@@ -318,7 +318,10 @@ export default function HackathonsPage() {
                 {chatOpen ? (
                     <div
                         style={{ width: dimensions.width, height: dimensions.height }}
-                        className="glass-effect rounded-2xl border border-border shadow-antigravity flex flex-col overflow-hidden scale-100 transition-all animate-in slide-in-from-bottom-8 relative"
+                        className={clsx(
+                            "glass-effect rounded-2xl border border-border shadow-antigravity flex flex-col overflow-hidden scale-100 animate-in slide-in-from-bottom-8 relative",
+                            !isResizing && "transition-all duration-300"
+                        )}
                     >
                         {/* Edge Drag Resize Handles */}
                         <div
@@ -378,10 +381,38 @@ export default function HackathonsPage() {
                                         {msg.sender === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4 text-primary" />}
                                     </div>
                                     <div className={clsx(
-                                        "prose prose-sm max-w-none whitespace-pre-wrap flex-grow min-w-0 break-words",
-                                        msg.sender === "user" ? "text-white prose-invert" : "text-slate-800"
+                                        "prose prose-sm max-w-none flex-grow min-w-0 break-words",
+                                        msg.sender === "user" ? "text-white prose-invert" : "text-slate-800 dark:text-slate-200"
                                     )}>
-                                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                        <ReactMarkdown
+                                            components={{
+                                                p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+                                                ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1 text-inherit">{children}</ul>,
+                                                ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1 text-inherit">{children}</ol>,
+                                                li: ({ children }) => <li className="leading-relaxed text-inherit">{children}</li>,
+                                                h1: ({ children }) => <h1 className="text-lg font-extrabold mb-2 text-primary mt-4 first:mt-0">{children}</h1>,
+                                                h2: ({ children }) => <h2 className="text-base font-bold mb-1 text-primary mt-3 first:mt-0">{children}</h2>,
+                                                h3: ({ children }) => <h3 className="text-sm font-bold mb-1 text-primary mt-2 first:mt-0">{children}</h3>,
+                                                code: ({ node, inline, className, children, ...props }: any) => {
+                                                    if (inline) {
+                                                        return <code className="bg-muted/80 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded text-xs font-semibold font-mono border border-border/50" {...props}>{children}</code>;
+                                                    }
+                                                    return (
+                                                        <pre className="bg-slate-900 text-slate-100 p-3 rounded-xl my-2 overflow-x-auto text-xs font-mono border border-slate-800 shadow-md max-w-full">
+                                                            <code {...props}>{children}</code>
+                                                        </pre>
+                                                    );
+                                                },
+                                                a: ({ href, children }) => (
+                                                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-bold inline-flex items-center gap-0.5">
+                                                        {children}
+                                                        <ExternalLink className="w-3 h-3 inline" />
+                                                    </a>
+                                                )
+                                            }}
+                                        >
+                                            {msg.text}
+                                        </ReactMarkdown>
                                     </div>
                                 </div>
                             ))}

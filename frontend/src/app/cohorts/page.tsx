@@ -72,7 +72,7 @@ export default function StudentCohortsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 p-8 md:p-12 font-display">
-            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-50 blur-[120px] pointer-events-none" />
+            {/* <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-50 blur-[120px] pointer-events-none" /> */}
             
             <header className="mb-12">
                 <h1 className="text-4xl lg:text-6xl font-black uppercase tracking-tight text-slate-900">My Cohorts</h1>

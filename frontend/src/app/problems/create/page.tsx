@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react"; 
-import { 
-    ChevronLeft, Send, Sparkles, BookOpen, 
-    Lock, Loader2, FileText, Code2, Eye, PenLine, 
+import { useState, useRef } from "react";
+import {
+    ChevronLeft, Send, Sparkles, BookOpen,
+    Lock, Loader2, FileText, Code2, Eye, PenLine,
     Upload, Search, RotateCcw, Plus, Trash2, Lightbulb,
     FileInput, FileOutput, ListOrdered, Globe, Shield,
     Trophy
@@ -15,19 +15,57 @@ import api from "@/lib/api";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const subjects = [
-    { id: "data-structures", name: "Data Structures", icon: "🌳" },
-    { id: "algorithms", name: "Algorithms", icon: "⚙️" },
-    { id: "dp", name: "Dynamic Programming", icon: "📊" },
-    { id: "graphs", name: "Graph Theory", icon: "🔗" },
-    { id: "math", name: "Mathematics", icon: "🔢" },
-    { id: "strings", name: "String Processing", icon: "📝" },
-    { id: "number-theory", name: "Number Theory", icon: "🔐" },
-    { id: "combinatorics", name: "Combinatorics", icon: "🎲" },
-    { id: "geometry", name: "Geometry", icon: "📐" },
-    { id: "game-theory", name: "Game Theory", icon: "🎮" },
-    { id: "blockchain", name: "Blockchain & Smart Contracts", icon: "⛓️" },
+const SUBJECT_CATEGORIES = [
+    {
+        title: "1. Core DSA Subjects",
+        items: [
+            { id: "data-structures", name: "Data Structures", icon: "🌳" },
+            { id: "algorithms", name: "Algorithms", icon: "⚙️" },
+            { id: "strings", name: "Arrays & Strings", icon: "📝" },
+            { id: "linked-list", name: "Linked List", icon: "🔗" },
+            { id: "stack-queue", name: "Stack & Queue", icon: "📚" },
+            { id: "trees-binary-trees", name: "Trees & Binary Trees", icon: "🌲" },
+            { id: "heap-priority-queue", name: "Heap / Priority Queue", icon: "📊" },
+            { id: "graphs", name: "Graph Theory", icon: "⚙️" },
+            { id: "dp", name: "Dynamic Programming", icon: "📉" },
+            { id: "greedy-algorithms", name: "Greedy Algorithms", icon: "🍕" },
+            { id: "backtracking", name: "Backtracking", icon: "↩️" },
+            { id: "bit-manipulation", name: "Bit Manipulation", icon: "🔢" },
+            { id: "math", name: "Mathematics", icon: "🔢" },
+            { id: "number-theory", name: "Number Theory", icon: "🔐" },
+            { id: "combinatorics", name: "Combinatorics", icon: "🎲" },
+            { id: "geometry", name: "Geometry", icon: "📐" },
+            { id: "game-theory", name: "Game Theory", icon: "🎮" },
+        ]
+    },
+    {
+        title: "2. Real-World Problem Domains",
+        items: [
+            { id: "logistics-routing", name: "Logistics & Routing Systems", icon: "🚚" },
+            { id: "fintech-payment", name: "Fintech & Payment Systems", icon: "💳" },
+            { id: "social-media", name: "Social Media Systems", icon: "📱" },
+            { id: "ecommerce", name: "E-commerce Systems", icon: "🛒" },
+            { id: "gaming-simulation", name: "Gaming & Simulation", icon: "🎮" },
+            { id: "healthcare", name: "Healthcare Systems", icon: "🏥" },
+            { id: "networking-systems", name: "Networking & Systems", icon: "🌐" },
+            { id: "cybersecurity", name: "Cybersecurity & Cryptography", icon: "🔐" },
+        ]
+    },
+    {
+        title: "3. Trending / Future Tech",
+        items: [
+            { id: "ai-ml", name: "AI / Machine Learning Basics", icon: "🤖" },
+            { id: "data-analytics", name: "Data Analytics & Big Data", icon: "📊" },
+            { id: "blockchain", name: "Blockchain & Web3", icon: "⛓️" },
+            { id: "cloud-distributed", name: "Cloud & Distributed Systems", icon: "☁️" },
+            { id: "realtime-systems", name: "Real-time Systems", icon: "📡" },
+            { id: "search-ranking", name: "Search & Ranking Systems", icon: "🔍" },
+        ]
+    }
 ];
+
+const subjects = SUBJECT_CATEGORIES.flatMap(c => c.items);
+
 
 const levels = [
     { level: 1, name: "Code Beginner", minXP: 0 },
@@ -98,10 +136,10 @@ export default function CreateProblemPage() {
                 output_format: formData.output_format || null,
                 constraints: formData.constraints || null,
             };
-            
+
             const problemRes = await api.post("/problems", problemData);
             const problemId = problemRes.data.id;
-            
+
             for (const tc of validTestCases) {
                 await api.post(`/problems/${problemId}/testcases`, {
                     input_data: tc.input_data,
@@ -109,7 +147,7 @@ export default function CreateProblemPage() {
                     is_sample: tc.is_sample,
                 });
             }
-            
+
             setShowSuccess(true);
             setTimeout(() => {
                 router.push("/faculty/problems");
@@ -136,7 +174,7 @@ export default function CreateProblemPage() {
     };
 
     const updateTestCase = (id: number, field: string, value: string | boolean) => {
-        setTestCases(testCases.map(tc => 
+        setTestCases(testCases.map(tc =>
             tc.id === id ? { ...tc, [field]: value } : tc
         ));
     };
@@ -153,7 +191,7 @@ export default function CreateProblemPage() {
             const res = await api.post("/problems/generate-ai", formDataAI, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-            
+
             if (res.data) {
                 setFormData(prev => ({
                     ...prev,
@@ -190,7 +228,7 @@ export default function CreateProblemPage() {
 
                         <div className="flex items-center gap-4">
                             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
-                                <button 
+                                <button
                                     onClick={() => setActiveTab('editor')}
                                     className={clsx(
                                         "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-bold text-xs uppercase tracking-wider",
@@ -200,7 +238,7 @@ export default function CreateProblemPage() {
                                     <PenLine className="w-4 h-4" />
                                     Editor
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setActiveTab('preview')}
                                     className={clsx(
                                         "flex items-center gap-2 px-6 py-2 rounded-lg transition-all font-bold text-xs uppercase tracking-wider",
@@ -297,9 +335,9 @@ export default function CreateProblemPage() {
                                     Add Case
                                 </button>
                             </div>
-                            
+
                             <p className="text-xs text-slate-500 font-medium">Add test cases to validate student solutions. Sample cases are visible to students.</p>
-                            
+
                             <div className="space-y-6">
                                 {testCases.map((tc, index) => (
                                     <div key={tc.id} className="bg-slate-50 border border-blue-100 p-6 rounded-2xl space-y-4 relative group">
@@ -335,7 +373,7 @@ export default function CreateProblemPage() {
                                                 )}
                                             </div>
                                         </div>
-                                        
+
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
@@ -379,7 +417,7 @@ export default function CreateProblemPage() {
                                     Constraints & Hints
                                 </h3>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-3">
                                     <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Constraints</label>
@@ -423,24 +461,24 @@ export default function CreateProblemPage() {
                                     )}
                                 </div>
                                 <p className="text-xs text-slate-500 font-medium leading-relaxed mb-6">Upload a PDF or TXT problem statement and let AI draft the description and title for you.</p>
-                                
+
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
                                     disabled={isAiGenerating}
                                     className={clsx(
                                         "w-full p-6 rounded-2xl border-2 border-dashed flex flex-col items-center gap-4 transition-all",
-                                        isAiGenerating 
-                                            ? "bg-slate-50 border-slate-200" 
+                                        isAiGenerating
+                                            ? "bg-slate-50 border-slate-200"
                                             : "bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-400"
                                     )}
                                 >
                                     <Upload className="w-8 h-8" />
                                     <span className="text-xs font-black uppercase tracking-widest">Inject Blueprint</span>
-                                    <input 
-                                        type="file" 
+                                    <input
+                                        type="file"
                                         ref={fileInputRef}
                                         onChange={handleFileUpload}
-                                        className="hidden" 
+                                        className="hidden"
                                         accept=".pdf,.txt"
                                     />
                                 </button>
@@ -453,26 +491,33 @@ export default function CreateProblemPage() {
                                 <BookOpen className="w-4 h-4 text-blue-600" />
                                 Subject
                             </h3>
-                            <div className="grid grid-cols-1 gap-2">
-                                {subjects.map((sub) => (
-                                    <button
-                                        key={sub.id}
-                                        onClick={() => setFormData({ ...formData, subject: sub.id })}
-                                        className={clsx(
-                                            "flex items-center justify-between p-4 rounded-xl border transition-all group",
-                                            formData.subject === sub.id
-                                                ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
-                                                : "border-slate-100 bg-slate-50 text-slate-500 hover:border-blue-200 hover:bg-white hover:text-slate-700"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-lg">{sub.icon}</span>
-                                            <span className="font-bold text-xs uppercase tracking-wider">{sub.name}</span>
+                            <div className="space-y-6">
+                                {SUBJECT_CATEGORIES.map((category, catIdx) => (
+                                    <div key={catIdx} className="space-y-3">
+                                        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">{category.title}</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                                            {category.items.map((sub) => (
+                                                <button
+                                                    key={sub.id}
+                                                    onClick={() => setFormData({ ...formData, subject: sub.id })}
+                                                    className={clsx(
+                                                        "flex items-center justify-between p-3 rounded-xl border transition-all group text-left",
+                                                        formData.subject === sub.id
+                                                            ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm"
+                                                            : "border-slate-100 bg-slate-50 text-slate-500 hover:border-blue-200 hover:bg-white hover:text-slate-700"
+                                                    )}
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+                                                        <span className="text-base flex-shrink-0">{sub.icon}</span>
+                                                        <span className="font-semibold text-xs uppercase tracking-wider leading-tight break-words whitespace-normal flex-1">{sub.name}</span>
+                                                    </div>
+                                                    {formData.subject === sub.id && (
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600 flex-shrink-0" />
+                                                    )}
+                                                </button>
+                                            ))}
                                         </div>
-                                        {formData.subject === sub.id && (
-                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                                        )}
-                                    </button>
+                                    </div>
                                 ))}
                             </div>
                         </div>
