@@ -341,18 +341,22 @@ async def create_event(
     session.commit()
     session.refresh(event)
 
-    news_item = NewsItem(
-        title=f"New Event: {event.title}",
-        content=event.description[:200] + "..."
-        if len(event.description) > 200
-        else event.description,
-        news_type="event",
-        link=f"/events/{event.id}",
-        priority=2,
-        created_by=user.id,
-    )
-    session.add(news_item)
-    session.commit()
+    try:
+        news_item = NewsItem(
+            title=f"New Event: {event.title}",
+            content=event.description[:200] + "..."
+            if len(event.description) > 200
+            else event.description,
+            news_type="event",
+            link=f"/events/{event.id}",
+            priority=2,
+            created_by=user.id,
+        )
+        session.add(news_item)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(f"Warning: Failed to create news item for event {event.id}: {e}")
 
     return {"id": event.id, "message": "Event created successfully"}
 

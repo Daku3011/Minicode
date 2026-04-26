@@ -184,16 +184,20 @@ def create_problem(
     session.commit()
     session.refresh(problem)
 
-    news_item = NewsItem(
-        title=f"New Problem: {problem.title}",
-        content=f"A new {problem.difficulty} problem has been added to the arena.",
-        news_type="problem",
-        link=f"/problems/{problem.id}",
-        priority=1,
-        created_by=user.id,
-    )
-    session.add(news_item)
-    session.commit()
+    try:
+        news_item = NewsItem(
+            title=f"New Problem: {problem.title}",
+            content=f"A new {problem.difficulty} problem has been added to the arena.",
+            news_type="problem",
+            link=f"/problems/{problem.id}",
+            priority=1,
+            created_by=user.id,
+        )
+        session.add(news_item)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        print(f"Warning: Failed to create news item for problem {problem.id}: {e}")
 
     return problem
 
