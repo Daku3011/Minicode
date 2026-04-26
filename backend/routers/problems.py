@@ -199,6 +199,7 @@ def create_problem(
         session.rollback()
         print(f"Warning: Failed to create news item for problem {problem.id}: {e}")
 
+    session.refresh(problem)
     return problem
 
 
