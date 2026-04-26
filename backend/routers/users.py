@@ -6,13 +6,22 @@ import logging
 from datetime import datetime, timezone, timedelta
 
 from database import get_session
-from models import User, Problem, Submission
+from models import User, Problem, Submission, Notification, QuestRewardClaim
 from auth import get_current_user
 from sync_xp import calculate_unlocked_level_from_xp, LEVEL_NAMES
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["users"])
+
+QUEST_XP_REWARDS = {
+    "identity-sync": 10,
+    "first-submission": 20,
+    "first-accepted": 35,
+    "streak-starter": 25,
+    "xp-200": 40,
+    "triple-solver": 60,
+}
 
 
 def get_user_profile_logic(user: User, session: Session):
@@ -136,6 +145,95 @@ def get_me(
     user: User = Depends(get_current_user), session: Session = Depends(get_session)
 ):
     return get_user_profile_logic(user, session)
+
+
+@router.get("/quests/claims")
+def get_quest_claims(
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    claims = session.exec(
+        select(QuestRewardClaim).where(QuestRewardClaim.user_id == user.id)
+    ).all()
+    return {
+        "claims": [
+            {
+                "quest_id": c.quest_id,
+                "xp_awarded": c.xp_awarded,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+            }
+            for c in claims
+        ],
+        "claimed_ids": [c.quest_id for c in claims],
+        "total_bonus_xp": sum(c.xp_awarded for c in claims),
+    }
+
+
+class QuestClaimRequest(BaseModel):
+    quest_id: str
+
+
+@router.post("/quests/claim")
+def claim_quest_reward(
+    data: QuestClaimRequest,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    quest_id = (data.quest_id or "").strip()
+    if quest_id not in QUEST_XP_REWARDS:
+        raise HTTPException(status_code=400, detail="Invalid quest id")
+
+    existing_claim = session.exec(
+        select(QuestRewardClaim).where(
+            QuestRewardClaim.user_id == user.id,
+            QuestRewardClaim.quest_id == quest_id,
+        )
+    ).first()
+    if existing_claim:
+        return {
+            "status": "already_claimed",
+            "quest_id": quest_id,
+            "xp_awarded": 0,
+            "total_xp": user.xp or 0,
+            "unlocked_level": user.unlocked_level or 1,
+        }
+
+    xp_award = QUEST_XP_REWARDS[quest_id]
+
+    old_xp = user.xp or 0
+    user.xp = old_xp + xp_award
+
+    new_level = calculate_unlocked_level_from_xp(user.xp)
+    old_level = user.unlocked_level or 1
+    user.unlocked_level = max(old_level, new_level)
+
+    claim = QuestRewardClaim(
+        user_id=user.id,
+        quest_id=quest_id,
+        xp_awarded=xp_award,
+    )
+    session.add(claim)
+
+    notification = Notification(
+        user_id=user.id,
+        title="Quest Completed",
+        message=f"You completed '{quest_id}' and earned {xp_award} XP.",
+        notification_type="achievement",
+        created_at=datetime.now(timezone.utc),
+    )
+    session.add(notification)
+
+    session.add(user)
+    session.commit()
+
+    return {
+        "status": "claimed",
+        "quest_id": quest_id,
+        "xp_awarded": xp_award,
+        "total_xp": user.xp,
+        "unlocked_level": user.unlocked_level,
+        "leveled_up": new_level > old_level,
+    }
 
 
 class SettingsUpdate(BaseModel):

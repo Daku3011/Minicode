@@ -22,6 +22,13 @@ export interface User {
         level_name: string;
         streak: number;
     };
+    contribution_data?: Record<string, number>;
+    recentSubmissions?: {
+        id: number;
+        problem: string;
+        status: string;
+        time: string;
+    }[];
 }
 
 interface AuthContextType {
@@ -29,6 +36,7 @@ interface AuthContextType {
     loading: boolean;
     login: (token: string) => Promise<void>;
     logout: () => void;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -36,6 +44,7 @@ const AuthContext = createContext<AuthContextType>({
     loading: true,
     login: async () => { },
     logout: () => { },
+    refreshUser: async () => { },
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -78,7 +87,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, logout, refreshUser: fetchUser }}>
             {children}
         </AuthContext.Provider>
     );
