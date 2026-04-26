@@ -318,7 +318,7 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
             { id: "dashboard", label: "Dashboard", icon: Activity },
             { id: "submissions", label: "Submissions", icon: Code2 },
             { id: "achievements", label: "Achievements", icon: Trophy },
-            { id: "insights", label: "Insights", icon: Zap },
+            // { id: "insights", label: "Insights", icon: Zap },
             { id: "progress", label: "Progress Guide", icon: Target },
         ];
 
@@ -342,7 +342,7 @@ export default function StudentProfileView({ data, isFacultyView = false }: Stud
             case "dashboard": return <DashboardTab {...props} />;
             case "submissions": return <SubmissionsTab {...props} />;
             case "achievements": return <AchievementsTab {...props} />;
-            case "insights": return <InsightsTab {...props} />;
+            // case "insights": return <InsightsTab {...props} />;
             case "settings": return <SettingsTab {...props} />;
             case "help": return <HelpTab {...props} />;
             case "sovereign": return <SovereignTab {...props} />;
