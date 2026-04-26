@@ -175,3 +175,19 @@ class Lab(SQLModel, table=True):
     cohort: Optional[Cohort] = Relationship(back_populates="labs")
     problems: List["Problem"] = Relationship(back_populates="labs", link_model=LabProblemLink)
 
+
+class Hackathon(SQLModel, table=True):
+    __tablename__ = "hackathons"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    title: str = Field(index=True)
+    description: Optional[str] = None
+    url: str
+    platform: str = Field(index=True)  # "hackerearth", "hack2skill"
+    status: str = Field(default="UPCOMING", index=True)  # "ONGOING", "UPCOMING", "ENDED"
+    cover_image: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    registration_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+

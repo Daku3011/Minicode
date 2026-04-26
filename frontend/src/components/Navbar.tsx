@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle } from "lucide-react";
+import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -55,13 +55,16 @@ export default function Navbar() {
             { name: "Problems", href: "/faculty/problems", icon: Code2 },
             { name: "Events", href: "/faculty/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+            { name: "Hackathons", href: "/hackathons", icon: Sparkles },
         ]
         : [
             { name: "Cohorts", href: "/cohorts", icon: User },
             { name: "Problems", href: "/problems", icon: Code2 },
             { name: "Events", href: "/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+            { name: "Hackathons", href: "/hackathons", icon: Sparkles },
         ];
+
 
     useEffect(() => {
         const handleOpenNews = () => setShowNews(true);

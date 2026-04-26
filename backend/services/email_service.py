@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 # Note: On Resend Free tier without a domain, the 'from' email must be 'onboarding@resend.dev'
 # The 'to' email must be your verified email (minicode.scet@gmail.com)
-RESEND_FROM_EMAIL = "MiniCode Arena <onboarding@resend.dev>"
-RESEND_RECIPIENT = "minicode.scet@gmail.com"
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "MiniCode Arena <onboarding@resend.dev>")
+RESEND_RECIPIENT = os.getenv("RESEND_RECIPIENT", "minicode.scet@gmail.com")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
@@ -44,10 +44,9 @@ def send_email(to_email: str, subject: str, html_content: str, attachments: List
             except Exception as e:
                 logger.error(f"Failed to encode attachment {att.get('filename')}: {e}")
 
-    # For the free tier to work without domain verification, we often need to send TO the verified email
-    # If the user provides a different to_email, we'll try it, but onboarding@resend.dev -> verified_email is safest.
-    # USER REQUIREMENT: All emails must go to minicode.scet@gmail.com
-    target_recipient = RESEND_RECIPIENT
+    # Use the provided to_email instead of hardcoding.
+    # Note: If using onboarding@resend.dev, Resend only allows sending to the verified account email.
+    target_recipient = to_email if to_email else RESEND_RECIPIENT
     
     payload = {
         "from": RESEND_FROM_EMAIL,
