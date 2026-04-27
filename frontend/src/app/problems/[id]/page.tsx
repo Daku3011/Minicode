@@ -390,6 +390,38 @@ function ProblemDetailContent() {
                                     </div>
                                 </div>
                             </div>
+
+                            {testCases.length > 0 && (
+                                <div className="bg-white hover:bg-slate-50 transition-colors rounded-3xl p-8 border border-blue-100 space-y-6 shadow-sm pb-8 mb-8">
+                                    <div className="flex items-center gap-3 text-blue-600">
+                                        <Code2 className="w-5 h-5" />
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em]">Sample Test Cases</h3>
+                                    </div>
+                                    <div className="space-y-6">
+                                        {testCases.map((tc, index) => (
+                                            <div key={tc.id || index} className="p-6 rounded-2xl bg-slate-50 border border-blue-100 space-y-4">
+                                                <div className="text-xs font-black uppercase tracking-widest text-slate-400">
+                                                    Example {index + 1}
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Input</div>
+                                                        <pre className="p-4 bg-slate-900 text-slate-100 rounded-xl text-sm font-mono overflow-x-auto">
+                                                            {tc.input}
+                                                        </pre>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Output</div>
+                                                        <pre className="p-4 bg-slate-900 text-slate-100 rounded-xl text-sm font-mono overflow-x-auto">
+                                                            {tc.expected_output}
+                                                        </pre>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Right Column: Deployment */}
