@@ -10,6 +10,51 @@ from fastapi import UploadFile
 
 logger = logging.getLogger(__name__)
 
+async def generate_content_with_retry(client, prompt, default_model='gemini-3-flash-preview', response_mime_type=None) -> str:
+    models = [default_model, 'gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-3.1-flash-lite-preview']
+    last_exception = None
+    
+    unique_models = []
+    for m in models:
+        if m not in unique_models:
+            unique_models.append(m)
+            
+    for model_name in unique_models:
+        for attempt in range(3):
+            try:
+                logger.info(f"Attempting generation with model={model_name}, attempt={attempt+1}")
+                if hasattr(client, 'aio'):
+                    response = await client.aio.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            response_mime_type=response_mime_type,
+                        ) if response_mime_type else None
+                    )
+                else:
+                    response = await anyio.to_thread.run_sync(
+                        lambda: client.models.generate_content(
+                            model=model_name,
+                            contents=prompt,
+                            config=types.GenerateContentConfig(
+                                response_mime_type=response_mime_type,
+                            ) if response_mime_type else None
+                        )
+                    )
+                return response.text.strip()
+            except Exception as e:
+                last_exception = e
+                error_msg = str(e)
+                logger.warning(f"Gemini model {model_name} failed (attempt {attempt+1}): {error_msg}")
+                if "503" in error_msg or "demand" in error_msg or "quota" in error_msg or "429" in error_msg:
+                    await anyio.sleep(1.5 * (attempt + 1))
+                    continue
+                else:
+                    break
+    raise last_exception
+
+_generate_content_with_retry = generate_content_with_retry
+
 # Predefined subjects mapping (matching frontend IDs)
 def extract_text_from_file(file_content: bytes, filename: str) -> str:
     """Extracts text from a file based on its extension."""
@@ -84,18 +129,53 @@ async def generate_problem_content(text_content: str) -> Dict[str, Any]:
     """
     
     try:
-        # Using gemini-2.5-flash for optimal speed and reasoning stability
-        response = await anyio.to_thread.run_sync(
-            lambda: client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                )
-            )
-        )
-        
-        return json.loads(response.text.strip())
+        # Using robust Gemini failover logic
+        response_text = await generate_content_with_retry(client, prompt, response_mime_type="application/json")
+        return json.loads(response_text)
+
     except Exception as e:
         logger.error(f"Gemini Problem Generation Error: {e}")
         raise e
+
+async def improve_problem_content(current_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Uses Gemini 2.5 to improve the problem content."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not set.")
+
+    client = genai.Client(api_key=api_key)
+    
+    prompt = f"""
+    TASK: You are an elite technical curriculum designer. Your task is to IMPROVE and POLISH the following draft coding problem.
+
+    Make it professional, clear, technically precise, and visually appealing using Markdown.
+
+    CURRENT DRAFT DATA:
+    - Title: {current_data.get('title', '')}
+    - Description: {current_data.get('description', '')}
+    - Difficulty: {current_data.get('difficulty', 'Easy')}
+    - Subject: {current_data.get('subject', '')}
+    - Input Format: {current_data.get('input_format', '')}
+    - Output Format: {current_data.get('output_format', '')}
+    - Constraints: {current_data.get('constraints', '')}
+    - Hints: {current_data.get('hints', '')}
+
+    IMPROVEMENT GUIDELINES:
+    1. Expand the Description to be rigorous and professional (use tables, code blocks where relevant).
+    2. Ensure 'input_format' and 'output_format' are clear and well-structured.
+    3. Provide realistic constraints if missing.
+    4. Write a highly valuable Hint.
+    5. Maintain the essence of the original draft.
+
+    RESPONSE: Return ONLY a JSON object with matching keys: 'title', 'description', 'input_format', 'output_format', 'constraints', 'hints'. No markdown wrappers around the JSON.
+    """
+
+    try:
+        # Using robust Gemini failover logic
+        response_text = await generate_content_with_retry(client, prompt, default_model='gemini-3-flash-preview', response_mime_type="application/json")
+        return json.loads(response_text)
+
+    except Exception as e:
+        logger.error(f"Gemini Problem Improvement Error: {e}")
+        raise e
+

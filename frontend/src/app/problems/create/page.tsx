@@ -90,6 +90,7 @@ export default function CreateProblemPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isPublishing, setIsPublishing] = useState(false);
     const [isAiGenerating, setIsAiGenerating] = useState(false);
+    const [isAiImproving, setIsAiImproving] = useState(false);
     const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
     const [formData, setFormData] = useState({
         title: "",
@@ -209,6 +210,39 @@ export default function CreateProblemPage() {
         }
     };
 
+    const handleAiImprove = async () => {
+        setIsAiImproving(true);
+        try {
+            const res = await api.post("/problems/improve-ai", {
+                title: formData.title,
+                description: formData.description,
+                difficulty: formData.difficulty,
+                subject: formData.subject,
+                hints: formData.hints || null,
+                input_format: formData.input_format || null,
+                output_format: formData.output_format || null,
+                constraints: formData.constraints || null,
+            });
+
+            if (res.data) {
+                setFormData(prev => ({
+                    ...prev,
+                    title: res.data.title || prev.title,
+                    description: res.data.description || prev.description,
+                    input_format: res.data.input_format || prev.input_format,
+                    output_format: res.data.output_format || prev.output_format,
+                    constraints: res.data.constraints || prev.constraints,
+                    hints: res.data.hints || prev.hints,
+                }));
+            }
+        } catch (error) {
+            console.error("AI Improvement failed:", error);
+            alert("AI Improvement failed. Ensure API key is configured.");
+        } finally {
+            setIsAiImproving(false);
+        }
+    };
+
     const selectedLevel = levels.find(l => l.level === formData.level);
 
     return (
@@ -249,6 +283,14 @@ export default function CreateProblemPage() {
                                     Preview
                                 </button>
                             </div>
+                            <button
+                                onClick={handleAiImprove}
+                                disabled={isAiImproving || !formData.title || !formData.description}
+                                className="bg-slate-800 text-slate-200 hover:bg-slate-900 hover:text-white px-6 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-3 transition-all shadow-lg shadow-slate-200 disabled:opacity-50 disabled:shadow-none"
+                            >
+                                {isAiImproving ? <RotateCcw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                <span>{isAiImproving ? "Improving..." : "Improve with AI"}</span>
+                            </button>
                             <button
                                 onClick={handlePublish}
                                 disabled={isPublishing || !formData.title || !formData.description}
@@ -414,11 +456,31 @@ export default function CreateProblemPage() {
                                     <ListOrdered className="w-5 h-5 text-blue-600" />
                                 </div>
                                 <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">
-                                    Constraints & Hints
+                                    Format, Constraints & Hints
                                 </h3>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Input Format</label>
+                                    <textarea
+                                        value={formData.input_format}
+                                        onChange={(e) => setFormData({ ...formData, input_format: e.target.value })}
+                                        rows={4}
+                                        className="w-full bg-slate-50 text-slate-900 border border-blue-100 rounded-2xl p-6 text-sm font-medium focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400 resize-none"
+                                        placeholder="Describe parameters/data input..."
+                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Output Format</label>
+                                    <textarea
+                                        value={formData.output_format}
+                                        onChange={(e) => setFormData({ ...formData, output_format: e.target.value })}
+                                        rows={4}
+                                        className="w-full bg-slate-50 text-slate-900 border border-blue-100 rounded-2xl p-6 text-sm font-medium focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-400 resize-none"
+                                        placeholder="Describe return values/results..."
+                                    />
+                                </div>
                                 <div className="space-y-3">
                                     <label className="text-xs font-black text-slate-500 uppercase tracking-widest block ml-1 leading-none">Constraints</label>
                                     <textarea

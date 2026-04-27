@@ -8,6 +8,7 @@ from services.auth import decrypt_token
 from utils.utils_cache import invalidate_leaderboard_cache
 from services.sync_xp import calculate_unlocked_level_from_xp
 from tenacity import retry, stop_after_attempt, wait_exponential
+from services.ai_generator import generate_content_with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -79,15 +80,14 @@ async def run_ai_judge(
     try:
         from google.genai import types
 
-        response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-            ),
+        text = await generate_content_with_retry(
+            client,
+            prompt,
+            default_model="gemini-3-flash-preview",
+            response_mime_type="application/json"
         )
 
-        text = response.text.strip()
+        # text already retrieved
         import re
 
         # Find JSON object

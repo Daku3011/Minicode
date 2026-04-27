@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from core.database import get_session
 from core.models import User, Problem, TestCase, NewsItem, LabProblemLink
 from services.auth import require_faculty, get_current_user
-from services.ai_generator import generate_problem_content, extract_text_from_file
+from services.ai_generator import generate_problem_content, extract_text_from_file, improve_problem_content
 
 logger = logging.getLogger(__name__)
 
@@ -302,3 +302,27 @@ async def generate_ai_problem(
     except Exception as e:
         logger.error(f"Failed to generate problem with AI: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+class ProblemImproveRequest(BaseModel):
+    title: str
+    description: str
+    difficulty: str
+    subject: Optional[str] = None
+    hints: Optional[str] = None
+    input_format: Optional[str] = None
+    output_format: Optional[str] = None
+    constraints: Optional[str] = None
+
+@router.post("/improve-ai")
+async def improve_ai_problem(
+    request: ProblemImproveRequest,
+    user: User = Depends(require_faculty),
+):
+    """Improves an existing problem statement using AI."""
+    try:
+        improved_data = await improve_problem_content(request.dict())
+        return improved_data
+    except Exception as e:
+        logger.error(f"Failed to improve problem with AI: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

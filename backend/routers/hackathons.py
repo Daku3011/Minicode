@@ -13,6 +13,7 @@ import anyio
 from core.models import Hackathon, User
 from services.auth import get_session, get_current_user
 from services.hackathon_scraper import update_hackathons_cache
+from services.ai_generator import generate_content_with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -106,13 +107,8 @@ async def hackathon_ai_chat(
     
     try:
         client = genai.Client(api_key=api_key)
-        response = await anyio.to_thread.run_sync(
-            lambda: client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt
-            )
-        )
-        return {"response": response.text.strip()}
+        response_text = await generate_content_with_retry(client, prompt)
+        return {"response": response_text}
     except Exception as e:
         logger.error(f"Gemini Chat Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to process AI request.")
