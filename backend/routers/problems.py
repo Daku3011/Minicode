@@ -21,9 +21,9 @@ def get_problems(
     session: Session = Depends(get_session)
 ):
     if user.role in ["admin", "faculty"]:
-        return session.exec(select(Problem)).all()
+        return session.exec(select(Problem).where(Problem.is_deleted == False)).all()
     
-    public_problems = session.exec(select(Problem).where(Problem.visibility == "public")).all()
+    public_problems = session.exec(select(Problem).where(Problem.visibility == "public", Problem.is_deleted == False)).all()
     
     private_problems = []
     if user.cohorts:
@@ -36,7 +36,7 @@ def get_problems(
             private_problems = session.exec(
                 select(Problem)
                 .join(LabProblemLink)
-                .where(Problem.visibility == "private")
+                .where(Problem.visibility == "private", Problem.is_deleted == False)
                 .where(LabProblemLink.lab_id.in_(student_lab_ids))
             ).all()
             
@@ -51,7 +51,7 @@ def get_problem(
     session: Session = Depends(get_session)
 ):
     problem = session.get(Problem, problem_id)
-    if not problem:
+    if not problem or problem.is_deleted:
         raise HTTPException(status_code=404, detail="Problem not found")
         
     if problem.visibility == "private" and user.role not in ["admin", "faculty"]:
@@ -119,7 +119,7 @@ def add_test_case(
 ):
     """Add a test case to a problem (faculty/admin only)."""
     problem = session.get(Problem, problem_id)
-    if not problem:
+    if not problem or problem.is_deleted:
         raise HTTPException(status_code=404, detail="Problem not found")
 
     # Check ownership (admin can add to any)
@@ -212,7 +212,7 @@ def update_problem(
 ):
     """Update a problem (faculty/admin only)."""
     problem = session.get(Problem, problem_id)
-    if not problem:
+    if not problem or problem.is_deleted:
         raise HTTPException(status_code=404, detail="Problem not found")
 
     # Check ownership (admin can edit any)
@@ -259,22 +259,17 @@ def delete_problem(
 ):
     """Delete a problem (faculty/admin only)."""
     problem = session.get(Problem, problem_id)
-    if not problem:
+    if not problem or problem.is_deleted:
         raise HTTPException(status_code=404, detail="Problem not found")
-
+        
     # Check ownership (admin can delete any)
     if user.role != "admin" and problem.author_id != user.id:
         raise HTTPException(
             status_code=403, detail="Not authorized to delete this problem"
         )
 
-    # Delete related test cases first to avoid foreign key constraint violations
-    for test_case in problem.test_cases:
-        session.delete(test_case)
-    # Delete related submissions first to avoid foreign key constraint violations
-    for submission in problem.submissions:
-        session.delete(submission)
-    session.delete(problem)
+    problem.is_deleted = True
+    session.add(problem)
     session.commit()
     return {"message": "Problem deleted successfully"}
 

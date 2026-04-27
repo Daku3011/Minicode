@@ -57,7 +57,7 @@ def get_students(
 def get_faculty_problems(
     user: User = Depends(require_faculty), session: Session = Depends(get_session)
 ):
-    return session.exec(select(Problem).where(Problem.author_id == user.id)).all()
+    return session.exec(select(Problem).where(Problem.author_id == user.id, Problem.is_deleted == False)).all()
 
 
 @router.get("/analytics/{problem_id}")
@@ -169,7 +169,7 @@ def get_faculty_dashboard_stats(
     session: Session = Depends(get_session),
 ):
     # Stats Aggregation
-    total_problems = session.exec(select(func.count(Problem.id))).one()
+    total_problems = session.exec(select(func.count(Problem.id)).where(Problem.is_deleted == False)).one()
     total_students = session.exec(
         select(func.count(User.id)).where(User.role == "student")
     ).one()

@@ -60,6 +60,7 @@ class Problem(SQLModel, table=True):
     visibility: str = Field(default="public", index=True)  # public or private
     author_id: Optional[int] = Field(default=None, foreign_key="users.id")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    is_deleted: bool = Field(default=False, index=True)
 
     author: Optional["User"] = Relationship(back_populates="created_problems")
     test_cases: List["TestCase"] = Relationship(back_populates="problem")

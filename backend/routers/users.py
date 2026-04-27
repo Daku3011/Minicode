@@ -26,7 +26,7 @@ QUEST_XP_REWARDS = {
 
 def get_user_profile_logic(user: User, session: Session):
     # Batch fetch all problems once to avoid N+1 queries
-    all_problems = session.exec(select(Problem)).all()
+    all_problems = session.exec(select(Problem).where(Problem.is_deleted == False)).all()
     problem_map = {p.id: p for p in all_problems}
 
     # Calculate stats for profile

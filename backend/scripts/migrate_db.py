@@ -73,6 +73,17 @@ def run_migrations():
             except Exception as e:
                 print(f"Column visibility in problem: {e}")
 
+            # Add is_deleted to problem table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE problem ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;"
+                    )
+                )
+                print("Added is_deleted to problem")
+            except Exception as e:
+                print(f"Column is_deleted in problem: {e}")
+
             # Create email_verifications table
             try:
                 conn.execute(
@@ -158,6 +169,20 @@ def run_migrations():
                     print("Column visibility already exists in problem")
                 else:
                     print(f"Column visibility in problem: {e}")
+
+            # Add is_deleted to problem table
+            try:
+                conn.execute(
+                    text(
+                        "ALTER TABLE problem ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;"
+                    )
+                )
+                print("Added is_deleted to problem")
+            except Exception as e:
+                if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                    print("Column is_deleted already exists in problem")
+                else:
+                    print(f"Column is_deleted in problem: {e}")
 
             # Add status to cohorts table
             try:
