@@ -110,8 +110,8 @@ async def run_ai_judge(
         return result, None
     except json.JSONDecodeError as e:
         fallback_feedback = "AI Judge failed to format response correctly. Resulting in error."
-        if 'response' in locals() and response and getattr(response, 'text', None):
-            fallback_feedback += f"\n\nRaw Output: {response.text}"
+        if 'text' in locals() and text:
+            fallback_feedback += f"\n\nRaw Output: {text}"
         return {"status": "error", "score": 0, "feedback": fallback_feedback}, None
     except Exception as e:
         return None, f"Gemini Error: {str(e)}"
