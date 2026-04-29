@@ -176,7 +176,7 @@ def list_students(
             "full_name": s.full_name,
             "email": s.email,
             "xp": s.xp,
-            "current_level": s.current_level,
+            "level": s.unlocked_level,
             "unlocked_level": s.unlocked_level,
         })
     
@@ -340,7 +340,7 @@ def list_contact_requests(
             r["requester_username"] = requester.username
             r["requester_email"] = requester.email
             r["requester_xp"] = requester.xp
-            r["requester_level"] = requester.current_level
+            r["requester_level"] = requester.unlocked_level
         if recipient:
             r["recipient_name"] = recipient.full_name or recipient.username
         return r
