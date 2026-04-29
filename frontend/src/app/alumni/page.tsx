@@ -74,10 +74,6 @@ export default function AlumniDashboardPage() {
     };
 
     const handleUpdateProfile = async () => {
-        if (!savedData?.exists) {
-            alert("Please fill in your profile first");
-            return;
-        }
         try {
             const data = {
                 headline: formData.headline || undefined,
@@ -93,9 +89,9 @@ export default function AlumniDashboardPage() {
             await api.put("/alumni/profile/me", data);
             setIsEditing(false);
             fetchData();
-            alert("Profile updated!");
+            alert(savedData?.exists ? "Profile updated!" : "Profile created!");
         } catch (e) {
-            alert("Failed to update profile");
+            alert("Failed to save profile");
         }
     };
 
