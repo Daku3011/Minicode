@@ -9,12 +9,13 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function StudentCohortsPage() {
     const [cohorts, setCohorts] = useState<any[]>([]);
+    const [pendingRequests, setPendingRequests] = useState<number[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isJoining, setIsJoining] = useState(false);
     const [inviteCode, setInviteCode] = useState("");
     const { user } = useAuth();
     const router = useRouter();
-    
+
     useEffect(() => {
         fetchCohorts();
     }, []);
@@ -22,7 +23,8 @@ export default function StudentCohortsPage() {
     const fetchCohorts = async () => {
         try {
             const res = await api.get("/cohorts/my");
-            setCohorts(res.data);
+            setCohorts(res.data.enrolled || []);
+            setPendingRequests(res.data.pending_requests || []);
         } catch (e) {
             console.error("Failed to load your cohorts", e);
         } finally {
@@ -48,8 +50,8 @@ export default function StudentCohortsPage() {
             console.error(e);
             let errorMessage = "Failed to join cohort. Check invite code.";
             if (e.response?.data?.detail) {
-                errorMessage = typeof e.response.data.detail === 'string' 
-                    ? e.response.data.detail 
+                errorMessage = typeof e.response.data.detail === 'string'
+                    ? e.response.data.detail
                     : JSON.stringify(e.response.data.detail);
             }
             alert(errorMessage);
@@ -107,28 +109,49 @@ export default function StudentCohortsPage() {
 
                 {/* Cohorts List */}
                 <div className="lg:col-span-2 space-y-4">
-                    {cohorts.length === 0 ? (
+                    {cohorts.length === 0 && pendingRequests.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-3xl border border-blue-100 border-dashed shadow-sm">
                             <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                             <p className="text-slate-500 font-bold uppercase tracking-widest">You have not joined any cohorts</p>
                         </div>
                     ) : (
-                        cohorts.map(c => (
-                            <div key={c.id} className="bg-white border border-blue-100 p-6 rounded-2xl flex items-center justify-between hover:border-blue-200 transition-all shadow-sm">
-                                <div>
-                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{c.name}</h3>
-                                    <div className="flex items-center gap-6 mt-2 text-slate-500 text-[10px] tracking-widest font-bold uppercase">
-                                        <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-primary" /> Prof: {c.faculty_name}</span>
-                                    </div>
+                        <>
+                            {/* Pending Requests */}
+                            {pendingRequests.length > 0 && (
+                                <div className="mb-6">
+                                    <h2 className="text-sm font-black uppercase tracking-widest text-amber-600 mb-3">Pending Approval</h2>
+                                    {pendingRequests.map((cohortId) => (
+                                        <div key={`pending-${cohortId}`} className="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex items-center justify-between mb-3">
+                                            <div>
+                                                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Cohort ID: {cohortId}</h3>
+                                                <p className="text-amber-600 text-[10px] tracking-widest font-bold uppercase mt-1">Waiting for faculty approval</p>
+                                            </div>
+                                            <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] uppercase tracking-widest font-bold">
+                                                Pending
+                                            </span>
+                                        </div>
+                                    ))}
                                 </div>
-                                <button 
-                                    onClick={() => router.push(`/cohorts/${c.id}`)}
-                                    className="p-3 bg-blue-50 border border-blue-100 hover:bg-blue-100 rounded-xl transition-all group"
-                                >
-                                    <ChevronRight className="w-5 h-5 text-primary transition-colors" />
-                                </button>
-                            </div>
-                        ))
+                            )}
+
+                            {/* Enrolled Cohorts */}
+                            {cohorts.map(c => (
+                                <div key={c.id} className="bg-white border border-blue-100 p-6 rounded-2xl flex items-center justify-between hover:border-blue-200 transition-all shadow-sm">
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{c.name}</h3>
+                                        <div className="flex items-center gap-6 mt-2 text-slate-500 text-[10px] tracking-widest font-bold uppercase">
+                                            <span className="flex items-center gap-1.5"><Users className="w-3 h-3 text-primary" /> Prof: {c.faculty_name}</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => router.push(`/cohorts/${c.id}`)}
+                                        className="p-3 bg-blue-50 border border-blue-100 hover:bg-blue-100 rounded-xl transition-all group"
+                                    >
+                                        <ChevronRight className="w-5 h-5 text-primary transition-colors" />
+                                    </button>
+                                </div>
+                            ))}
+                        </>
                     )}
                 </div>
             </div>

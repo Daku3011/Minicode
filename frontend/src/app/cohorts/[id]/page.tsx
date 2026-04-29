@@ -29,14 +29,14 @@ export default function StudentCohortDetailPage() {
         if (id) fetchCohort();
     }, [id]);
 
-    if (isLoading) return <div className="min-h-screen bg-[#05050a] flex items-center justify-center"><LoadingSpinner label="SYNCING CLASSROOM..." /></div>;
+    if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><LoadingSpinner label="SYNCING CLASSROOM..." /></div>;
     if (!cohort) return null;
 
     return (
-        <div className="min-h-screen bg-[#05050a] text-white p-8 md:p-12 font-black">
-            <button 
+        <div className="min-h-screen bg-slate-50 text-slate-900 p-8 md:p-12 font-black">
+            <button
                 onClick={() => router.push("/cohorts")}
-                className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors mb-8 uppercase text-xs tracking-widest"
+                className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors mb-8 uppercase text-xs tracking-widest"
             >
                 <ArrowLeft className="w-4 h-4" /> My Cohorts
             </button>
@@ -46,7 +46,7 @@ export default function StudentCohortDetailPage() {
                     <h1 className="text-4xl lg:text-5xl font-black uppercase tracking-tighter">{cohort.name}</h1>
                     <div className="flex items-center gap-4 mt-2">
                         <span className="text-primary uppercase tracking-[0.2em] text-[10px]">Prof. {cohort.faculty_name}</span>
-                        <div className="h-3 w-px bg-white/10" />
+                        <div className="h-3 w-px bg-slate-200" />
                         <span className="text-slate-500 uppercase tracking-[0.2em] text-[10px]">{cohort.student_count} Peers</span>
                     </div>
                 </div>
@@ -63,7 +63,7 @@ export default function StudentCohortDetailPage() {
                     <div className="space-y-4">
                         {cohort.labs && cohort.labs.length > 0 ? (
                             cohort.labs.map((lab: any) => (
-                                <div key={lab.id} className="bg-white/[0.02] border border-white/5 p-8 rounded-2xl flex flex-col gap-4 transition-all hover:bg-white/[0.04]">
+                                <div key={lab.id} className="bg-white border border-blue-100 p-8 rounded-2xl flex flex-col gap-4 transition-all hover:border-blue-200 shadow-sm">
                                     <div className="flex items-center gap-6">
                                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                                             <PlayCircle className="w-5 h-5 text-primary" />
@@ -73,17 +73,17 @@ export default function StudentCohortDetailPage() {
                                             <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">{lab.problem_count} Problems Available</p>
                                         </div>
                                     </div>
-                                    
+
                                     {lab.description && (
-                                        <div className="mt-4 p-4 bg-black/40 rounded-xl text-sm text-slate-300 font-medium font-mono whitespace-pre-wrap">
+                                        <div className="mt-4 p-4 bg-slate-50 rounded-xl text-sm text-slate-700 font-medium font-mono whitespace-pre-wrap border border-slate-100">
                                             {lab.description}
                                         </div>
                                     )}
 
                                     <div className="flex justify-end mt-4">
-                                        <button 
+                                        <button
                                             onClick={() => router.push(`/cohorts/${id}/labs/${lab.id}`)}
-                                            className="px-6 py-2 bg-primary hover:bg-gray-500/90 text-white rounded-xl text-xs uppercase tracking-widest transition-all border border-white/10 flex items-center gap-2 cursor-pointer"
+                                            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-2 cursor-pointer"
                                         >
                                             Enter Lab
                                         </button>
@@ -91,9 +91,9 @@ export default function StudentCohortDetailPage() {
                                 </div>
                             ))
                         ) : (
-                            <div className="py-20 text-center border border-dashed border-white/5 rounded-3xl">
-                                <Lock className="w-12 h-12 text-slate-800 mx-auto mb-4" />
-                                <p className="text-slate-600 uppercase tracking-widest text-[10px]">Wait for Faculty to unlock labs</p>
+                            <div className="py-20 text-center border border-blue-100 border-dashed rounded-3xl bg-white shadow-sm">
+                                <Lock className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <p className="text-slate-500 uppercase tracking-widest text-[10px]">Wait for Faculty to unlock labs</p>
                             </div>
                         )}
                     </div>
@@ -102,14 +102,14 @@ export default function StudentCohortDetailPage() {
                 {/* Info Sidebar */}
                 <div className="space-y-6">
                     {cohort.notes && (
-                        <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl relative overflow-hidden group">
+                        <div className="bg-white border border-blue-100 p-6 rounded-2xl relative overflow-hidden group shadow-sm">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <Library className="w-12 h-12" />
+                                <Library className="w-12 h-12 text-slate-300" />
                             </div>
                             <h3 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-6 flex items-center gap-2 relative">
                                 <PlusCircle className="w-3.5 h-3.5 text-blue-500" /> Resources & Notes
                             </h3>
-                            <div className="prose prose-invert prose-sm max-w-none relative">
+                            <div className="prose prose-sm max-w-none relative">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {cohort.notes}
                                 </ReactMarkdown>
@@ -117,21 +117,21 @@ export default function StudentCohortDetailPage() {
                         </div>
                     )}
 
-                    <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                    <div className="bg-white border border-blue-100 p-6 rounded-2xl shadow-sm">
                         <h3 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-4">Classroom ID</h3>
-                        <div className="text-2xl font-mono text-primary bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
+                        <div className="text-2xl font-mono text-primary bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
                             {cohort.id}
                         </div>
                         <p className="text-[9px] text-slate-500 mt-4 leading-relaxed uppercase text-center">Share this ID with peers to join this classroom.</p>
                     </div>
 
-                    <div className="bg-white/[0.02] border border-white/5 p-6 rounded-2xl">
+                    <div className="bg-white border border-blue-100 p-6 rounded-2xl shadow-sm">
                         <h3 className="text-xs uppercase tracking-[0.2em] text-slate-500 mb-4 flex items-center gap-2">
                              <Users className="w-3.5 h-3.5" /> Recent Peers
                         </h3>
                         <div className="flex -space-x-2">
                             {cohort.students?.slice(0, 5).map((s: any) => (
-                                <div key={s.id} className="w-8 h-8 rounded-lg border-2 border-[#05050a] bg-slate-800 flex items-center justify-center text-[10px] uppercase font-black" title={s.username}>
+                                <div key={s.id} className="w-8 h-8 rounded-lg border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] uppercase font-black text-slate-600" title={s.username}>
                                     {s.username[0]}
                                 </div>
                             ))}
