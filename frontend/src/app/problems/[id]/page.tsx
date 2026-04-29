@@ -593,11 +593,11 @@ function ProblemDetailContent() {
                                 <div className="flex justify-center">
                                     <button 
                                         onClick={() => setActiveTab("description")}
-                                        className="flex items-center gap-3 px-12 py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all"
+                                        className="flex items-center gap-3 px-12 py-5 bg-blue-500/50 hover:bg-gray-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-black/5 transition-all cursor pointer "
                                     >
                                         <RotateCcw className="w-4 h-4" />
                                         Return to Specs
-                                    </button>
+                                    </button>   
                                 </div>
                             </div>
                         )}

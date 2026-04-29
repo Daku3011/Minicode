@@ -461,7 +461,7 @@ const DashboardTab = memo(({ data }: StudentProfileViewProps) => {
                                                 <p className="text-slate-400 text-[9px] font-bold mt-0.5 uppercase tracking-widest">{new Date(sub.time).toLocaleDateString()} // v{String(sub.id).slice(0, 4)}</p>
                                             </div>
                                         </div>
-                                        <ChevronRight className="w-5 h-5 text-slate-300 group-hover/item:text-blue-500 transition-colors" />
+                                        {/* <ChevronRight className="w-5 h-5 text-slate-300 group-hover/item:text-blue-500 transition-colors" /> */}
                                     </div>
                                 ))}
                             </div>
