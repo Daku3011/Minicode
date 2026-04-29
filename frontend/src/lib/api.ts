@@ -22,6 +22,7 @@ api.interceptors.request.use(
 
 export const userApi = {
     me: () => api.get("/user/me"),
+    byUsername: (username: string) => api.get(`/user/by/${username}`),
     questClaims: () => api.get("/user/quests/claims"),
     claimQuestReward: (questId: string) => api.post("/user/quests/claim", { quest_id: questId }),
     settings: (data: { faculty_report_email?: string }) => api.put("/user/me/settings", data),
