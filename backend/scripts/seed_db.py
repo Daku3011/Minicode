@@ -79,7 +79,29 @@ def seed_database():
                 student.unlocked_level = 1
                 session.add(student)
                 session.commit()
-                session.refresh(student)
+
+        # Ensure Alumni exists
+        alumni_statement = select(User).where(User.username == "alumni")
+        alumni = session.exec(alumni_statement).first()
+        if not alumni:
+            print("Creating default alumni...")
+            alumni = User(
+                username="alumni",
+                email="alumni@minicode.ai",
+                full_name="Alumni Graduate",
+                hashed_password=get_password_hash("alumni123"),
+                role="alumni",
+                xp=0,
+                unlocked_level=99,
+            )
+            session.add(alumni)
+            session.commit()
+            session.refresh(alumni)
+        else:
+            alumni.unlocked_level = 99
+            session.add(alumni)
+            session.commit()
+            session.refresh(alumni)
 
         # Create problems with levels
         from scripts.problems_data import problems_data

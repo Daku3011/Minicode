@@ -1,14 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import Optional
+from datetime import datetime, timezone
 
 from core.database import get_session
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
-from typing import Optional
-
-from core.database import get_session
-from core.models import User, Cohort, UserCohortLink
+from core.models import User, Cohort, UserCohortLink, CohortJoinRequest
 from services.auth import require_faculty, get_current_user
 from pydantic import BaseModel
 
@@ -76,12 +72,23 @@ def my_cohorts(
         .where(Cohort.status == "active")
     ).all()
 
+    # Also get pending requests for this user
+    pending_requests = session.exec(
+        select(CohortJoinRequest)
+        .where(CohortJoinRequest.user_id == user.id)
+        .where(CohortJoinRequest.status == "pending")
+    ).all()
+
     results = []
     for c in cohorts:
         c_dict = c.model_dump()
         c_dict["faculty_name"] = c.faculty.full_name or c.faculty.username if c.faculty else "Unknown"
         results.append(c_dict)
-    return results
+
+    # Add pending requests info
+    pending_cohort_ids = [req.cohort_id for req in pending_requests]
+
+    return {"enrolled": results, "pending_requests": pending_cohort_ids}
 
 @router.post("/join")
 def join_cohort(
@@ -92,20 +99,35 @@ def join_cohort(
     cohort = session.get(Cohort, req.cohort_id)
     if not cohort:
         raise HTTPException(status_code=404, detail="Invalid Cohort ID (Invite Code)")
-        
-    # Check if already joined
+
+    # Check if already an approved member
     existing_link = session.exec(select(UserCohortLink).where(
         UserCohortLink.user_id == user.id,
         UserCohortLink.cohort_id == req.cohort_id
     )).first()
-    
+
     if existing_link:
         return {"message": "Already enrolled in this cohort", "cohort": {"id": cohort.id, "name": cohort.name}}
-        
-    new_link = UserCohortLink(user_id=user.id, cohort_id=cohort.id)
-    session.add(new_link)
+
+    # Check if there's already a pending request
+    existing_request = session.exec(select(CohortJoinRequest).where(
+        CohortJoinRequest.user_id == user.id,
+        CohortJoinRequest.cohort_id == req.cohort_id,
+        CohortJoinRequest.status == "pending"
+    )).first()
+
+    if existing_request:
+        return {"message": "Join request already pending approval", "status": "pending"}
+
+    # Create a new join request
+    new_request = CohortJoinRequest(
+        cohort_id=req.cohort_id,
+        user_id=user.id,
+        status="pending"
+    )
+    session.add(new_request)
     session.commit()
-    return {"message": "Successfully joined cohort", "cohort": {"id": cohort.id, "name": cohort.name}}
+    return {"message": "Join request submitted. Waiting for faculty approval.", "status": "pending"}
 
 @router.get("/{cohort_id}")
 def get_cohort_detail(
@@ -141,6 +163,104 @@ def get_cohort_detail(
     ]
     
     return res
+
+class JoinRequestAction(BaseModel):
+    faculty_note: Optional[str] = None
+
+@router.get("/{cohort_id}/requests")
+def get_join_requests(
+    cohort_id: int,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session)
+):
+    cohort = session.get(Cohort, cohort_id)
+    if not cohort:
+        raise HTTPException(status_code=404, detail="Cohort not found")
+
+    if user.role != "admin" and cohort.faculty_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    requests = session.exec(
+        select(CohortJoinRequest)
+        .where(CohortJoinRequest.cohort_id == cohort_id)
+        .where(CohortJoinRequest.status == "pending")
+    ).all()
+
+    result = []
+    for req in requests:
+        req_dict = req.model_dump()
+        req_dict["student_username"] = req.user.username if req.user else "Unknown"
+        req_dict["student_full_name"] = req.user.full_name if req.user else "Unknown"
+        result.append(req_dict)
+
+    return result
+
+
+@router.post("/{cohort_id}/requests/{request_id}/approve")
+def approve_join_request(
+    cohort_id: int,
+    request_id: int,
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session)
+):
+    cohort = session.get(Cohort, cohort_id)
+    if not cohort:
+        raise HTTPException(status_code=404, detail="Cohort not found")
+
+    if user.role != "admin" and cohort.faculty_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    join_request = session.get(CohortJoinRequest, request_id)
+    if not join_request or join_request.cohort_id != cohort_id:
+        raise HTTPException(status_code=404, detail="Join request not found")
+
+    if join_request.status != "pending":
+        raise HTTPException(status_code=400, detail="Request already processed")
+
+    # Create the cohort link
+    new_link = UserCohortLink(user_id=join_request.user_id, cohort_id=cohort_id)
+    session.add(new_link)
+
+    # Update request status
+    join_request.status = "approved"
+    join_request.responded_at = datetime.now(timezone.utc)
+    session.add(join_request)
+    session.commit()
+
+    return {"message": "Student approved and added to cohort"}
+
+
+@router.post("/{cohort_id}/requests/{request_id}/reject")
+def reject_join_request(
+    cohort_id: int,
+    request_id: int,
+    action: JoinRequestAction = JoinRequestAction(),
+    user: User = Depends(require_faculty),
+    session: Session = Depends(get_session)
+):
+    cohort = session.get(Cohort, cohort_id)
+    if not cohort:
+        raise HTTPException(status_code=404, detail="Cohort not found")
+
+    if user.role != "admin" and cohort.faculty_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    join_request = session.get(CohortJoinRequest, request_id)
+    if not join_request or join_request.cohort_id != cohort_id:
+        raise HTTPException(status_code=404, detail="Join request not found")
+
+    if join_request.status != "pending":
+        raise HTTPException(status_code=400, detail="Request already processed")
+
+    # Update request status
+    join_request.status = "rejected"
+    join_request.responded_at = datetime.now(timezone.utc)
+    join_request.faculty_note = action.faculty_note
+    session.add(join_request)
+    session.commit()
+
+    return {"message": "Join request rejected"}
+
 
 @router.post("/{cohort_id}/students")
 def add_student_to_cohort(

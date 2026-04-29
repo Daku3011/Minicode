@@ -26,7 +26,7 @@ class User(SQLModel, table=True):
     google_id: Optional[str] = Field(default=None, unique=True, index=True)
     github_access_token: Optional[str] = None
     hashed_password: Optional[str] = None
-    role: str = Field(default="student")  # student, faculty, admin
+    role: str = Field(default="student")  # student, faculty, admin, alumni
     xp: int = Field(default=0)  # Total XP earned
     unlocked_level: int = Field(default=1)  # Current unlocked level
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -149,6 +149,20 @@ class QuestRewardClaim(SQLModel, table=True):
 
 
 
+class CohortJoinRequest(SQLModel, table=True):
+    __tablename__ = "cohort_join_requests"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    cohort_id: int = Field(foreign_key="cohorts.id", index=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    status: str = Field(default="pending", index=True)  # pending, approved, rejected
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    responded_at: Optional[datetime] = None
+    faculty_note: Optional[str] = None  # Reason for rejection
+
+    cohort: Optional["Cohort"] = Relationship()
+    user: Optional["User"] = Relationship()
+
+
 class Cohort(SQLModel, table=True):
     __tablename__ = "cohorts"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -158,10 +172,11 @@ class Cohort(SQLModel, table=True):
     status: str = Field(default="active", index=True)  # active, archived
     notes: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    
+
     faculty: Optional["User"] = Relationship(back_populates="managed_cohorts")
     students: List["User"] = Relationship(back_populates="cohorts", link_model=UserCohortLink)
     labs: List["Lab"] = Relationship(back_populates="cohort")
+    join_requests: List["CohortJoinRequest"] = Relationship(back_populates="cohort")
 
 class Lab(SQLModel, table=True):
     __tablename__ = "labs"
@@ -191,4 +206,55 @@ class Hackathon(SQLModel, table=True):
     registration_url: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class AlumniProfile(SQLModel, table=True):
+    __tablename__ = "alumni_profiles"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", unique=True)
+    headline: Optional[str] = None  # Professional headline
+    company: Optional[str] = None   # Current company
+    location: Optional[str] = None  # Current location
+    linkedin_url: Optional[str] = None
+    github_url: Optional[str] = None
+    personal_website: Optional[str] = None
+    bio: Optional[str] = None       # About me
+    graduation_year: Optional[int] = None
+    degree: Optional[str] = None
+    skills: Optional[str] = None    # Comma-separated or JSON string
+    projects: Optional[str] = None  # JSON string of projects
+    employment_history: Optional[str] = None  # JSON string of work experience
+    is_available_for_mentoring: bool = Field(default=False)
+    is_available_for_job_referrals: bool = Field(default=False)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    user: Optional["User"] = Relationship()
+
+
+class AlumniNotification(SQLModel, table=True):
+    __tablename__ = "alumni_notifications"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    alumni_id: int = Field(foreign_key="users.id", index=True)
+    title: str = Field(index=True)
+    message: str
+    notification_type: str = Field(default="info", index=True)  # info, warning, success
+    is_read: bool = Field(default=False, index=True)
+    related_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), index=True)
+    expires_at: Optional[datetime] = None
+    
+    alumni: Optional["User"] = Relationship()
+
+
+class ContactRequest(SQLModel, table=True):
+    __tablename__ = "contact_requests"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    requester_id: int = Field(foreign_key="users.id", index=True)  # Student or alumni making request
+    recipient_id: int = Field(foreign_key="users.id", index=True)  # Alumni being requested
+    status: str = Field(default="pending", index=True)  # pending, accepted, rejected, completed
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    responded_at: Optional[datetime] = None
+    message: Optional[str] = None  # Initial message from requester
+    response_message: Optional[str] = None  # Response from recipient
 

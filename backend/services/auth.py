@@ -150,3 +150,4 @@ def require_role(roles: list[str]):
 
 require_admin = require_role(["admin"])
 require_faculty = require_role(["faculty", "admin"])
+require_alumni = require_role(["alumni", "admin", "faculty"])  # Alumni can view faculty content

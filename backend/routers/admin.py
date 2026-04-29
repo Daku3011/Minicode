@@ -57,6 +57,11 @@ def update_user_role(
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
+    valid_roles = ["student", "faculty", "admin", "alumni"]
+    if role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
+    
     user.role = role
     session.add(user)
     session.commit()
