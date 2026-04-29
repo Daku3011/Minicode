@@ -162,6 +162,7 @@ function processRecentSubmissionsToWeeklyActivity(recentSubmissions: RecentSubmi
 interface StudentProfileViewProps {
     data: ProfileData;
     isFacultyView?: boolean;
+    isOwnProfile?: boolean;
 }
 
 const statusColor = (status: string) => {

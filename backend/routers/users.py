@@ -147,6 +147,18 @@ def get_me(
     return get_user_profile_logic(user, session)
 
 
+@router.get("/by/{username}")
+def get_user_by_username(
+    username: str,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    target_user = session.exec(select(User).where(User.username == username)).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return get_user_profile_logic(target_user, session)
+
+
 @router.get("/quests/claims")
 def get_quest_claims(
     user: User = Depends(get_current_user),
