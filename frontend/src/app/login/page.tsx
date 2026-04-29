@@ -48,6 +48,7 @@ export default function LoginPage() {
 
             if (user.role === "admin") router.push("/admin/users");
             else if (user.role === "faculty") router.push("/faculty/profile");
+            else if (user.role === "alumni") router.push("/alumni");
             else router.push("/problems");
         }
     }, [user, loading, router]);

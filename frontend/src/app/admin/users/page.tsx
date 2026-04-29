@@ -9,7 +9,7 @@ interface User {
     id: number;
     username: string;
     email: string;
-    role: "student" | "faculty" | "admin";
+    role: "student" | "faculty" | "admin" | "alumni";
     joined: string;
 }
 
@@ -204,6 +204,7 @@ export default function AdminDashboard() {
                                                             <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ring-2 ring-background-dark", 
                                                                 user.role === 'admin' ? "bg-rose-500/20 text-rose-400" :
                                                                 user.role === 'faculty' ? "bg-primary/20 text-primary" :
+                                                                user.role === 'alumni' ? "bg-amber-500/20 text-amber-500" :
                                                                 "bg-emerald-500/20 text-emerald-400"
                                                             )}>
                                                                 {user.username.slice(0, 2).toUpperCase()}
@@ -220,12 +221,13 @@ export default function AdminDashboard() {
                                                             onChange={(e) => handleRoleUpdate(user.id, e.target.value)}
                                                             className={clsx(
                                                                 "bg-slate-50 border border-blue-200 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer shadow-sm hover:bg-blue-50 transition-all text-center",
-                                                                user.role === 'admin' ? "text-rose-600" : user.role === 'faculty' ? "text-blue-600" : "text-emerald-600"
+                                                                user.role === 'admin' ? "text-rose-600" : user.role === 'faculty' ? "text-blue-600" : user.role === 'alumni' ? "text-amber-600" : "text-emerald-600"
                                                             )}
                                                         >
                                                             <option value="student">Student</option>
                                                             <option value="faculty">Faculty</option>
                                                             <option value="admin">Admin</option>
+                                                            <option value="alumni">Alumni</option>
                                                         </select>
                                                     </td>
                                                     <td className="px-6 py-4">

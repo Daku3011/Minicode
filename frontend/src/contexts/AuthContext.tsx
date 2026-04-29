@@ -10,7 +10,7 @@ export interface User {
     email: string;
     full_name: string | null;
     avatar_url: string | null;
-    role: "student" | "admin" | "faculty";
+    role: "student" | "admin" | "faculty" | "alumni";
     github_id: number | null;
     created_at: string;
     unlocked_level?: number;

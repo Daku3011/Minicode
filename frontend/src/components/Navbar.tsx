@@ -57,12 +57,22 @@ export default function Navbar() {
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
             { name: "Hackathons", href: "/hackathons", icon: Sparkles },
         ]
+        : user?.role === 'alumni'
+        ? [
+            { name: "Alumni", href: "/alumni", icon: User },
+            { name: "Cohorts", href: "/cohorts", icon: User },
+            { name: "Problems", href: "/problems", icon: Code2 },
+            { name: "Events", href: "/events", icon: Calendar },
+            { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+            { name: "Hackathons", href: "/hackathons", icon: Sparkles },
+        ]
         : [
             { name: "Cohorts", href: "/cohorts", icon: User },
             { name: "Problems", href: "/problems", icon: Code2 },
             { name: "Events", href: "/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
             { name: "Hackathons", href: "/hackathons", icon: Sparkles },
+            { name: "Alumni", href: "/alumni/profiles", icon: User },
         ];
 
 
