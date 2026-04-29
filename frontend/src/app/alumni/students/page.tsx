@@ -84,7 +84,7 @@ export default function AlumniStudentsPage() {
                                     <span>{student.xp || 0} XP</span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <span>Level {student.current_level || 1}</span>
+                                    <span>Level {student.level || student.unlocked_level || 1}</span>
                                 </div>
                             </div>
                         </div>
