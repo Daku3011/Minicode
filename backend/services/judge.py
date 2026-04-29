@@ -162,7 +162,18 @@ async def judge_submission(
                         continue
 
                 if content_file:
-                    user_code = content_file.decoded_content.decode("utf-8")
+                    # Try multiple encodings to handle different file types (Java, Python, etc.)
+                    try:
+                        user_code = content_file.decoded_content.decode("utf-8")
+                    except UnicodeDecodeError:
+                        try:
+                            user_code = content_file.decoded_content.decode("latin-1")
+                        except UnicodeDecodeError:
+                            user_code = content_file.decoded_content.decode("cp1252", errors="ignore")
+
+                    # Remove NULL bytes that PostgreSQL can't handle
+                    if isinstance(user_code, str):
+                        user_code = user_code.replace('\x00', '')
                 else:
                     user_code = f"# Error fetching code: A file named 'solution.*' was not found in repository {repo_name}."
 
