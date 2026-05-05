@@ -8,6 +8,7 @@ import DesktopEnforcer from "@/components/DesktopEnforcer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import WelcomeModal from '@/components/WelcomeModal';
 
 export const metadata: Metadata = {
   title: "MiniCode | Code. Compete. Evolve.",
@@ -40,6 +41,7 @@ export default function RootLayout({
                 {children}
               </Suspense>
             </main>
+              <WelcomeModal />
             <Analytics mode="production" />
             <SpeedInsights />
           </DesktopEnforcer>
