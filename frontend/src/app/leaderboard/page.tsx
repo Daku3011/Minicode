@@ -25,6 +25,21 @@ interface LeaderboardUser {
     streak?: number;
 }
 
+const fallbackLeaderboardUser = (rank: number): LeaderboardUser => ({
+    id: -rank,
+    username: `student${rank}`,
+    name: "MiniCode Student",
+    score: 0,
+    problems: 0,
+    avatar: null,
+    rank,
+    tags: [],
+    level: 1,
+    problems_solved: 0,
+    experience: 0,
+    streak: 0,
+});
+
 export default function LeaderboardPage() {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = useState<LeaderboardUser[]>([]);
@@ -90,7 +105,11 @@ export default function LeaderboardPage() {
         streak: 4,
     };
 
-    const podiumSlots = [topThree[1] || null, topThree[0] || null, topThree[2]];
+    const podiumSlots = [
+        topThree[1] || fallbackLeaderboardUser(2),
+        topThree[0] || fallbackLeaderboardUser(1),
+        topThree[2] || fallbackLeaderboardUser(3),
+    ];
 
     return (
         <div className="min-h-screen bg-[#faf8ff] pt-20 pb-24 px-4 md:px-8 overflow-x-hidden relative">
