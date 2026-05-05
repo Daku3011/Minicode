@@ -374,7 +374,7 @@ export default function HackathonsPage() {
                                         "flex gap-3 max-w-[85%] rounded-xl p-3 text-sm font-medium leading-relaxed shadow-sm break-words min-w-0",
                                         msg.sender === "user"
                                             ? "bg-blue-600 text-white self-end ml-auto"
-                                            : "bg-card text-card-foreground border border-border self-start"
+                                            : "bg-slate-100 text-slate-900 border border-slate-200 self-start"
                                     )}
                                 >
                                     <div className="mt-0.5 flex-shrink-0">
@@ -382,17 +382,19 @@ export default function HackathonsPage() {
                                     </div>
                                     <div className={clsx(
                                         "prose prose-sm max-w-none flex-grow min-w-0 break-words",
-                                        msg.sender === "user" ? "text-white prose-invert" : "text-slate-800 dark:text-slate-200"
+                                        msg.sender === "user" ? "text-white prose-invert" : "text-slate-900"
                                     )}>
                                         <ReactMarkdown
                                             components={{
-                                                p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
-                                                ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1 text-inherit">{children}</ul>,
-                                                ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1 text-inherit">{children}</ol>,
-                                                li: ({ children }) => <li className="leading-relaxed text-inherit">{children}</li>,
-                                                h1: ({ children }) => <h1 className="text-lg font-extrabold mb-2 text-primary mt-4 first:mt-0">{children}</h1>,
-                                                h2: ({ children }) => <h2 className="text-base font-bold mb-1 text-primary mt-3 first:mt-0">{children}</h2>,
-                                                h3: ({ children }) => <h3 className="text-sm font-bold mb-1 text-primary mt-2 first:mt-0">{children}</h3>,
+                                                p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed text-slate-900">{children}</p>,
+                                                ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1 text-slate-900">{children}</ul>,
+                                                ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1 text-slate-900">{children}</ol>,
+                                                li: ({ children }) => <li className="leading-relaxed text-slate-900">{children}</li>,
+                                                strong: ({ children }) => <strong className="font-extrabold text-slate-900">{children}</strong>,
+                                                em: ({ children }) => <em className="italic text-slate-800">{children}</em>,
+                                                h1: ({ children }) => <h1 className="text-lg font-extrabold mb-2 text-slate-900 mt-4 first:mt-0">{children}</h1>,
+                                                h2: ({ children }) => <h2 className="text-base font-bold mb-1 text-slate-900 mt-3 first:mt-0">{children}</h2>,
+                                                h3: ({ children }) => <h3 className="text-sm font-bold mb-1 text-slate-900 mt-2 first:mt-0">{children}</h3>,
                                                 code: ({ node, inline, className, children, ...props }: any) => {
                                                     if (inline) {
                                                         return <code className="bg-muted/80 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded text-xs font-semibold font-mono border border-border/50" {...props}>{children}</code>;

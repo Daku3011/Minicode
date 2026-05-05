@@ -90,7 +90,7 @@ export default function LeaderboardPage() {
         streak: 4,
     };
 
-    const podiumSlots = [topThree[1] || null, topThree[0] || null, topThree[2] || dummyThird];
+    const podiumSlots = [topThree[1] || null, topThree[0] || null, topThree[2]];
 
     return (
         <div className="min-h-screen bg-[#faf8ff] pt-20 pb-24 px-4 md:px-8 overflow-x-hidden relative">
