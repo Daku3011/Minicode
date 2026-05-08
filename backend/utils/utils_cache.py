@@ -31,7 +31,8 @@ def leaderboard_cache_key_builder(func, *args, **kwargs):
         except Exception as e:
             logger.error(f"Failed to fetch leaderboard version from Redis: {e}")
     
-    return f"leaderboard:v{version}:{func.__name__}"
+    period = kwargs.get("period", "global")
+    return f"leaderboard:v{version}:{func.__name__}:{period}"
 
 def invalidate_leaderboard_cache():
     """Invalidate the leaderboard cache by incrementing the version in Redis."""

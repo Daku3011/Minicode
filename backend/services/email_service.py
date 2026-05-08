@@ -1,7 +1,11 @@
 import httpx
 import base64
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone, timedelta
 from sqlmodel import Session, select, func
+from sqlalchemy import or_
 from typing import List, Dict, Any
 from core.models import User, Problem, Submission
 import logging
@@ -17,6 +21,35 @@ RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "MiniCode Arena <onboarding@r
 RESEND_RECIPIENT = os.getenv("RESEND_RECIPIENT", "minicode.scet@gmail.com")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_EMAIL = os.getenv("SMTP_EMAIL", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+
+
+def send_email_smtp(to_email: str, subject: str, html_content: str):
+    if not SMTP_EMAIL or not SMTP_PASSWORD:
+        logger.warning("SMTP credentials not configured, skipping email")
+        return False
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["From"] = SMTP_EMAIL
+        msg["To"] = to_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(html_content, "html"))
+
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_EMAIL, SMTP_PASSWORD)
+            server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+
+        logger.info(f"Email sent via SMTP to {to_email}: {subject}")
+        return True
+    except Exception as e:
+        logger.error(f"SMTP error sending to {to_email}: {e}")
+        return False
 
 
 def send_email(to_email: str, subject: str, html_content: str, attachments: List[Dict[str, Any]] = None):
@@ -64,10 +97,12 @@ def send_email(to_email: str, subject: str, html_content: str, attachments: List
             return True
     except httpx.HTTPStatusError as e:
         logger.error(f"Resend API error ({e.response.status_code}): {e.response.text}")
-        return False
+        logger.info("Falling back to SMTP...")
+        return send_email_smtp(to_email, subject, html_content)
     except Exception as e:
         logger.error(f"Unexpected error sending email via Resend: {e}")
-        return False
+        logger.info("Falling back to SMTP...")
+        return send_email_smtp(to_email, subject, html_content)
 
 
 def generate_motivation_email(username, top_activity, leaderboard_top=None, suggestions=None):
@@ -173,8 +208,14 @@ def send_engagement_lure_emails(session: Session, days_inactive: int = 2):
     inactive_users = session.exec(
         select(User).where(
             User.role == "student",
-            (User.last_login < cutoff_date) | (User.last_login == None),
-            (User.last_engagement_email_sent == None) | (User.last_engagement_email_sent < cutoff_date)
+            or_(
+                User.last_login < cutoff_date,
+                User.last_login.is_(None),
+            ),
+            or_(
+                User.last_engagement_email_sent.is_(None),
+                User.last_engagement_email_sent < cutoff_date,
+            ),
         )
     ).all()
 
