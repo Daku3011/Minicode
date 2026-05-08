@@ -30,6 +30,8 @@ interface Milestone {
     order: number;
     xp_reward: number;
     content: string | null;
+    hints: string | null;
+    resources: { title: string; url: string; description: string }[];
     status: "locked" | "in_progress" | "completed" | "rewarded";
     completed_at: string | null;
     rewarded_at: string | null;
@@ -64,12 +66,17 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
     const [stream, setStream] = useState<StreamData | null>(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<number | null>(null);
+    const [expandedMilestone, setExpandedMilestone] = useState<number | null>(null);
 
     // Upload modal state
     const [uploadModal, setUploadModal] = useState<{ milestone: Milestone } | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
+
+    // Dynamic learning materials
+    const [dynamicMaterials, setDynamicMaterials] = useState<Record<number, { hints: string; resources: { title: string; url: string; description: string }[] }>>({});
+    const [generatingMaterials, setGeneratingMaterials] = useState<Set<number>>(new Set());
 
     // Chatbot state
     const [chatOpen, setChatOpen] = useState(false);
@@ -135,6 +142,23 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
             console.error("Failed to fetch stream:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadLearningMaterials = async (milestoneId: number) => {
+        if (dynamicMaterials[milestoneId]) return;
+        setGeneratingMaterials(prev => new Set(prev).add(milestoneId));
+        try {
+            const response = await api.post(`/roadmap/milestones/${milestoneId}/learning-materials`, {});
+            setDynamicMaterials(prev => ({ ...prev, [milestoneId]: response.data }));
+        } catch (error) {
+            console.error("Failed to load learning materials:", error);
+        } finally {
+            setGeneratingMaterials(prev => {
+                const next = new Set(prev);
+                next.delete(milestoneId);
+                return next;
+            });
         }
     };
 
@@ -342,6 +366,72 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
                                             </div>
                                             <h3 className="text-lg font-bold text-slate-900 mb-1">{milestone.title}</h3>
                                             <p className="text-sm text-slate-500">{milestone.description}</p>
+
+                                            {milestone.status !== "locked" && (
+                                                <div className="mt-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            const next = expandedMilestone === milestone.id ? null : milestone.id;
+                                                            setExpandedMilestone(next);
+                                                            if (next) loadLearningMaterials(milestone.id);
+                                                        }}
+                                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+                                                    >
+                                                        <FileText className="w-3.5 h-3.5" />
+                                                        {expandedMilestone === milestone.id ? "Hide Materials" : "View Learning Materials"}
+                                                    </button>
+
+                                                    {expandedMilestone === milestone.id && (
+                                                        <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                                                            {generatingMaterials.has(milestone.id) ? (
+                                                                <div className="flex items-center gap-3 py-4 text-sm text-slate-500">
+                                                                    <Loader2 className="w-4 h-4 animate-spin text-violet-500" />
+                                                                    Generating personalized learning materials...
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    {(() => {
+                                                                        const mats = dynamicMaterials[milestone.id];
+                                                                        const hints = mats?.hints || milestone.hints;
+                                                                        const resources = mats?.resources || milestone.resources;
+                                                                        return (
+                                                                            <>
+                                                                                {hints && (
+                                                                                    <div>
+                                                                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hints</p>
+                                                                                        <div className="text-sm text-slate-700 leading-relaxed prose prose-sm max-w-none">
+                                                                                            <ReactMarkdown>{hints}</ReactMarkdown>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
+                                                                                {resources && resources.length > 0 && (
+                                                                                    <div>
+                                                                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Resources</p>
+                                                                                        <div className="space-y-2">
+                                                                                            {resources.map((res, ri) => (
+                                                                                                <a
+                                                                                                    key={ri}
+                                                                                                    href={res.url}
+                                                                                                    target="_blank"
+                                                                                                    rel="noopener noreferrer"
+                                                                                                    className="block p-3 bg-white rounded-lg border border-slate-200 hover:border-violet-200 hover:shadow-sm transition-all"
+                                                                                                >
+                                                                                                    <p className="text-sm font-semibold text-slate-900">{res.title}</p>
+                                                                                                    <p className="text-xs text-slate-500 mt-0.5">{res.description}</p>
+                                                                                                </a>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                )}
+                                                                            </>
+                                                                        );
+                                                                    })()}
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col items-end gap-2 flex-shrink-0">

@@ -29,6 +29,7 @@ const iconMap: Record<string, React.ElementType> = {
 export default function RoadmapPage() {
     const [streams, setStreams] = useState<Stream[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         fetchStreams();
@@ -36,10 +37,12 @@ export default function RoadmapPage() {
 
     const fetchStreams = async () => {
         try {
+            setError(null);
             const response = await api.get("/roadmap/streams");
             setStreams(response.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch streams:", error);
+            setError(error.response?.data?.detail || error.message || "Failed to load streams");
         } finally {
             setLoading(false);
         }
@@ -110,8 +113,27 @@ export default function RoadmapPage() {
 
                 {!loading && streams.length === 0 && (
                     <div className="text-center py-20">
-                        <Rocket className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                        <p className="text-slate-600 text-lg font-semibold">No streams available yet</p>
+                        {error ? (
+                            <>
+                                <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center mx-auto mb-4">
+                                    <Rocket className="w-8 h-8 text-red-400" />
+                                </div>
+                                <p className="text-slate-600 text-lg font-semibold mb-2">Failed to load streams</p>
+                                <p className="text-sm text-slate-400 mb-6 max-w-md mx-auto">{error}</p>
+                                <button
+                                    onClick={() => { setLoading(true); fetchStreams(); }}
+                                    className="px-5 py-2.5 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 transition-colors"
+                                >
+                                    Retry
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Rocket className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                                <p className="text-slate-600 text-lg font-semibold">No streams available yet</p>
+                                <p className="text-slate-400 text-sm mt-1">Check back later for new learning paths.</p>
+                            </>
+                        )}
                     </div>
                 )}
             </div>

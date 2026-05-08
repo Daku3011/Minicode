@@ -129,6 +129,16 @@ def run_migrations():
             except Exception as e:
                 print(f"Column notes in cohorts: {e}")
 
+            # Add hints and resources to milestones table
+            for col_name, col_type in [("hints", "TEXT"), ("resources", "TEXT")]:
+                try:
+                    conn.execute(
+                        text(f"ALTER TABLE milestones ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
+                    )
+                    print(f"Added {col_name} to milestones")
+                except Exception as e:
+                    print(f"Column {col_name} in milestones: {e}")
+
         elif dialect == "sqlite":
             SQLModel.metadata.create_all(engine, checkfirst=True)
             print("Tables created.")
@@ -214,6 +224,19 @@ def run_migrations():
                     print(f"Column notes in cohorts: {e}")
 
             # Note: email_verifications table is already created by create_all if it's in SQLModel metadata.
+
+            # Add hints and resources to milestones table
+            for col_name, col_type in [("hints", "TEXT"), ("resources", "TEXT")]:
+                try:
+                    conn.execute(
+                        text(f"ALTER TABLE milestones ADD COLUMN {col_name} {col_type};")
+                    )
+                    print(f"Added {col_name} to milestones")
+                except Exception as e:
+                    if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                        print(f"Column {col_name} already exists in milestones")
+                    else:
+                        print(f"Column {col_name} in milestones: {e}")
 
         conn.commit()
         print("Migrations completed.")

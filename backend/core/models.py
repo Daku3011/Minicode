@@ -270,6 +270,8 @@ class Milestone(SQLModel, table=True):
     order: int = Field(default=0)
     xp_reward: int = Field(default=100)
     content: Optional[str] = None
+    hints: Optional[str] = None
+    resources: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     stream: Stream = Relationship(back_populates="milestones")
