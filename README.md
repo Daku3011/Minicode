@@ -60,6 +60,10 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 - [x] **AI-Powered Judge** - Gemini-powered code evaluation with detailed feedback
 - [x] **Role-Based Access** - Student, Faculty, and Admin roles with distinct workflows
 - [x] **XP & Levels** - Gamified progression system with leaderboards
+- [x] **Learning Paths (Roadmaps)** - Curated streams (Cybersecurity, AI/ML, Web Dev, Data Science) with milestone-based progression
+- [x] **Dynamic Milestone Generation** - New milestones auto-created by AI as you complete them
+- [x] **AI Stream Chatbot** - Per-stream assistant answering questions about that learning path
+- [x] **AI-Generated Learning Materials** - Personalized hints and resources for each milestone
 - [x] **Events System** - Hackathons, contests, and team collaboration
 - [x] **Real-time Updates** - WebSocket-powered submission status
 - [x] **AI Plagiarism Detection** - Identifies AI-generated submissions
@@ -158,18 +162,19 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 Minicode/
 ├── frontend/                  # Next.js application
 │   ├── src/
-│   │   ├── app/            # App Router pages
+│   │   ├── app/            # App Router pages (roadmap, faq, terms, privacy, problems, events, ...)
 │   │   ├── components/      # React components
 │   │   ├── lib/           # Utilities
 │   │   └── styles/        # Global styles
 │   └── public/            # Static assets
 ├── backend/                 # FastAPI application
-│   ├── routers/           # API route handlers
+│   ├── routers/           # API route handlers (roadmap, problems, submissions, auth, ...)
 │   ├── core/              # Database & SQLModel definitions
-│   ├── services/          # Business logic (auth, judge, email)
+│   ├── services/          # Business logic (auth, judge, email, ai_generator)
 │   ├── utils/             # Shared utilities (caching)
 │   ├── worker.py          # Celery worker
 │   └── scripts/          # DB migration & seeding
+├── Docs/                    # Documentation (USER_MANUAL, DEPLOYMENT, DESIGN_VISION, ...)
 ├── docker-compose.yml       # Full local stack
 ├── .env.example         # Environment template
 └── README.md            # This file
