@@ -11,7 +11,7 @@ export default function TermsPage() {
                 </Link>
 
                 <h1 className="text-4xl font-black text-white mb-2">Terms of Service</h1>
-                <p className="text-slate-400 mb-8">Last updated: March 31, 2026</p>
+                <p className="text-slate-400 mb-8">Last updated: May 8, 2026</p>
 
                 <div className="prose prose-invert max-w-none space-y-8">
                     <section>
@@ -32,6 +32,10 @@ export default function TermsPage() {
                             <li>Coding challenges and competitive programming problems</li>
                             <li>AI-powered code evaluation and feedback</li>
                             <li>GitHub repository integration for code submission</li>
+                            <li>Curated Learning Paths (Roadmaps) with milestones in Cybersecurity, AI/ML, Web Development, and Data Science</li>
+                            <li>Dynamic milestone generation — new milestones are auto-created by AI as you progress</li>
+                            <li>AI-powered stream-specific chatbot for personalized learning assistance</li>
+                            <li>AI-generated learning materials (hints and resources) tailored to each milestone</li>
                             <li>Event management for challenges and team projects</li>
                             <li>Leaderboards and progress tracking</li>
                             <li>Faculty tools for creating and managing content</li>
@@ -83,9 +87,12 @@ export default function TermsPage() {
                     <section>
                         <h2 className="text-2xl font-bold text-white mb-4">7. AI-Powered Judging</h2>
                         <p className="text-slate-300 leading-relaxed">
-                            The Platform uses AI (Google Gemini) to evaluate code submissions. AI evaluations are 
-                            provided as-is and may not be 100% accurate. Faculty members have the authority to 
-                            override AI decisions and manually adjust scores.
+                            The Platform uses AI (Google Gemini) for multiple purposes: evaluating code submissions, 
+                            generating personalized learning materials (hints and resources for milestones), 
+                            powering the stream-specific chatbot, and dynamically creating new milestones as 
+                            students progress through learning paths. AI outputs are provided as-is and may not 
+                            be 100% accurate. Faculty members have the authority to override AI decisions and 
+                            manually adjust scores.
                         </p>
                     </section>
 

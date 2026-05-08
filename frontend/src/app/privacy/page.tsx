@@ -11,7 +11,7 @@ export default function PrivacyPage() {
                 </Link>
 
                 <h1 className="text-4xl font-black text-white mb-2">Privacy Policy</h1>
-                <p className="text-slate-400 mb-8">Last updated: March 31, 2026</p>
+                <p className="text-slate-400 mb-8">Last updated: May 8, 2026</p>
 
                 <div className="prose prose-invert max-w-none space-y-8">
                     <section>
@@ -24,6 +24,7 @@ export default function PrivacyPage() {
                             <li><strong>Profile Data:</strong> Full name, role (student/faculty/admin)</li>
                             <li><strong>Code Submissions:</strong> Repository URLs, commit history, code content</li>
                             <li><strong>Activity Data:</strong> Problem-solving history, event participation, scores, XP earned</li>
+                            <li><strong>Learning Path Data:</strong> Milestone progress, file uploads for evaluation, chatbot conversations, learning materials viewed</li>
                             <li><strong>Authentication Tokens:</strong> Encrypted GitHub access tokens for repository management</li>
                         </ul>
                     </section>
@@ -92,7 +93,7 @@ export default function PrivacyPage() {
                         </p>
                         <ul className="text-slate-300 list-disc list-inside space-y-2">
                             <li><strong>GitHub:</strong> For authentication and repository management. Subject to GitHub's Privacy Policy.</li>
-                            <li><strong>Google Gemini:</strong> For AI-powered code evaluation. Code content is sent to Gemini for analysis.</li>
+                            <li><strong>Google Gemini:</strong> For AI-powered code evaluation, milestone submission assessment, learning materials generation, stream chatbot responses, and dynamic milestone creation. Code content, uploaded files, and chat queries are sent to Gemini for analysis.</li>
                             <li><strong>Supabase/PostgreSQL:</strong> For data storage. Subject to Supabase's Privacy Policy.</li>
                         </ul>
                     </section>
