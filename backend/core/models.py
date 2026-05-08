@@ -247,6 +247,50 @@ class AlumniNotification(SQLModel, table=True):
     alumni: Optional["User"] = Relationship()
 
 
+class Stream(SQLModel, table=True):
+    __tablename__ = "streams"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True, unique=True)
+    slug: str = Field(index=True, unique=True)
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    milestones: List["Milestone"] = Relationship(back_populates="stream")
+
+
+class Milestone(SQLModel, table=True):
+    __tablename__ = "milestones"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    stream_id: int = Field(foreign_key="streams.id", index=True)
+    title: str
+    description: Optional[str] = None
+    order: int = Field(default=0)
+    xp_reward: int = Field(default=100)
+    content: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    stream: Stream = Relationship(back_populates="milestones")
+    user_progress: List["UserMilestoneProgress"] = Relationship(back_populates="milestone")
+
+
+class UserMilestoneProgress(SQLModel, table=True):
+    __tablename__ = "user_milestone_progress"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    milestone_id: int = Field(foreign_key="milestones.id", index=True)
+    status: str = Field(default="locked")  # locked, in_progress, completed, rewarded
+    note: Optional[str] = None
+    completed_at: Optional[datetime] = None
+    rewarded_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    user: User = Relationship()
+    milestone: Milestone = Relationship(back_populates="user_progress")
+
+
 class ContactRequest(SQLModel, table=True):
     __tablename__ = "contact_requests"
     id: Optional[int] = Field(default=None, primary_key=True)

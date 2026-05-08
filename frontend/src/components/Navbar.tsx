@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles } from "lucide-react";
+import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles, Map } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -56,6 +56,7 @@ export default function Navbar() {
             { name: "Events", href: "/faculty/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
             { name: "Hackathons", href: "/hackathons", icon: Sparkles },
+            { name: "Roadmap", href: "/roadmap", icon: Map },
         ]
         : user?.role === 'alumni'
         ? [
@@ -65,6 +66,7 @@ export default function Navbar() {
             { name: "Events", href: "/events", icon: Calendar },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
             { name: "Hackathons", href: "/hackathons", icon: Sparkles },
+            { name: "Roadmap", href: "/roadmap", icon: Map },
         ]
         : [
             { name: "Cohorts", href: "/cohorts", icon: User },
@@ -73,6 +75,7 @@ export default function Navbar() {
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
             { name: "Hackathons", href: "/hackathons", icon: Sparkles },
             { name: "Alumni", href: "/alumni/profiles", icon: User },
+            { name: "Roadmap", href: "/roadmap", icon: Map },
         ];
 
 

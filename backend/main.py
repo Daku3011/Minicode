@@ -162,6 +162,7 @@ from routers.cohorts import router as cohorts_router
 from routers.labs import router as labs_router
 from routers.hackathons import router as hackathons_router
 from routers.alumni import router as alumni_router
+from routers.roadmap import router as roadmap_router
 
 app.include_router(auth_router)
 app.include_router(problems_router)
@@ -178,6 +179,7 @@ app.include_router(cohorts_router)
 app.include_router(labs_router)
 app.include_router(hackathons_router)
 app.include_router(alumni_router)
+app.include_router(roadmap_router)
 
 if __name__ == "__main__":
     import uvicorn
