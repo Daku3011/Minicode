@@ -49,11 +49,11 @@ export default function LeaderboardPage() {
 
     useEffect(() => {
         fetchLeaderboard();
-    }, []);
+    }, [activeTab]);
 
     const fetchLeaderboard = async () => {
         try {
-            const response = await api.get("/leaderboard");
+            const response = await api.get(`/leaderboard?period=${activeTab}`);
             const enhancedData = response.data.map((u: any, i: number) => ({
                 ...u,
                 rank: i + 1,
@@ -257,7 +257,7 @@ export default function LeaderboardPage() {
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={clsx(
                                         "px-6 py-2.5 rounded-lg text-sm font-medium transition-all",
-                                        activeTab === tab.id ? "bg-violet-600 text-black" : "text-slate-600 hover:text-slate-900"
+                                        activeTab === tab.id ? "bg-violet-600 text-white" : "text-slate-600 hover:text-slate-900"
                                     )}
                                 >
                                     {tab.label}
