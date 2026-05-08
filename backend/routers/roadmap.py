@@ -171,13 +171,16 @@ def start_milestone(
 @router.post("/milestones/{milestone_id}/submit")
 async def submit_milestone(
     milestone_id: int,
-    file: UploadFile = File(...),
+    files: List[UploadFile] = File(...),
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     milestone = session.get(Milestone, milestone_id)
     if not milestone:
         raise HTTPException(status_code=404, detail="Milestone not found")
+
+    if not files or len(files) == 0:
+        raise HTTPException(status_code=400, detail="No files uploaded")
 
     progress = session.exec(
         select(UserMilestoneProgress).where(
@@ -187,25 +190,65 @@ async def submit_milestone(
     ).first()
 
     if not progress:
-        raise HTTPException(status_code=400, detail="Milestone not started yet. Click 'Start' first.")
+        all_prior = session.exec(
+            select(Milestone)
+            .where(
+                Milestone.stream_id == milestone.stream_id,
+                Milestone.order < milestone.order,
+            )
+            .order_by(Milestone.order)
+        ).all()
+
+        prior_ids = [m.id for m in all_prior]
+        if prior_ids:
+            prior_progress = session.exec(
+                select(UserMilestoneProgress).where(
+                    UserMilestoneProgress.user_id == user.id,
+                    UserMilestoneProgress.milestone_id.in_(prior_ids),
+                )
+            ).all()
+            all_prior_done = all(
+                p.status in ("completed", "rewarded") for p in prior_progress
+            ) and len(prior_progress) == len(prior_ids)
+        else:
+            all_prior_done = True
+
+        if all_prior_done:
+            progress = UserMilestoneProgress(
+                user_id=user.id,
+                milestone_id=milestone_id,
+                status="in_progress",
+            )
+            session.add(progress)
+            session.commit()
+        else:
+            raise HTTPException(status_code=400, detail="Milestone not started yet. Click 'Start' first.")
 
     if progress.status in ("completed", "rewarded"):
         raise HTTPException(status_code=400, detail="Milestone already completed")
 
-    file_content = await file.read()
-    if not file_content:
-        raise HTTPException(status_code=400, detail="Empty file uploaded")
+    combined_text = ""
+    total_size = 0
+    for f in files:
+        content = await f.read()
+        if not content:
+            continue
+        if f.size and f.size > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"File '{f.filename}' exceeds 10MB limit.")
+        total_size += len(content)
+        if total_size > 50 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Total upload size exceeds 50MB limit.")
+        text = extract_text_from_file(content, f.filename or "upload.txt")
+        if text.strip():
+            combined_text += f"\n\n--- {f.filename} ---\n\n{text}"
 
-    if file.size and file.size > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File too large. Max 10MB allowed.")
+    combined_text = combined_text.strip()
+    if not combined_text:
+        raise HTTPException(status_code=400, detail="Could not extract text from any uploaded file")
 
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="AI configuration missing")
-
-    text_content = extract_text_from_file(file_content, file.filename or "upload.txt")
-    if not text_content.strip():
-        raise HTTPException(status_code=400, detail="Could not extract text from file")
 
     client = genai.Client(api_key=api_key)
 
@@ -220,7 +263,7 @@ async def submit_milestone(
 
     STUDENT SUBMISSION:
     \"\"\"
-    {text_content[:20000]}
+    {combined_text[:20000]}
     \"\"\"
 
     Evaluate the student's work based on:

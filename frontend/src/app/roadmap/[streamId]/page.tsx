@@ -70,7 +70,7 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
 
     // Upload modal state
     const [uploadModal, setUploadModal] = useState<{ milestone: Milestone } | null>(null);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
     const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
 
@@ -176,19 +176,23 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
     };
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] || null;
-        setSelectedFile(file);
+        const files = Array.from(e.target.files || []);
+        setSelectedFiles(files);
         setSubmitResult(null);
     };
 
+    const removeFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSubmitFile = async () => {
-        if (!uploadModal || !selectedFile) return;
+        if (!uploadModal || selectedFiles.length === 0) return;
         setUploading(true);
         setSubmitResult(null);
 
         try {
             const formData = new FormData();
-            formData.append("file", selectedFile);
+            selectedFiles.forEach(f => formData.append("files", f));
             const response = await api.post(
                 `/roadmap/milestones/${uploadModal.milestone.id}/submit`,
                 formData,
@@ -505,7 +509,7 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-xl font-bold text-slate-900">Submit: {uploadModal.milestone.title}</h3>
-                            <button onClick={() => { setUploadModal(null); setSelectedFile(null); setSubmitResult(null); }} className="text-slate-400 hover:text-slate-600">
+                            <button onClick={() => { setUploadModal(null); setSelectedFiles([]); setSubmitResult(null); }} className="text-slate-400 hover:text-slate-600">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -518,27 +522,35 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
 
                                 <div className={clsx(
                                     "border-2 border-dashed rounded-xl p-8 text-center transition-colors mb-6",
-                                    selectedFile ? "border-emerald-300 bg-emerald-50" : "border-slate-300 hover:border-violet-300"
+                                    selectedFiles.length > 0 ? "border-emerald-300 bg-emerald-50" : "border-slate-300 hover:border-violet-300"
                                 )}>
-                                    {selectedFile ? (
+                                    {selectedFiles.length > 0 ? (
                                         <div className="space-y-3">
                                             <FileText className="w-10 h-10 text-emerald-500 mx-auto" />
-                                            <p className="text-sm font-semibold text-slate-900">{selectedFile.name}</p>
-                                            <p className="text-xs text-slate-500">{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                                            <p className="text-sm font-semibold text-slate-900">{selectedFiles.length} file(s) selected</p>
+                                            <div className="flex flex-wrap justify-center gap-2">
+                                                {selectedFiles.map((f, i) => (
+                                                    <div key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg border border-slate-200 text-xs">
+                                                        <span className="text-slate-700 max-w-[120px] truncate">{f.name}</span>
+                                                        <button onClick={() => removeFile(i)} className="text-slate-400 hover:text-red-500 ml-1">&times;</button>
+                                                    </div>
+                                                ))}
+                                            </div>
                                             <button
-                                                onClick={() => setSelectedFile(null)}
+                                                onClick={() => setSelectedFiles([])}
                                                 className="text-xs text-violet-600 hover:underline"
                                             >
-                                                Choose a different file
+                                                Clear all and choose different files
                                             </button>
                                         </div>
                                     ) : (
                                         <label className="cursor-pointer space-y-3">
                                             <Upload className="w-10 h-10 text-slate-400 mx-auto" />
                                             <p className="text-sm font-semibold text-slate-600">Click to upload or drag & drop</p>
-                                            <p className="text-xs text-slate-400">PDF, DOCX, TXT up to 10MB</p>
+                                            <p className="text-xs text-slate-400">PDF, DOCX, TXT, code files (max 10MB each)</p>
                                             <input
                                                 type="file"
+                                                multiple
                                                 onChange={handleFileSelect}
                                                 className="hidden"
                                                 accept=".pdf,.docx,.txt,.py,.js,.ts,.java,.cpp,.c,.html,.css,.md"
@@ -549,13 +561,13 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
 
                                 <button
                                     onClick={handleSubmitFile}
-                                    disabled={!selectedFile || uploading}
+                                    disabled={selectedFiles.length === 0 || uploading}
                                     className="w-full py-3 rounded-xl bg-violet-600 text-white font-bold text-sm hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2"
                                 >
                                     {uploading ? (
                                         <><Loader2 className="w-4 h-4 animate-spin" /> AI Evaluating...</>
                                     ) : (
-                                        <><Zap className="w-4 h-4" /> Submit for AI Evaluation</>
+                                        <><Zap className="w-4 h-4" /> Submit {selectedFiles.length > 1 ? `${selectedFiles.length} Files` : "File"} for AI Evaluation</>
                                     )}
                                 </button>
                             </>
@@ -600,7 +612,7 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
                                 )}
 
                                 <button
-                                    onClick={() => { setUploadModal(null); setSelectedFile(null); setSubmitResult(null); }}
+                                    onClick={() => { setUploadModal(null); setSelectedFiles([]); setSubmitResult(null); }}
                                     className="w-full py-3 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-colors"
                                 >
                                     Close
