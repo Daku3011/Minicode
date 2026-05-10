@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar, Users, Trophy, Clock, ArrowLeft, ExternalLink, UserPlus, LogOut, Send, Loader2, Plus, X, Check, User, Mail, Bell } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -354,10 +356,10 @@ export default function EventDetailPage() {
                                                 <button
                                                     onClick={() => setShowSubmitForm(!showSubmitForm)}
                                                     className={clsx(
-                                                        "px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm border",
+                                                        "px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm border text-black",
                                                         event.user_submission_status === "submitted"
                                                             ? "bg-white border-amber-500 text-amber-600 hover:bg-amber-50"
-                                                            : "bg-primary border-primary text-white hover:bg-blue-600"
+                                                            : "bg-primary border-primary text-black hover:bg-blue-600 hover:text-white"
                                                     )}
                                                 >
                                                     <Send className="w-4 h-4" />
@@ -366,9 +368,9 @@ export default function EventDetailPage() {
                                             )}
                                             <button
                                                 onClick={handleLeave}
-                                                className="bg-white hover:bg-red-50 text-slate-500 hover:text-red-500 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all border border-blue-100 shadow-sm"
+                                                className="bg-white hover:bg-red-50 text-slate-500 hover:text-red-500 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-all border border-blue-100 shadow-sm cursor-pointer"
                                             >
-                                                <LogOut className="w-4 h-4" /> Leave Event
+                                                <LogOut className="w-4 h-4 text-red-500" /> Leave Event
                                             </button>
                                         </>
                                     ) : (
@@ -432,13 +434,13 @@ export default function EventDetailPage() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={!repoUrl || submitting}
-                                        className="bg-primary hover:bg-blue-600 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-sm"
+                                        className="bg-primary hover:bg-blue-600 disabled:opacity-50 text-black px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-sm"
                                     >
                                         {submitting ? "Submitting..." : "Submit"}
                                     </button>
                                     <button
                                         onClick={() => setShowSubmitForm(false)}
-                                        className="bg-white border border-blue-100 hover:bg-blue-50 text-slate-500 hover:text-slate-900 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-sm"
+                                        className="bg-white border border-blue-100 hover:bg-red-500 text-slate-500 hover:text-slate-900 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-sm"
                                     >
                                         Cancel
                                     </button>
@@ -520,13 +522,13 @@ export default function EventDetailPage() {
                 {/* Tab Content */}
                 {activeTab === "details" && (
                     <div className="bg-white border border-blue-100 rounded-3xl p-6 md:p-8 shadow-sm">
-                        <div className="prose max-w-none">
-                            <div className="text-slate-600 font-medium whitespace-pre-wrap">{event.description}</div>
+                        <div className="prose prose-slate max-w-none prose-p:text-slate-600 prose-headings:text-slate-900 prose-headings:font-black prose-strong:text-blue-600 prose-code:text-blue-600 prose-code:bg-blue-50 prose-pre:bg-slate-900 prose-pre:text-white prose-pre:rounded-xl">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{event.description}</ReactMarkdown>
 
                             {event.rules && (
                                 <>
                                     <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 mt-8 mb-4">Rules</h3>
-                                    <div className="text-slate-600 font-medium whitespace-pre-wrap">{event.rules}</div>
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{event.rules}</ReactMarkdown>
                                 </>
                             )}
 
@@ -535,7 +537,9 @@ export default function EventDetailPage() {
                                     <h3 className="text-xl font-black uppercase tracking-tight text-slate-900 mt-8 mb-4">Prizes</h3>
                                     <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-200">
                                         <Trophy className="w-8 h-8 text-amber-500" />
-                                        <p className="text-amber-800 font-bold">{event.prize_description}</p>
+                                        <div className="text-amber-800 font-bold prose prose-amber max-w-none prose-p:text-amber-800">
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{event.prize_description}</ReactMarkdown>
+                                        </div>
                                     </div>
                                 </>
                             )}

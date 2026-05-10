@@ -4,12 +4,14 @@ import { useState } from "react";
 import { 
     ChevronLeft, Send, Calendar, Users, Trophy, FileText, 
     Zap, Target, Layers, Lock, Plus, Trash2, ChevronRight, 
-    Clock, Star, Loader2, AlertCircle, Megaphone, ShieldCheck
+    Clock, Star, Loader2, AlertCircle, Megaphone, ShieldCheck, Eye, PenLine
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import api from "@/lib/api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const eventTypes = [
     { 
@@ -63,6 +65,7 @@ const subjects = [
 export default function CreateEventPage() {
     const router = useRouter();
     const [isPublishing, setIsPublishing] = useState(false);
+    const [previewMode, setPreviewMode] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -228,15 +231,46 @@ export default function CreateEventPage() {
                             </div>
 
                             <div className="md:col-span-6 space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Mission Briefing *</label>
-                                <textarea
-                                    required
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    rows={4}
-                                    className="w-full bg-white border border-blue-200 rounded-xl px-5 py-4 text-slate-700 font-medium text-sm leading-relaxed focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-slate-400 resize-none transition-all shadow-sm"
-                                    placeholder="Define objectives, constraints, and engagement vectors..."
-                                />
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Mission Briefing *</label>
+                                    <div className="flex rounded-lg border border-blue-200 overflow-hidden shadow-sm">
+                                        <button
+                                            onClick={() => setPreviewMode(false)}
+                                            className={clsx("px-3 py-1 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5", !previewMode ? "bg-blue-100 text-primary" : "bg-white text-slate-500 hover:bg-blue-50")}
+                                        >
+                                            <PenLine className="w-3 h-3" /> Editor
+                                        </button>
+                                        <button
+                                            onClick={() => setPreviewMode(true)}
+                                            className={clsx("px-3 py-1 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5", previewMode ? "bg-blue-100 text-primary" : "bg-white text-slate-500 hover:bg-blue-50")}
+                                        >
+                                            <Eye className="w-3 h-3" /> Preview
+                                        </button>
+                                    </div>
+                                </div>
+                                {previewMode ? (
+                                    <div className="min-h-[160px] bg-white border border-blue-200 rounded-xl px-5 py-4 overflow-auto">
+                                        {formData.description ? (
+                                            <div className="prose prose-slate max-w-none prose-p:text-slate-600 prose-headings:text-slate-900 prose-headings:font-black prose-strong:text-blue-600 prose-code:text-blue-600 prose-code:bg-blue-50 prose-pre:bg-slate-900 prose-pre:text-white prose-pre:rounded-xl">
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.description}</ReactMarkdown>
+                                            </div>
+                                        ) : (
+                                            <div className="h-full flex flex-col items-center justify-center text-slate-300 py-10 space-y-2">
+                                                <FileText className="w-8 h-8 opacity-30" />
+                                                <p className="text-xs font-bold uppercase tracking-[0.2em]">No content to preview</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <textarea
+                                        required
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        rows={4}
+                                        className="w-full bg-white border border-blue-200 rounded-xl px-5 py-4 text-slate-700 font-medium text-sm leading-relaxed focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:slate-400 resize-none transition-all shadow-sm"
+                                        placeholder="Define objectives, constraints, and engagement vectors... (Markdown supported)"
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>

@@ -440,7 +440,20 @@ async def join_event(
     ).first()
 
     if existing:
-        raise HTTPException(status_code=400, detail="Already joined this event")
+        if existing.status == "withdrawn":
+            team_name = join_data.team_name if join_data else None
+            existing.status = "active"
+            if team_name:
+                existing.team_name = team_name
+            if join_data and join_data.team_members:
+                existing.team_members = json.dumps(join_data.team_members)
+            session.add(existing)
+            session.commit()
+            if team_name:
+                return {"message": f"Successfully rejoined as team '{team_name}'", "team_name": team_name}
+            return {"message": "Successfully rejoined the event"}
+        else:
+            raise HTTPException(status_code=400, detail="Already joined this event")
 
     # Check max participants
     if event.max_participants:
@@ -568,7 +581,7 @@ async def leave_event(
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    """Leave an event."""
+    """Leave an event - marks participant as withdrawn instead of deleting."""
     participant = session.exec(
         select(EventParticipant).where(
             EventParticipant.event_id == event_id, EventParticipant.user_id == user.id
@@ -578,7 +591,8 @@ async def leave_event(
     if not participant:
         raise HTTPException(status_code=404, detail="Not joined this event")
 
-    session.delete(participant)
+    participant.status = "withdrawn"
+    session.add(participant)
     session.commit()
 
     return {"message": "Successfully left the event"}
@@ -757,12 +771,17 @@ async def get_faculty_events(
             {
                 "id": event.id,
                 "title": event.title,
+                "description": event.description,
                 "event_type": event.event_type,
+                "difficulty": event.difficulty,
+                "subject": event.subject,
                 "status": event.status,
                 "start_date": event.start_date.isoformat(),
                 "end_date": event.end_date.isoformat() if event.end_date else None,
                 "current_participants": participant_count,
                 "max_participants": event.max_participants,
+                "prize_description": event.prize_description,
+                "rules": event.rules,
                 "created_at": event.created_at.isoformat(),
             }
         )
