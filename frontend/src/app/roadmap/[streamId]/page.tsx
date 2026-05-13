@@ -6,7 +6,7 @@ import {
     Shield, Brain, Code, BarChart3, Rocket, Swords, Sparkles,
     ArrowLeft, CheckCircle2, Circle, Lock, Trophy, Zap, Crown, Play,
     Loader2, Star, Upload, FileText, Send, Bot, User, X, MessageSquare,
-    ExternalLink,
+    ExternalLink, Cloud, Smartphone, Layers, Server, GitBranch, Globe, Cpu,
 } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
@@ -21,6 +21,13 @@ const iconMap: Record<string, React.ElementType> = {
     rocket: Rocket,
     swords: Swords,
     sparkles: Sparkles,
+    cloud: Cloud,
+    smartphone: Smartphone,
+    layers: Layers,
+    server: Server,
+    "git-branch": GitBranch,
+    globe: Globe,
+    cpu: Cpu,
 };
 
 interface Milestone {
