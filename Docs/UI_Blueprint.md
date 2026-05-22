@@ -4,7 +4,7 @@
 
 ### Public/Student Routes
 - `/login`  
-  **Purpose:** Login page (OAuth and staff login).  
+  **Purpose:** Login page (OAuth and staff login). Includes Help & FAQ button.  
   **Auth:** Public  
 - `/problems`  
   **Purpose:** List all problems, filter/search, view unlock status.  
@@ -285,6 +285,13 @@
 - **Method:** GET `/auth/github/callback`, `/auth/google/callback`
 - **Frontend Usage:** `/auth/github/callback`, `/auth/google/callback`
 
+### Example: Roadmap (Learning Paths)
+
+#### Backend Endpoint: Seed Additional Streams
+- **Method:** GET `/roadmap/seed-additional`
+- **Response:** `{ message: "Incremental seeding completed successfully", streams_added: [...] }`
+- **Frontend Usage:** Backend/Admin action for populating new streams.
+
 ### Example: User Profile
 
 #### Backend Endpoint: Get Own Profile
@@ -296,7 +303,7 @@
 - **Frontend Usage:** `/profile`
 
 #### Backend Endpoint: Send/Verify Email
-- **Method:** POST `/user/send-verification-email`, `/user/verify-email`
+- **Method:** POST `/user/send-verification-email` (Uses recipient email from the request body payload), `/user/verify-email`
 - **Frontend Usage:** `/profile`, `StudentProfileView`
 
 ### Example: News/Notifications

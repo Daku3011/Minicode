@@ -112,7 +112,7 @@ Google login rule:
 
 - `GET /user/me`
 - `PUT /user/me/settings`
-- `POST /user/send-verification-email`
+- `POST /user/send-verification-email` — Dynamically routes verification code to the provided email address
 - `POST /user/verify-email`
 - `GET /user/profile/email`
 
@@ -163,6 +163,7 @@ Google login rule:
 - `POST /roadmap/streams/{id}/chat` — Stream-specific AI chatbot
 - `GET /roadmap/progress` — Aggregate user progress across all milestones
 - `GET /roadmap/seed` — (Re)seed stream and milestone data
+- `GET /roadmap/seed-additional` — Incremental seeding for newly added streams without overwriting existing data
 
 Key behavior:
 - Streams auto-seed on first `GET /roadmap/streams` if empty.

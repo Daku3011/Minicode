@@ -60,7 +60,7 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 - [x] **AI-Powered Judge** - Gemini-powered code evaluation with detailed feedback
 - [x] **Role-Based Access** - Student, Faculty, and Admin roles with distinct workflows
 - [x] **XP & Levels** - Gamified progression system with leaderboards
-- [x] **Learning Paths (Roadmaps)** - Curated streams (Cybersecurity, AI/ML, Web Dev, Data Science) with milestone-based progression
+- [x] **Learning Paths (Roadmaps)** - Curated streams (Cybersecurity, AI/ML, Web Dev, Data Science, Cloud & DevOps, Mobile Development, Blockchain, System Design, Open Source) with milestone-based progression
 - [x] **Dynamic Milestone Generation** - New milestones auto-created by AI as you complete them
 - [x] **AI Stream Chatbot** - Per-stream assistant answering questions about that learning path
 - [x] **AI-Generated Learning Materials** - Personalized hints and resources for each milestone
@@ -68,6 +68,7 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 - [x] **Real-time Updates** - WebSocket-powered submission status
 - [x] **AI Plagiarism Detection** - Identifies AI-generated submissions
 - [x] **Cohorts & Labs** - Organized student groups for faculty management
+- [x] **Dynamic Email Verification** - Secure student email verification flow correctly routing codes to users
 
 ### Authentication
 

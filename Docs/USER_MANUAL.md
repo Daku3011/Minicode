@@ -56,6 +56,8 @@
 2. Click **"Faculty Authentication"**
 3. Enter credentials in Control Room form
 
+> **Help & FAQ:** A stylized "Help & FAQ" button is available on the login card for immediate access to platform support and documentation.
+
 **Development Credentials:**
 
 | Role | Username | Password |
@@ -136,7 +138,21 @@ Click a problem to view:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Page 2: Starting a Problem
+### Page 2: Profile & Verification
+
+#### Profile Overview
+1. Click your avatar in the navbar and select **"Profile"**
+2. View your complete stats: XP, Level, Problems Solved, and Ranking
+3. Manage account settings and preferences
+
+#### Student Email Verification
+To ensure secure communication and access to specific features, verify your student email:
+1. On your profile page, locate the **Email Verification** section
+2. Enter your email address and click **"Send Verification Email"**
+3. Check your inbox for a unique verification code dynamically sent to your provided address
+4. Enter the code in the verification modal to complete the process
+
+### Page 3: Starting a Problem
 
 #### Repository Creation
 
@@ -315,7 +331,7 @@ View rankings at `/leaderboard`:
 
 ### Page 8: Learning Paths (Roadmaps)
 
-Learning Paths are curated streams of milestones organized by topic. Currently available: **Cybersecurity**, **AI & Machine Learning**, **Web Development**, and **Data Science**.
+Learning Paths are curated streams of milestones organized by topic. Currently available: **Cybersecurity**, **AI & Machine Learning**, **Web Development**, **Data Science**, **Cloud & DevOps**, **Mobile Development**, **Blockchain**, **System Design**, and **Open Source**.
 
 #### Accessing Learning Paths
 
