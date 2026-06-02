@@ -31,6 +31,7 @@ if redis_url.startswith("rediss://") and "ssl_cert_reqs" not in redis_url:
 celery_config = {
     "broker_url": redis_url,
     "result_backend": redis_url,
+    "result_expires": 3600,
     "task_serializer": "json",
     "accept_content": ["json"],
     "result_serializer": "json",
@@ -197,7 +198,7 @@ celery_app.conf.beat_schedule = {
     },
     "refresh-leaderboard-every-minute": {
         "task": "refresh_leaderboard_task",
-        "schedule": 60.0,
+        "schedule": 300.0,
     },
     "send-inactive-reminders-daily": {
         "task": "send_inactive_reminders_task",
