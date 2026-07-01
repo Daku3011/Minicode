@@ -13,9 +13,9 @@ MiniCode's architecture is built on modern, scalable cloud primitives:
 ```text
 ┌─────────────────┐       ┌────────────────────┐       ┌──────────────────┐
 │                 │       │                    │       │                  │
-│    Frontend     │──────▶│    Backend API     │──────▶│   Supabase DB    │
-│  (Next.js 15)   │       │ (FastAPI/Gunicorn) │       │ (PostgreSQL 15)  │
-│  Vercel/Render  │       │   Render/Railway   │       │   w/ PgBouncer   │
+│    Frontend     │──────▶│    Backend API     │──────▶│   PostgreSQL     │
+│  (Next.js 16)   │       │ (FastAPI/Gunicorn) │       │ (PostgreSQL 15)  │
+│  Vercel/Render  │       │   Render/Railway   │       │                  │
 │                 │       │                    │       │                  │
 └─────────────────┘       └─────────┬──────────┘       └──────────────────┘
                                      │
@@ -45,7 +45,7 @@ Perfect for college coding clubs, 48-hour hackathons, and personal portfolios.
 
 | Component | Provider | Plan | Cost | Limits |
 |-----------|----------|------|------|--------|
-| **Database** | Supabase | Free Tier | $0/mo | 500MB storage, 2 active projects, 50 max connections |
+| **Database** | Local PostgreSQL | Docker | $0/mo | Limited by disk space |
 | **Backend API** | Render / Railway | Free / Trial | $0/mo | Render spins down after 15m inactivity. |
 | **Frontend** | Vercel | Hobby | $0/mo | 100GB Bandwidth, unlimited static requests |
 | **Cache/Broker** | Upstash (Redis) | Free | $0/mo | 10k requests/day |
@@ -57,7 +57,7 @@ Perfect for 200+ concurrent students, university courses, and major events.
 
 | Component | Provider | Plan | Cost | Benefits |
 |-----------|----------|------|------|----------|
-| **Database** | Supabase | Pro Plan | $25/mo | 8GB storage, daily backups, increased connection limits |
+| **Database** | Managed PostgreSQL (Supabase/Railway) | Pro Plan | $10-$25/mo | Daily backups, increased connection limits |
 | **Backend API** | Render / Railway | Standard/Pro | $7-$25/mo | Always-on, 1-2GB RAM, multi-worker FastAPI concurrency |
 | **Frontend** | Vercel | Pro | $20/mo | Increased bandwidth, faster builds, team collaboration |
 | **Cache/Broker** | Upstash (Redis) | Pay-as-you-go | ~$2/mo | High throughput for Celery task queuing |
@@ -79,12 +79,38 @@ If you are a student, you can run the **Production Tier for FREE** using the [Gi
 
 ## 📦 Deployment Step-by-Step
 
-### 1️⃣ Database (Supabase)
-1. Create a project on [Supabase.com](https://supabase.com/).
+### 0️⃣ Generate Security Keys
+
+Before deploying, generate the required security keys:
+
+```bash
+# Generate FERNET_KEY (for token encryption)
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+
+# Generate JWT_SECRET
+openssl rand -hex 32
+```
+
+Set these in your environment variables:
+- `FERNET_KEY` - Used for encrypting GitHub tokens and sensitive data
+- `JWT_SECRET` - Used for signing authentication tokens
+
+### 1️⃣ Database (PostgreSQL)
+
+#### Option A: Local Development (Docker)
+The `docker-compose.yml` includes a PostgreSQL container. Simply run:
+```bash
+docker-compose up -d postgres
+```
+The `DATABASE_URL` will be: `postgresql://postgres:postgres@localhost:5432/minicode`
+
+#### Option B: Managed PostgreSQL (Production)
+1. Create a project on [Supabase.com](https://supabase.com/) or [Railway](https://railway.app/).
 2. Navigate to **Project Settings → Database**.
-3. Copy the **Connection Pooling URI** (Port `6543`).
-   - *Format:* `postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
-4. Set **Pool Mode** to **Transaction**.
+3. Copy the **Connection Pooling URI** (Port `6543` for Supabase).
+   - *Format (Supabase):* `postgresql://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres`
+   - *Format (Railway):* `postgresql://postgres:PASSWORD@xxx.railway.app:5432/railway`
+4. Set **Pool Mode** to **Transaction** (Supabase only).
 
 ### 2️⃣ OAuth (GitHub)
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers).
@@ -133,7 +159,44 @@ Render's Free Tier only allows one Web Service. We have optimized the code to ru
   - `NEXT_PUBLIC_API_URL`: Your Render.com backend URL.
   - `NEXT_PUBLIC_GITHUB_CLIENT_ID`: Your GitHub Meta-App ID.
 
-### 5️⃣ Keeping the Backend Awake (Anti-Sleep)
+### 6️⃣ Railway Deployment
+
+Railway provides a simple deployment path with a pre-configured `railway.json` in the project root.
+
+#### Steps:
+1. Connect your GitHub repository to [Railway](https://railway.app/).
+2. Select the repository root as the project directory.
+3. Railway will automatically detect the `railway.json` configuration.
+4. Add the following environment variables in the Railway dashboard:
+   - `DATABASE_URL` (PostgreSQL connection string)
+   - `REDIS_URL` (Redis connection string)
+   - `CELERY_BROKER_URL` (same as REDIS_URL)
+   - `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` / `GITHUB_TOKEN`
+   - `GEMINI_API_KEY`
+   - `FERNET_KEY` (generate with the command above)
+   - `JWT_SECRET`
+   - `SMTP_EMAIL` / `SMTP_PASSWORD`
+5. Deploy the service.
+
+#### Railway Configuration (`railway.json`):
+```json
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "backend/Dockerfile"
+  },
+  "deploy": {
+    "runtime": "V2",
+    "numReplicas": 1,
+    "preDeployCommand": [
+      "env CREATE_TABLES=1 ONLY_CREATE_TABLES=1 python main.py && python seed.py"
+    ],
+    "sleepApplication": false
+  }
+}
+```
+
+### 7️⃣ Keeping the Backend Awake (Anti-Sleep)
 Render's Free Tier spins down after 15 minutes of inactivity. To keep it responsive:
 1. Use a free monitoring service like [Cron-job.org](https://cron-job.org/) or [Better Stack](https://betterstack.com/).
 2. Set it to ping your backend's `/health` endpoint every **14 minutes**.

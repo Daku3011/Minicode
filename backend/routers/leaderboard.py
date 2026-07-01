@@ -17,6 +17,8 @@ router = APIRouter(tags=["leaderboard"])
 @cache(expire=60, key_builder=leaderboard_cache_key_builder)
 def get_leaderboard(
     period: str = Query("global", pattern="^(global|monthly|weekly)$"),
+    skip: int = 0,
+    limit: int = 100,
     session: Session = Depends(get_session),
 ):
     now = datetime.now(timezone.utc)
@@ -50,6 +52,14 @@ def get_leaderboard(
             .subquery()
         )
 
+        count_statement = (
+            select(func.count(func.distinct(User.id)))
+            .outerjoin(subquery, User.id == subquery.c.user_id)
+            .outerjoin(xp_subquery, User.id == xp_subquery.c.user_id)
+            .where(User.role == "student")
+        )
+        total_count = session.exec(count_statement).one()
+
         statement = (
             select(
                 User,
@@ -60,9 +70,17 @@ def get_leaderboard(
             .outerjoin(xp_subquery, User.id == xp_subquery.c.user_id)
             .where(User.role == "student")
             .order_by(func.coalesce(xp_subquery.c.period_xp, 0).desc())
-            .limit(100)
+            .offset(skip)
+            .limit(limit)
         )
     else:
+        count_statement = (
+            select(func.count(func.distinct(User.id)))
+            .outerjoin(subquery, User.id == subquery.c.user_id)
+            .where(User.role == "student")
+        )
+        total_count = session.exec(count_statement).one()
+
         statement = (
             select(
                 User, func.coalesce(subquery.c.problems_count, 0).label("problems_solved")
@@ -70,7 +88,8 @@ def get_leaderboard(
             .outerjoin(subquery, User.id == subquery.c.user_id)
             .where(User.role == "student")
             .order_by(User.xp.desc())
-            .limit(100)
+            .offset(skip)
+            .limit(limit)
         )
 
     results = session.exec(statement).all()
@@ -83,7 +102,7 @@ def get_leaderboard(
 
         leaderboard.append(
             {
-                "rank": i + 1,
+                "rank": skip + i + 1,
                 "id": user.id,
                 "name": user.full_name or user.username,
                 "username": user.username,
@@ -93,4 +112,4 @@ def get_leaderboard(
             }
         )
 
-    return leaderboard
+    return {"items": leaderboard, "total_count": total_count}

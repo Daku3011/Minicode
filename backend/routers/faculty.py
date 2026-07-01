@@ -32,11 +32,13 @@ class StudentListItem(BaseModel):
 
 @router.get("/students", response_model=List[StudentListItem])
 def get_students(
+    skip: int = 0,
+    limit: int = 50,
     faculty: User = Depends(require_faculty),
     session: Session = Depends(get_session),
 ):
     students = session.exec(
-        select(User).where(User.role == "student").order_by(User.xp.desc())
+        select(User).where(User.role == "student").order_by(User.xp.desc()).offset(skip).limit(limit)
     ).all()
 
     return [

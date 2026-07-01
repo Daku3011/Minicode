@@ -6,35 +6,9 @@ from pydantic import BaseModel
 
 from core.database import get_session
 from core.models import User, AlumniProfile, AlumniNotification, ContactRequest
-from services.auth import get_current_user, require_alumni, get_password_hash
+from services.auth import get_current_user, require_alumni
 
 router = APIRouter(prefix="/alumni", tags=["alumni"])
-
-
-@router.post("/create-test-alumni")
-def create_test_alumni(session: Session = Depends(get_session)):
-    """Debug endpoint to create test alumni user"""
-    existing = session.exec(select(User).where(User.username == "alumni")).first()
-    if existing:
-        existing.role = "alumni"
-        if not existing.hashed_password:
-            existing.hashed_password = get_password_hash("alumni123")
-        session.add(existing)
-        session.commit()
-        return {"message": "Alumni user updated"}
-    
-    alumni = User(
-        username="alumni",
-        email="alumni@minicode.ai",
-        full_name="Test Alumni",
-        hashed_password=get_password_hash("alumni123"),
-        role="alumni",
-        xp=0,
-        unlocked_level=99
-    )
-    session.add(alumni)
-    session.commit()
-    return {"message": "Alumni user created"}
 
 
 class AlumniProfileUpdate(BaseModel):
@@ -134,22 +108,19 @@ def list_alumni_profiles(
     if user.role not in ["student", "faculty", "admin", "alumni"]:
         raise HTTPException(status_code=403, detail="Not authorized to view alumni")
     
-    # Exclude own profile from the list
-    profiles = session.exec(
-        select(AlumniProfile)
+    rows = session.exec(
+        select(AlumniProfile, User)
         .join(User, AlumniProfile.user_id == User.id)
         .where(User.role.in_(["alumni", "faculty", "admin"]))
         .where(AlumniProfile.user_id != user.id)
     ).all()
     
     results = []
-    for p in profiles:
-        p_dict = p.model_dump()
-        p_dict["user_id"] = p.user_id
-        u = session.exec(select(User).where(User.id == p.user_id)).first()
-        if u:
-            p_dict["username"] = u.username
-            p_dict["full_name"] = u.full_name
+    for profile, u in rows:
+        p_dict = profile.model_dump()
+        p_dict["user_id"] = profile.user_id
+        p_dict["username"] = u.username
+        p_dict["full_name"] = u.full_name
         results.append(p_dict)
     
     return results

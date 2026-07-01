@@ -147,12 +147,12 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| **Frontend** | Next.js | 15+ |
+| **Frontend** | Next.js | 16+ |
 | **UI Framework** | React | 19 |
-| **Styling** | Tailwind CSS | 3.4+ |
-| **Backend** | FastAPI | 0.100+ |
+| **Styling** | Tailwind CSS | 4+ |
+| **Backend** | FastAPI | 0.115+ |
 | **Database** | SQLModel + PostgreSQL | 15 |
-| **Cache/Broker** | Redis + Celery | 7+ |
+| **Cache/Broker** | Redis + Celery | 5.4+ |
 | **AI Judge** | Google Gemini | 2.5 |
 | **Auth** | JWT + OAuth2 | - |
 | **Container** | Docker | 24+ |
@@ -211,8 +211,7 @@ GITHUB_CLIENT_SECRET=your_github_client_secret
 GEMINI_API_KEY=your_gemini_api_key
 JWT_SECRET=your_jwt_secret
 
-# Security (generate with)
-# openssl rand -hex 32
+# Security (generate with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
 FERNET_KEY=your_fernet_key
 
 # Optional
@@ -275,11 +274,12 @@ Seed data provides:
 
 | Document | Description |
 |----------|-------------|
+| [API Reference](http://localhost:8000/docs) | Interactive Swagger/OpenAPI documentation (auto-generated) |
 | [USER_MANUAL.md](./USER_MANUAL.md) | Complete user guide by role |
 | [backend/Dev.md](./backend/Dev.md) | Backend developer reference |
 | [DEPLOYMENT.md](./DEPLOYMENT.md) | Deployment guide |
 | [DESIGN_VISION.md](./DESIGN_VISION.md) | UI/UX design philosophy |
-| [SKILLS.md](./SKILLS.md) | Development skills library |
+| [SKILLS.md](./SKILLS.md) | Development guidelines |
 
 ---
 

@@ -107,45 +107,59 @@ class EventResponse(BaseModel):
 async def get_events(
     event_type: Optional[str] = None,
     status: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
     session: Session = Depends(get_session),
     user: Optional[User] = Depends(get_optional_user),
 ):
     """Get all events, optionally filtered by type and status."""
-    statement = select(Event)
+    base_query = select(Event)
 
     if event_type:
-        statement = statement.where(Event.event_type == event_type)
+        base_query = base_query.where(Event.event_type == event_type)
     if status:
-        statement = statement.where(Event.status == status)
+        base_query = base_query.where(Event.status == status)
     else:
-        # Default to showing active and upcoming events
-        statement = statement.where(Event.status.in_(["active", "completed"]))
+        base_query = base_query.where(Event.status.in_(["active", "completed"]))
 
-    statement = statement.order_by(Event.start_date.desc())
+    total_count = len(session.exec(base_query).all())
+
+    statement = base_query.order_by(Event.start_date.desc()).offset(skip).limit(limit)
     events = session.exec(statement).all()
+
+    if not events:
+        return {"items": [], "total_count": total_count}
+
+    event_ids = [e.id for e in events]
+    author_ids = list({e.created_by for e in events})
+
+    from sqlmodel import func
+
+    participant_counts_raw = session.exec(
+        select(EventParticipant.event_id, func.count(EventParticipant.id).label("cnt"))
+        .where(EventParticipant.event_id.in_(event_ids))
+        .group_by(EventParticipant.event_id)
+    ).all()
+    participant_count_map = {row[0]: row[1] for row in participant_counts_raw}
+
+    user_joined_ids: set = set()
+    if user:
+        joined = session.exec(
+            select(EventParticipant.event_id).where(
+                EventParticipant.event_id.in_(event_ids),
+                EventParticipant.user_id == user.id,
+            )
+        ).all()
+        user_joined_ids = {row[0] for row in joined}
+
+    authors = session.exec(
+        select(User).where(User.id.in_(author_ids))
+    ).all()
+    author_map = {a.id: a for a in authors}
 
     result = []
     for event in events:
-        # Get participant count
-        participant_count = len(
-            session.exec(
-                select(EventParticipant).where(EventParticipant.event_id == event.id)
-            ).all()
-        )
-
-        # Check if current user has joined
-        is_joined = False
-        if user:
-            participant = session.exec(
-                select(EventParticipant).where(
-                    EventParticipant.event_id == event.id,
-                    EventParticipant.user_id == user.id,
-                )
-            ).first()
-            is_joined = participant is not None
-
-        # Get author name
-        author = session.get(User, event.created_by)
+        author = author_map.get(event.created_by)
         author_name = (
             author.full_name
             if author and author.full_name
@@ -164,17 +178,17 @@ async def get_events(
                 "start_date": event.start_date.isoformat(),
                 "end_date": event.end_date.isoformat() if event.end_date else None,
                 "max_participants": event.max_participants,
-                "current_participants": participant_count,
+                "current_participants": participant_count_map.get(event.id, 0),
                 "prize_description": event.prize_description,
                 "rules": event.rules,
                 "status": event.status,
                 "author_name": author_name,
                 "created_at": event.created_at.isoformat(),
-                "is_joined": is_joined,
+                "is_joined": event.id in user_joined_ids,
             }
         )
 
-    return result
+    return {"items": result, "total_count": total_count}
 
 
 @router.get("/invitations")
@@ -356,7 +370,7 @@ async def create_event(
         session.commit()
     except Exception as e:
         session.rollback()
-        print(f"Warning: Failed to create news item for event {event.id}: {e}")
+        logger.warning(f"Failed to create news item for event {event.id}: {e}")
 
     return {"id": event.id, "message": "Event created successfully"}
 
@@ -611,12 +625,29 @@ async def get_event_leaderboard(event_id: int, session: Session = Depends(get_se
         .order_by(EventParticipant.xp_awarded.desc())
     ).all()
 
+    all_user_ids = {p.user_id for p in participants}
+    for p in participants:
+        if p.team_members:
+            member_ids = (
+                json.loads(p.team_members)
+                if isinstance(p.team_members, str)
+                else p.team_members
+            )
+            all_user_ids.update(member_ids)
+
+    users_map = {}
+    if all_user_ids:
+        users = session.exec(
+            select(User).where(User.id.in_(list(all_user_ids)))
+        ).all()
+        users_map = {u.id: u for u in users}
+
     leaderboard = []
     seen_teams = set()
     processed_users = set()
 
     for p in participants:
-        user = session.get(User, p.user_id)
+        user = users_map.get(p.user_id)
         if not user or p.user_id in processed_users:
             continue
 
@@ -628,7 +659,6 @@ async def get_event_leaderboard(event_id: int, session: Session = Depends(get_se
             seen_teams.add(team_key)
             processed_users.add(p.user_id)
 
-            # Collect ALL team members from ALL participants with same team_name
             team_member_ids = set()
             for tp in participants:
                 if tp.team_name == team_key:
@@ -649,6 +679,17 @@ async def get_event_leaderboard(event_id: int, session: Session = Depends(get_se
                     if tp.feedback:
                         team_feedback = tp.feedback
 
+            members = []
+            for mid in team_member_ids:
+                member = users_map.get(mid)
+                if member:
+                    members.append({
+                        "id": mid,
+                        "username": member.username,
+                        "full_name": member.full_name,
+                        "avatar_url": member.avatar_url,
+                    })
+
             entry = {
                 "rank": len(leaderboard) + 1,
                 "team_name": team_key,
@@ -656,22 +697,7 @@ async def get_event_leaderboard(event_id: int, session: Session = Depends(get_se
                 "xp_awarded": team_xp,
                 "feedback": team_feedback,
                 "member_count": len(team_member_ids),
-                "members": [
-                    {
-                        "id": mid,
-                        "username": session.get(User, mid).username
-                        if session.get(User, mid)
-                        else "Unknown",
-                        "full_name": session.get(User, mid).full_name
-                        if session.get(User, mid)
-                        else None,
-                        "avatar_url": session.get(User, mid).avatar_url
-                        if session.get(User, mid)
-                        else None,
-                    }
-                    for mid in team_member_ids
-                    if session.get(User, mid)
-                ],
+                "members": members,
             }
             leaderboard.append(entry)
         else:
@@ -1062,8 +1088,6 @@ async def award_participant(
     from utils.utils_cache import invalidate_leaderboard_cache
 
     invalidate_leaderboard_cache()
-
-    session.commit()
 
     # Refresh participant
     session.refresh(participant)

@@ -9,6 +9,7 @@ from utils.utils_cache import invalidate_leaderboard_cache
 from services.sync_xp import calculate_unlocked_level_from_xp
 from tenacity import retry, stop_after_attempt, wait_exponential
 from services.ai_generator import generate_content_with_retry
+from sqlmodel import Session
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ async def judge_submission(
     user: User,
     problem: Problem,
     test_cases: list[TestCase],
-    session,
+    session: Session,
 ):
     """
     Main entry point for judging. Fetches code from GitHub and runs AI judge.
@@ -158,7 +159,7 @@ async def judge_submission(
                                 break
                         if content_file:
                             break
-                    except Exception:
+                    except Exception as e:
                         continue
 
                 if content_file:
@@ -267,12 +268,13 @@ async def judge_submission(
     
     # Broadcast to WebSockets via Redis
     try:
-        import redis
-        r = redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"))
-        r.publish("submission_events", json.dumps({
+        from redis import asyncio as aioredis
+        r = aioredis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379"))
+        await r.publish("submission_events", json.dumps({
             "submission_id": submission.id,
             "status": submission.status
         }))
+        await r.aclose()
     except Exception as e:
         logger.error(f"Failed to publish WebSocket event: {e}")
 

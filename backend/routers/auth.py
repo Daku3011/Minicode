@@ -131,13 +131,6 @@ async def google_callback(
     if not google_email:
         raise HTTPException(status_code=400, detail="Could not retrieve email from Google.")
 
-    # Prevent student logins (student emails contain numbers)
-    if any(char.isdigit() for char in google_email.split('@')[0]):
-        raise HTTPException(
-            status_code=403,
-            detail="Unauthorized: Students must use GitHub login. Google login is reserved for faculty."
-        )
-
     # Only allow @scet.ac.in or existing faculty/admin to login
     statement = select(User).where(User.email == google_email)
     user = session.exec(statement).first()

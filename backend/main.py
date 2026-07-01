@@ -81,7 +81,12 @@ async def lifespan(app: FastAPI):
 
 
 # Initialize FastAPI App
-app = FastAPI(title="MiniCode API", lifespan=lifespan)
+app = FastAPI(
+    title="MiniCode API",
+    description="The Modern Coding Arena for Colleges & Clubs",
+    version="2.0.0",
+    lifespan=lifespan,
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -107,7 +112,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 
 cors_origins_str = os.getenv("CORS_ORIGINS", "")
 if not cors_origins_str:
-    cors_origins = ["*"] if os.getenv("ENVIRONMENT") != "production" else []
+    cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"] if os.getenv("ENVIRONMENT") != "production" else []
 else:
     cors_origins = [o.strip() for o in cors_origins_str.split(",")]
 

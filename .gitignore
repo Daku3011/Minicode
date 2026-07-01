@@ -1,5 +1,6 @@
 .env.local
 .env
+.env.production
 backend/.env
 node_modules
 dist
@@ -12,6 +13,8 @@ coverage
 .agent/*
 *.pyc
 .vscode/
+.pytest_cache/
+.ruff_cache/
 
 backend/venv/
 venv/
@@ -26,3 +29,4 @@ opencode.json
 IMPLEMENTATION_SUMMARY.md
 backend/ORGANIZATION.md
 .agents/rules/use-skills.md
+.opencode

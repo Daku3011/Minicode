@@ -29,17 +29,11 @@ GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 JWT_SECRET = os.getenv("JWT_SECRET")
 if not JWT_SECRET:
-    # In production, we MUST have a secret set
-    if os.getenv("ENVIRONMENT") == "production":
-        raise ValueError("JWT_SECRET environment variable is required in production")
-    JWT_SECRET = "dev-secret-key-keep-it-safe"
+    raise ValueError("JWT_SECRET environment variable is required. Set it in your .env file.")
 
 FERNET_KEY = os.getenv("FERNET_KEY")
 if not FERNET_KEY:
-    if os.getenv("ENVIRONMENT") == "production":
-        raise ValueError("FERNET_KEY environment variable is required in production")
-    # For dev, we can generate one or use a static one
-    FERNET_KEY = Fernet.generate_key().decode()
+    raise ValueError("FERNET_KEY environment variable is required. Set it in your .env file.")
 
 fernet = Fernet(FERNET_KEY.encode())
 

@@ -50,11 +50,13 @@ def test_leaderboard_logic(client, session: Session):
     # Check User 1: max(80, 100) + 50 = 150
     # Check User 2: max(90) + 0 = 90
     
-    assert len(data) == 2
-    assert data[0]["username"] == "user1"
-    assert data[0]["score"] == 150
-    assert data[0]["problems"] == 2
+    items = data["items"]
+    assert data["total_count"] == 2
+    assert len(items) == 2
+    assert items[0]["username"] == "user1"
+    assert items[0]["score"] == 150
+    assert items[0]["problems"] == 2
     
-    assert data[1]["username"] == "user2"
-    assert data[1]["score"] == 90
-    assert data[1]["problems"] == 1
+    assert items[1]["username"] == "user2"
+    assert items[1]["score"] == 90
+    assert items[1]["problems"] == 1

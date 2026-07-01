@@ -15,13 +15,18 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/problems", tags=["problems"])
 
 
-@router.get("", response_model=List[Problem])
+@router.get("")
 def get_problems(
+    skip: int = 0,
+    limit: int = 50,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     if user.role in ["admin", "faculty"]:
-        return session.exec(select(Problem).where(Problem.is_deleted == False)).all()
+        base_query = select(Problem).where(Problem.is_deleted == False)
+        total_count = len(session.exec(base_query).all())
+        problems = session.exec(base_query.offset(skip).limit(limit)).all()
+        return {"items": problems, "total_count": total_count}
     
     public_problems = session.exec(select(Problem).where(Problem.visibility == "public", Problem.is_deleted == False)).all()
     
@@ -40,8 +45,10 @@ def get_problems(
                 .where(LabProblemLink.lab_id.in_(student_lab_ids))
             ).all()
             
-    all_problems = {p.id: p for p in public_problems + private_problems}.values()
-    return list(all_problems)
+    all_problems = list({p.id: p for p in public_problems + private_problems}.values())
+    total_count = len(all_problems)
+    paginated = all_problems[skip:skip + limit]
+    return {"items": paginated, "total_count": total_count}
 
 
 @router.get("/{problem_id}")
@@ -197,7 +204,7 @@ def create_problem(
         session.commit()
     except Exception as e:
         session.rollback()
-        print(f"Warning: Failed to create news item for problem {problem.id}: {e}")
+        logger.warning(f"Failed to create news item for problem {problem.id}: {e}")
 
     session.refresh(problem)
     return problem

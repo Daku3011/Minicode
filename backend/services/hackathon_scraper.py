@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any
 from sqlmodel import Session, select
 from core.models import Hackathon
+from core.database import engine
 
 logger = logging.getLogger(__name__)
 
@@ -129,8 +130,8 @@ async def fetch_hackathons_from_hack2skill() -> List[Dict[str, Any]]:
         logger.error(f"Error fetching from Hack2Skill: {e}")
         return []
 
-async def update_hackathons_cache(session: Session):
-    """Update local DB cache of hackathons."""
+async def update_hackathons_cache():
+    """Update local DB cache of hackathons. Creates its own session."""
     logger.info("Updating hackathons cache...")
     he_events = await fetch_hackathons_from_hackerearth()
     h2s_events = await fetch_hackathons_from_hack2skill()
@@ -141,33 +142,31 @@ async def update_hackathons_cache(session: Session):
         logger.warning("No hackathons fetched. Skipping update.")
         return
     
-    try:
-        # Check existing events to avoid duplicates
-        for event_data in all_events:
-            statement = select(Hackathon).where(
-                Hackathon.title == event_data["title"],
-                Hackathon.platform == event_data["platform"]
-            )
-            existing = session.exec(statement).first()
+    with Session(engine) as session:
+        try:
+            for event_data in all_events:
+                statement = select(Hackathon).where(
+                    Hackathon.title == event_data["title"],
+                    Hackathon.platform == event_data["platform"]
+                )
+                existing = session.exec(statement).first()
+                
+                if existing:
+                    existing.description = event_data["description"]
+                    existing.url = event_data["url"]
+                    existing.status = event_data["status"]
+                    existing.cover_image = event_data["cover_image"]
+                    existing.start_date = event_data["start_date"]
+                    existing.end_date = event_data["end_date"]
+                    existing.registration_url = event_data["registration_url"]
+                    existing.updated_at = datetime.now(timezone.utc)
+                    session.add(existing)
+                else:
+                    new_hackathon = Hackathon(**event_data)
+                    session.add(new_hackathon)
             
-            if existing:
-                # Update existing record
-                existing.description = event_data["description"]
-                existing.url = event_data["url"]
-                existing.status = event_data["status"]
-                existing.cover_image = event_data["cover_image"]
-                existing.start_date = event_data["start_date"]
-                existing.end_date = event_data["end_date"]
-                existing.registration_url = event_data["registration_url"]
-                existing.updated_at = datetime.now(timezone.utc)
-                session.add(existing)
-            else:
-                # Insert new record
-                new_hackathon = Hackathon(**event_data)
-                session.add(new_hackathon)
-        
-        session.commit()
-        logger.info(f"Successfully cached {len(all_events)} hackathons.")
-    except Exception as e:
-        logger.error(f"Failed to save hackathons to DB: {e}")
-        session.rollback()
+            session.commit()
+            logger.info(f"Successfully cached {len(all_events)} hackathons.")
+        except Exception as e:
+            logger.error(f"Failed to save hackathons to DB: {e}")
+            session.rollback()

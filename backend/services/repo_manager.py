@@ -30,10 +30,6 @@ def create_student_repo(user: User, problem: Problem, session: Session):
     if user.github_access_token:
         decrypted_token = decrypt_token(user.github_access_token)
 
-    # If decryption failed, try using the token directly (for backward compatibility)
-    if not decrypted_token:
-        decrypted_token = user.github_access_token
-
     if not decrypted_token:
         raise Exception(
             "User has no valid GitHub access token. Please re-authenticate with GitHub."
@@ -94,7 +90,7 @@ def create_student_repo(user: User, problem: Problem, session: Session):
 
 def commit_code_to_repo(
     user: User, repo_name: str, file_path: str, content: str, commit_message: str
-):
+) -> str:
     """
     Commits code from the in-browser editor to the student's repository.
     """
@@ -111,7 +107,7 @@ def commit_code_to_repo(
         repo.update_file(
             contents.path, commit_message, content, contents.sha, branch=default_branch
         )
-    except:
+    except Exception:
         repo.create_file(file_path, commit_message, content, branch=default_branch)
 
     return repo.get_branch(default_branch).commit.sha

@@ -12,7 +12,9 @@ def test_health_check(client: TestClient):
 def test_get_problems_empty(client: TestClient):
     response = client.get("/problems")
     assert response.status_code == 200
-    assert response.json() == []
+    data = response.json()
+    assert data["items"] == []
+    assert data["total_count"] == 0
 
 def test_create_problem(client: TestClient, session: Session, test_faculty):
     # Mock authentication

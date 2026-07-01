@@ -56,7 +56,7 @@ async def get_hackathons(
             
     if should_update:
         logger.info("Hackathon cache stale or empty. Triggering background update.")
-        background_tasks.add_task(update_hackathons_cache, session)
+        background_tasks.add_task(update_hackathons_cache)
         
     # Return current state
     return hackathons

@@ -197,7 +197,7 @@ celery_app.conf.beat_schedule = {
         "task": "sync_xp_task",
         "schedule": 300.0,
     },
-    "refresh-leaderboard-every-minute": {
+    "refresh-leaderboard-every-5-minutes": {
         "task": "refresh_leaderboard_task",
         "schedule": 300.0,
     },

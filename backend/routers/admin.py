@@ -14,37 +14,56 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 def get_admin_stats(
     admin: User = Depends(require_admin), session: Session = Depends(get_session)
 ):
-    users = session.exec(select(User)).all()
-    submissions = session.exec(select(Submission)).all()
-    api_usage = len(submissions) * 15 + 45200  # Computed representation of API calls
-    alerts = len(
-        [s for s in submissions if s.status == "error" or s.status == "runtime_error"]
-    )
+    from sqlmodel import func
+
+    total_users = session.exec(select(func.count(User.id))).one()
+    total_submissions = session.exec(select(func.count(Submission.id))).one()
+    error_count = session.exec(
+        select(func.count(Submission.id)).where(
+            Submission.status.in_(["error", "runtime_error"])
+        )
+    ).one()
+    accepted_count = session.exec(
+        select(func.count(Submission.id)).where(Submission.status == "accepted")
+    ).one()
+    student_count = session.exec(
+        select(func.count(User.id)).where(User.role == "student")
+    ).one()
+
+    pass_rate = round((accepted_count / total_submissions * 100), 2) if total_submissions > 0 else 0.0
 
     return {
-        "total_users": len(users),
-        "api_usage": api_usage,
-        "system_alerts": alerts,
-        "db_health": "99.98%",
-        "peak_concurrent": max(200, len(users) * 2),
+        "total_users": total_users,
+        "total_submissions": total_submissions,
+        "api_usage": total_submissions,
+        "system_alerts": error_count,
+        "pass_rate": pass_rate,
+        "student_count": student_count,
     }
 
 
 @router.get("/users")
 def get_all_users(
+    skip: int = 0,
+    limit: int = 50,
     admin: User = Depends(require_admin), session: Session = Depends(get_session)
 ):
-    users = session.exec(select(User)).all()
-    return [
-        {
-            "id": u.id,
-            "username": u.username,
-            "email": u.email,
-            "role": u.role,
-            "joined": u.created_at.strftime("%Y-%m-%d") if u.created_at else "",
-        }
-        for u in users
-    ]
+    from sqlmodel import func
+    total_count = session.exec(select(func.count(User.id))).one()
+    users = session.exec(select(User).offset(skip).limit(limit)).all()
+    return {
+        "items": [
+            {
+                "id": u.id,
+                "username": u.username,
+                "email": u.email,
+                "role": u.role,
+                "joined": u.created_at.strftime("%Y-%m-%d") if u.created_at else "",
+            }
+            for u in users
+        ],
+        "total_count": total_count,
+    }
 
 
 @router.put("/users/{user_id}/role")

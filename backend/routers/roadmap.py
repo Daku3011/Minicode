@@ -1,17 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from sqlmodel import Session, select, func
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from sqlmodel import Session, select, func, SQLModel
 from typing import List, Optional
 from pydantic import BaseModel
 import logging
 import json
 import os
 from datetime import datetime, timezone
-
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from fastapi import Query
-from sqlmodel import Session, select, func, SQLModel
-from typing import List, Optional
-from pydantic import BaseModel
 from google import genai
 
 from core.database import get_session, engine
