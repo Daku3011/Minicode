@@ -20,6 +20,20 @@ api.interceptors.request.use(
     }
 );
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            // Clear token and redirect to login
+            document.cookie = 'minicode_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            if (typeof window !== 'undefined') {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const userApi = {
     me: () => api.get("/user/me"),
     byUsername: (username: string) => api.get(`/user/by/${username}`),

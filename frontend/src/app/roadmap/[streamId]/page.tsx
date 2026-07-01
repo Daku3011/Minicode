@@ -12,23 +12,7 @@ import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
-
-const iconMap: Record<string, React.ElementType> = {
-    shield: Shield,
-    brain: Brain,
-    code: Code,
-    chart: BarChart3,
-    rocket: Rocket,
-    swords: Swords,
-    sparkles: Sparkles,
-    cloud: Cloud,
-    smartphone: Smartphone,
-    layers: Layers,
-    server: Server,
-    "git-branch": GitBranch,
-    globe: Globe,
-    cpu: Cpu,
-};
+import { iconMap } from "@/constants/icons";
 
 interface Milestone {
     id: number;

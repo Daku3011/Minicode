@@ -8,6 +8,7 @@ import {
   Users, Trophy, Lock, ChevronRight, Globe, Cpu
 } from "lucide-react";
 import api from "@/lib/api";
+import { iconMap } from "@/constants/icons";
 
 interface Stream {
   id: number;
@@ -18,24 +19,6 @@ interface Stream {
   color: string;
   milestone_count: number;
 }
-
-const iconMap: Record<string, React.ElementType> = {
-  shield: Shield,
-  brain: Brain,
-  code: Code,
-  chart: BarChart3,
-  rocket: Rocket,
-  swords: Swords,
-  sparkles: Sparkles,
-  cloud: Cloud,
-  smartphone: Smartphone,
-  layers: Layers,
-  server: Server,
-  "git-branch": GitBranch,
-  globe: Globe,
-  cpu: Cpu,
-  zap: Zap,
-};
 
 // Metadata enrichment for each stream (tags, difficulty, trending status)
 const streamMeta: Record<string, {

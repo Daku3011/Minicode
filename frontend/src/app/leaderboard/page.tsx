@@ -57,7 +57,6 @@ export default function LeaderboardPage() {
             const enhancedData = response.data.map((u: any, i: number) => ({
                 ...u,
                 rank: i + 1,
-                streak: Math.floor(Math.random() * 15),
                 tags: i < 3 ? ["ELITE", "HARDCORE"] : i < 10 ? ["VETERAN"] : ["OPERATOR"],
                 level: Math.floor((u.score || 0) / 1000) + 1,
                 problems_solved: u.problems || 0,
@@ -147,7 +146,7 @@ export default function LeaderboardPage() {
                                                 )}
                                             </div>
                                             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary px-3 py-1 rounded-full shadow-lg">
-                                                <span className="text-[10px] text-black font-black uppercase tracking-widest whitespace-nowrap">Grandmaster</span>
+                                                <span className="text-[10px] text-white font-black uppercase tracking-widest whitespace-nowrap">Grandmaster</span>
                                             </div>
                                         </div>
                                         <div className="min-w-0 flex-grow text-center md:text-left pt-4">

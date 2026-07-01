@@ -98,9 +98,9 @@ export default function Navbar() {
                     <div className="bg-primary/5 p-1 rounded-xl shadow-lg shadow-primary/5 border border-white/5">
                         <Logo className="w-7 h-7" variant="gradient" />
                     </div>
-                    <h2 className="text-xl font-extrabold tracking-tight text-gray-900 hidden sm:block">
+                    {/* <h2 className="text-xl font-extrabold tracking-tight text-gray-900 hidden sm:block">
                         MiniCode
-                    </h2>
+                    </h2> */}
                 </Link>
 
                 {/* Navigation Links */}

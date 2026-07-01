@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import axios from "axios";
+import { getSafeRedirectTarget } from "@/lib/auth-utils";
 
 function GithubCallbackContent() {
     const searchParams = useSearchParams();
@@ -14,15 +15,6 @@ function GithubCallbackContent() {
     const [error, setError] = useState<string | null>(null);
     const hasRun = useRef(false);
     const code = searchParams.get("code");
-
-    const getSafeRedirectTarget = (): string | null => {
-        const target = localStorage.getItem("minicode_post_login_redirect");
-        if (target && target.startsWith("/") && !target.startsWith("//")) {
-            localStorage.removeItem("minicode_post_login_redirect");
-            return target;
-        }
-        return null;
-    };
 
     useEffect(() => {
         if (hasRun.current) return;
@@ -39,7 +31,25 @@ function GithubCallbackContent() {
 
                 if (access_token) {
                     await login(access_token);
-                    router.push(getSafeRedirectTarget() || "/problems");
+
+                    // Check for saved redirect target first
+                    const savedRedirect = getSafeRedirectTarget();
+                    if (savedRedirect) {
+                        router.push(savedRedirect);
+                        return;
+                    }
+
+                    // Fetch user profile to determine role-based redirect
+                    const userResponse = await api.get("/user/me");
+                    const user = userResponse.data;
+
+                    if (user?.role === "admin") {
+                        router.push("/admin");
+                    } else if (user?.role === "faculty") {
+                        router.push("/faculty/dashboard");
+                    } else {
+                        router.push("/problems");
+                    }
                 } else {
                     setError("Failed to obtain access token.");
                 }
