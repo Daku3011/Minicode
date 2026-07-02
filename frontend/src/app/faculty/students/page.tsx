@@ -33,7 +33,7 @@ export default function FacultyStudentsPage() {
         const fetchStudents = async () => {
             try {
                 const response = await api.get("/faculty/students");
-                setStudents(response.data);
+                setStudents(response.data.items || response.data || []);
             } catch (error) {
                 console.error("Failed to fetch students:", error);
             } finally {

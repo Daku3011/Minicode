@@ -26,7 +26,7 @@ export default function AdminDashboard() {
                     api.get("/admin/users"),
                     api.get("/admin/stats")
                 ]);
-                setUsers(usersRes.data);
+                setUsers(usersRes.data.items || usersRes.data || []);
                 setStats(statsRes.data);
             } catch (error) {
                 console.error("Fetch data error:", error);

@@ -26,8 +26,8 @@ export default function ProfilePage() {
                 ]);
 
                 const me = meRes.data;
-                const problems = problemsRes.data || [];
-                const leaderboard = leaderboardRes.data || [];
+                const problems = problemsRes.data.items || problemsRes.data || [];
+                const leaderboard = leaderboardRes.data.items || leaderboardRes.data || [];
 
                 // Find rank if not in stats
                 const myEntry = leaderboard.find((e: any) => e.username === me.username);

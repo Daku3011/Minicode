@@ -54,7 +54,8 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
         try {
             const response = await api.get(`/leaderboard?period=${activeTab}`);
-            const enhancedData = response.data.map((u: any, i: number) => ({
+            const data = response.data.items || response.data || [];
+            const enhancedData = data.map((u: any, i: number) => ({
                 ...u,
                 rank: i + 1,
                 tags: i < 3 ? ["ELITE", "HARDCORE"] : i < 10 ? ["VETERAN"] : ["OPERATOR"],

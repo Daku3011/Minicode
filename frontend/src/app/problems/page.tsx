@@ -45,7 +45,7 @@ function ProblemsContent() {
         const fetchProblems = async () => {
             try {
                 const response = await api.get("/problems");
-                setProblems(response.data);
+                setProblems(response.data.items || response.data || []);
             } catch (error) {
                 console.error("Failed to fetch problems:", error);
             } finally {
