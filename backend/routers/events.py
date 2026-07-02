@@ -150,7 +150,7 @@ async def get_events(
                 EventParticipant.user_id == user.id,
             )
         ).all()
-        user_joined_ids = {row[0] for row in joined}
+        user_joined_ids = set(joined)
 
     authors = session.exec(
         select(User).where(User.id.in_(author_ids))
