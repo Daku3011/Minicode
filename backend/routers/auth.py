@@ -4,6 +4,7 @@ from sqlmodel import Session, select
 from datetime import datetime, timezone
 import os
 import httpx
+import asyncio
 import logging
 from typing import Optional
 
@@ -28,35 +29,67 @@ async def github_callback(
     redirect_uri: Optional[str] = None,
     session: Session = Depends(get_session),
 ):
-    # Exchange code for token
-    params = {
+    # Exchange code for token — use POST body (not URL params) per GitHub spec
+    # This avoids leaking client_secret in server logs
+    data = {
         "client_id": os.getenv("GITHUB_CLIENT_ID"),
         "client_secret": os.getenv("GITHUB_CLIENT_SECRET"),
         "code": code,
     }
     if redirect_uri:
-        params["redirect_uri"] = redirect_uri
+        data["redirect_uri"] = redirect_uri
 
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            "https://github.com/login/oauth/access_token",
-            params=params,
-            headers={"Accept": "application/json"},
-        )
-        token_data = response.json()
-        access_token = token_data.get("access_token")
+    token_data = None
+    access_token = None
+
+    # Retry token exchange up to 2 times (GitHub can return transient errors)
+    for attempt in range(3):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://github.com/login/oauth/access_token",
+                data=data,
+                headers={"Accept": "application/json"},
+            )
+            token_data = response.json()
+            access_token = token_data.get("access_token")
+
+            if access_token:
+                logger.info("GitHub OAuth token exchange successful")
+                break
+
+            error = token_data.get("error", "unknown")
+            error_desc = token_data.get("error_description", "No description")
+            logger.warning(
+                f"GitHub OAuth token exchange attempt {attempt + 1}/3 failed: "
+                f"error={error}, description={error_desc}"
+            )
+
+            if attempt < 2:
+                await asyncio.sleep(1 * (attempt + 1))
 
     if not access_token:
         error_desc = token_data.get(
             "error_description", token_data.get("error", "Unknown error")
         )
-        logger.error(f"GitHub OAuth error: {token_data}")
+        logger.error(f"GitHub OAuth token exchange failed after retries: {token_data}")
         raise HTTPException(
             status_code=400, detail=f"GitHub OAuth failed: {error_desc}"
         )
 
-    # Get user info
-    github_user = await get_github_user_info(access_token)
+    # Get user info with retry (token can be briefly delayed in propagation)
+    github_user = None
+    for attempt in range(3):
+        try:
+            github_user = await get_github_user_info(access_token)
+            break
+        except HTTPException as e:
+            logger.warning(
+                f"GitHub user info attempt {attempt + 1}/3 failed: {e.detail}"
+            )
+            if attempt < 2:
+                await asyncio.sleep(1 * (attempt + 1))
+            else:
+                raise
 
     # Create or update user
     statement = select(User).where(User.github_id == github_user["id"])

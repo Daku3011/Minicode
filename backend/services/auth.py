@@ -1,4 +1,5 @@
 import os
+import logging
 from cryptography.fernet import Fernet
 import httpx
 from datetime import datetime, timedelta, timezone
@@ -11,6 +12,8 @@ from core.database import engine, get_session
 from dotenv import load_dotenv
 from passlib.context import CryptContext
 from core.models import User
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -29,11 +32,17 @@ GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 JWT_SECRET = os.getenv("JWT_SECRET")
 if not JWT_SECRET:
-    raise ValueError("JWT_SECRET environment variable is required. Set it in your .env file.")
+    if os.getenv("ENVIRONMENT") == "production":
+        raise ValueError("JWT_SECRET environment variable is required in production. Set it in your Render dashboard.")
+    logger.warning("JWT_SECRET not set — using insecure dev fallback. Set JWT_SECRET in production!")
+    JWT_SECRET = "dev-secret-key-keep-it-safe"
 
 FERNET_KEY = os.getenv("FERNET_KEY")
 if not FERNET_KEY:
-    raise ValueError("FERNET_KEY environment variable is required. Set it in your .env file.")
+    if os.getenv("ENVIRONMENT") == "production":
+        raise ValueError("FERNET_KEY environment variable is required in production. Set it in your Render dashboard.")
+    logger.warning("FERNET_KEY not set — generating ephemeral key. Set FERNET_KEY in production!")
+    FERNET_KEY = Fernet.generate_key().decode()
 
 fernet = Fernet(FERNET_KEY.encode())
 
@@ -62,10 +71,14 @@ async def get_github_user_info(access_token: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(
             "https://api.github.com/user",
-            headers={"Authorization": f"Bearer {access_token}"},
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Accept": "application/vnd.github.v3+json",
+            },
         )
         if response.status_code != 200:
-            raise HTTPException(status_code=400, detail="Invalid GitHub token")
+            logger.error(f"GitHub API returned {response.status_code}: {response.text}")
+            raise HTTPException(status_code=400, detail=f"Invalid GitHub token (HTTP {response.status_code})")
 
         user_data = response.json()
 

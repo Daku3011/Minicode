@@ -111,10 +111,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 app.add_middleware(SecurityHeadersMiddleware)
 
 cors_origins_str = os.getenv("CORS_ORIGINS", "")
-if not cors_origins_str:
-    cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"] if os.getenv("ENVIRONMENT") != "production" else []
+if cors_origins_str:
+    cors_origins = [o.strip() for o in cors_origins_str.split(",") if o.strip()]
 else:
-    cors_origins = [o.strip() for o in cors_origins_str.split(",")]
+    # No CORS_ORIGINS set: dev allows localhost, production allows all (better than empty list which blocks everything)
+    if os.getenv("ENVIRONMENT") == "production":
+        logger.warning("CORS_ORIGINS not set in production — allowing all origins. Set CORS_ORIGINS for tighter security!")
+        cors_origins = ["*"]
+    else:
+        cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 app.add_middleware(
     CORSMiddleware,
