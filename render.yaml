@@ -1,15 +1,12 @@
 # Render Infrastructure-as-Code Blueprint
 # Deploy: Connect repo to Render, it auto-detects this file
-
-# ================================
-# Persistent Data Stores
-# ================================
-databases:
-  - name: minicode-db
-    databaseName: minicode
-    user: minicode_admin
-    plan: free # Change to 'starter' for production persistence
-    region: oregon
+# Stack: Render (Backend) + Vercel (Frontend) + Supabase (PostgreSQL) + Render Redis
+#
+# IMPORTANT: JWT_SECRET and FERNET_KEY MUST be the SAME across all 3 backend services.
+# Generate once:
+#   python -c "import secrets; print(secrets.token_hex(32))"
+#   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+# Then set the SAME value in the Render dashboard for minicode-api, minicode-worker, and minicode-beat.
 
 services:
   # ================================
@@ -19,7 +16,7 @@ services:
     name: minicode-redis
     plan: free
     region: oregon
-    ipAllowList: [] # Only allow internal access
+    ipAllowList: []
 
   # ================================
   # Backend API (FastAPI + Gunicorn)
@@ -37,9 +34,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: minicode-db
-          property: connectionString
+        sync: false  # Set to your Supabase PostgreSQL connection string
       - key: REDIS_URL
         fromService:
           type: keyvalue
@@ -50,22 +45,37 @@ services:
           type: keyvalue
           name: minicode-redis
           property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: keyvalue
+          name: minicode-redis
+          property: connectionString
       - key: GITHUB_CLIENT_ID
-        sync: false
+        sync: false  # Set in Render dashboard
       - key: GITHUB_CLIENT_SECRET
-        sync: false
-      - key: GITHUB_TOKEN
-        sync: false
+        sync: false  # Set in Render dashboard
       - key: GEMINI_API_KEY
-        sync: false
+        sync: false  # Set in Render dashboard
       - key: JWT_SECRET
-        generateValue: true
+        sync: false  # MUST be same across api, worker, beat — set manually in dashboard
+      - key: FERNET_KEY
+        sync: false  # MUST be same across api, worker, beat — set manually in dashboard
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Set in Render dashboard (optional)
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false  # Set in Render dashboard (optional)
       - key: CORS_ORIGINS
-        sync: false # Set to your frontend URL, e.g. https://minicode-web.onrender.com
+        sync: false  # REQUIRED: Set to your Vercel frontend URL, e.g. https://minicode.vercel.app
+      - key: ENVIRONMENT
+        value: "production"
       - key: WEB_CONCURRENCY
         value: "4"
       - key: RESEND_API_KEY
-        sync: false
+        sync: false  # Set in Render dashboard
+      - key: SMTP_EMAIL
+        sync: false  # Set in Render dashboard (optional)
+      - key: SMTP_PASSWORD
+        sync: false  # Set in Render dashboard (optional)
 
   # ================================
   # Celery Worker (Background Tasks)
@@ -81,9 +91,7 @@ services:
     branch: main
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: minicode-db
-          property: connectionString
+        sync: false  # Set to your Supabase PostgreSQL connection string
       - key: REDIS_URL
         fromService:
           type: keyvalue
@@ -94,16 +102,29 @@ services:
           type: keyvalue
           name: minicode-redis
           property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: keyvalue
+          name: minicode-redis
+          property: connectionString
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
         sync: false
-      - key: GITHUB_TOKEN
-        sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: JWT_SECRET
+        sync: false  # MUST be same across api, worker, beat
+      - key: FERNET_KEY
+        sync: false  # MUST be same across api, worker, beat
       - key: RESEND_API_KEY
         sync: false
+      - key: SMTP_EMAIL
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: ENVIRONMENT
+        value: "production"
 
   # ================================
   # Celery Beat (Scheduled Tasks)
@@ -119,9 +140,7 @@ services:
     branch: main
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: minicode-db
-          property: connectionString
+        sync: false  # Set to your Supabase PostgreSQL connection string
       - key: REDIS_URL
         fromService:
           type: keyvalue
@@ -132,30 +151,26 @@ services:
           type: keyvalue
           name: minicode-redis
           property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: keyvalue
+          name: minicode-redis
+          property: connectionString
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
         sync: false
-      - key: GITHUB_TOKEN
-        sync: false
       - key: GEMINI_API_KEY
         sync: false
+      - key: JWT_SECRET
+        sync: false  # MUST be same across api, worker, beat
+      - key: FERNET_KEY
+        sync: false  # MUST be same across api, worker, beat
       - key: RESEND_API_KEY
         sync: false
-
-  # ================================
-  # Frontend (Next.js)
-  # ================================
-  - type: web
-    name: minicode-web
-    runtime: docker
-    dockerfilePath: ./frontend/Dockerfile
-    dockerContext: ./frontend
-    plan: starter
-    region: oregon
-    branch: main
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        sync: false # Set to your minicode-api URL
-      - key: NEXT_PUBLIC_GITHUB_CLIENT_ID
+      - key: SMTP_EMAIL
         sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: ENVIRONMENT
+        value: "production"
