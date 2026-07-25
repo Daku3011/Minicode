@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, Filter, Plus, Layers, Target } from "lucide-react";
+import { Search, Filter, Plus, Layers, Target, LayoutGrid, List } from "lucide-react";
 import { clsx } from "clsx";
 import Link from "next/link";
 import ProblemCard from "@/components/ProblemCard";
+import ProblemListItem from "@/components/ProblemListItem";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
@@ -19,6 +20,7 @@ interface Problem {
     level: number;
     xp_reward: number;
     description?: string;
+    status?: string;
 }
 
 import { SUBJECTS } from "@/constants/subjects";
@@ -33,6 +35,7 @@ function ProblemsContent() {
     const [selectedSubject, setSelectedSubject] = useState("");
     const [selectedDifficulty, setSelectedDifficulty] = useState("");
     const [showFilters, setShowFilters] = useState(false);
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [isCompact, setIsCompact] = useState(false);
     const compactRafRef = useRef<number | null>(null);
     const pendingCompactRef = useRef(false);
@@ -282,28 +285,69 @@ function ProblemsContent() {
                         <div className="flex items-center gap-6">
                             <h3 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">All Problems</h3>
                             <div className="h-px flex-1 bg-slate-200" />
-                            <div className="px-4 py-2 rounded-lg bg-slate-50 border border-slate-200">
-                                <span className="text-xs font-medium text-slate-600">{filteredProblems.length} problems</span>
+                            <div className="flex items-center gap-3">
+                                <div className="px-4 py-2 rounded-lg bg-slate-50 border border-slate-200">
+                                    <span className="text-xs font-medium text-slate-600">{filteredProblems.length} problems</span>
+                                </div>
+                                <div className="flex items-center p-1 bg-slate-100/80 rounded-xl border border-slate-200/80">
+                                    <button
+                                        onClick={() => setViewMode("grid")}
+                                        title="Grid view"
+                                        className={clsx(
+                                            "p-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
+                                            viewMode === "grid"
+                                                ? "bg-white text-blue-600 shadow-sm font-semibold"
+                                                : "text-slate-500 hover:text-slate-800"
+                                        )}
+                                    >
+                                        <LayoutGrid className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode("list")}
+                                        title="List view"
+                                        className={clsx(
+                                            "p-2 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5",
+                                            viewMode === "list"
+                                                ? "bg-white text-blue-600 shadow-sm font-semibold"
+                                                : "text-slate-500 hover:text-slate-800"
+                                        )}
+                                    >
+                                        <List className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         {loading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10" : "flex flex-col gap-4"}>
                                 {[1, 2, 3, 4, 5, 6].map(i => (
-                                    <div key={i} className="h-[400px] w-full bg-slate-100 rounded-xl border border-slate-200 overflow-hidden animate-pulse" />
+                                    <div key={i} className={viewMode === "grid" ? "h-[400px] w-full bg-slate-100 rounded-xl border border-slate-200 overflow-hidden animate-pulse" : "h-20 w-full bg-slate-100 rounded-2xl border border-slate-200 animate-pulse"} />
                                 ))}
                             </div>
                         ) : filteredProblems.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
-                                {filteredProblems.map((problem) => (
-                                    <ProblemCard 
-                                        key={problem.id} 
-                                        problem={problem} 
-                                        userUnlockedLevel={userUnlockedLevel}
-                                        isFaculty={isFaculty}
-                                    />
-                                ))}
-                            </div>
+                            viewMode === "grid" ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                                    {filteredProblems.map((problem) => (
+                                        <ProblemCard 
+                                            key={problem.id} 
+                                            problem={problem} 
+                                            userUnlockedLevel={userUnlockedLevel}
+                                            isFaculty={isFaculty}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    {filteredProblems.map((problem) => (
+                                        <ProblemListItem 
+                                            key={problem.id} 
+                                            problem={problem} 
+                                            userUnlockedLevel={userUnlockedLevel}
+                                            isFaculty={isFaculty}
+                                        />
+                                    ))}
+                                </div>
+                            )
                         ) : (
                             <div className="py-32 text-center bg-blue-50/30 rounded-[4rem] border border-dashed border-blue-100">
                                 <Logo className="w-16 h-16 text-slate-900 mx-auto mb-8" variant="solid" />
