@@ -43,7 +43,7 @@ export default function ProblemListItem({ problem, userUnlockedLevel = 1, isFacu
             return (
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/60 shadow-sm">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Completed</span>
+                    <span>{LEVEL_NAMES[problem.level] || "Completed"}</span>
                 </div>
             );
         }
@@ -89,7 +89,7 @@ export default function ProblemListItem({ problem, userUnlockedLevel = 1, isFacu
 
                     {/* Title & Description */}
                     <div className="flex-1 min-w-0">
-                        <Link 
+                        <Link
                             href={isLocked ? "#" : `/problems/${problem.id}`}
                             onClick={(e) => isLocked && e.preventDefault()}
                             className="block group/link"
