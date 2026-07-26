@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+RUN addgroup --system --gid 1000 sandbox && \
+    adduser --system --uid 1000 --ingroup sandbox --shell /bin/sh --disabled-password sandbox
+
+RUN mkdir -p /tmp/code /tmp/output && \
+    chown -R sandbox:sandbox /tmp/code /tmp/output && \
+    chmod 755 /tmp/code /tmp/output
+
+USER sandbox
+WORKDIR /tmp/code
+
+COPY --chown=sandbox:sandbox run_code.js /tmp/code/run_code.js
+
+ENTRYPOINT ["node", "/tmp/code/run_code.js"]

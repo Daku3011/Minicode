@@ -1,0 +1,23 @@
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "architectures": ["SCMP_ARCH_X86_64", "SCMP_ARCH_AARCH64"],
+  "syscalls": [
+    {"names": ["read", "write", "open", "openat", "close", "fstat", "stat", "lstat", "newfstatat", "readlink", "readlinkat"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["mmap", "mprotect", "munmap", "brk", "sbrk"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["exit", "exit_group"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["nanosleep", "clock_gettime", "gettimeofday", "time"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["getpid", "gettid", "getuid", "getgid", "geteuid", "getegid"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["arch_prctl", "set_tid_address", "set_robust_list", "futex", "rseq"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["writev", "readv", "pread64", "pwrite64", "lseek", "llseek", "dup", "dup2", "dup3", "fcntl"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["access", "faccessat", "faccessat2"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["pipe", "pipe2", "socket", "connect", "sendto", "recvfrom", "sendmsg", "recvmsg"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["ioctl", "poll", "ppoll", "select", "pselect6", "epoll_create", "epoll_create1", "epoll_ctl", "epoll_wait", "epoll_pwait"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["clone", "clone3", "fork", "vfork"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["execve", "execveat"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["getcwd", "chdir", "fchdir", "mkdir", "mkdirat"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["uname", "sysinfo", "prlimit64", "getrlimit", "setrlimit"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["rt_sigaction", "rt_sigprocmask", "rt_sigreturn", "sigaltstack"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["getrandom", "gettid"], "action": "SCMP_ACT_ALLOW"},
+    {"names": ["tkill", "tgkill"], "action": "SCMP_ACT_ALLOW"}
+  ]
+}
