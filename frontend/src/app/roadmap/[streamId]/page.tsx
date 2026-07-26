@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef, use } from "react";
 import Link from "next/link";
 import {
-    Shield, Brain, Code, BarChart3, Rocket, Swords, Sparkles,
+    Rocket, Sparkles,
     ArrowLeft, CheckCircle2, Circle, Lock, Trophy, Zap, Crown, Play,
     Loader2, Star, Upload, FileText, Send, Bot, User, X, MessageSquare,
-    ExternalLink, Cloud, Smartphone, Layers, Server, GitBranch, Globe, Cpu,
+    ExternalLink,
 } from "lucide-react";
 import { clsx } from "clsx";
 import api from "@/lib/api";
@@ -65,6 +65,11 @@ interface SubmitResult {
     tips: string[];
 }
 
+interface SubtaskGenerationStatus {
+    kind: "success" | "error" | "info";
+    message: string;
+}
+
 export default function StreamDetailPage({ params }: { params: Promise<{ streamId: string }> }) {
     const { streamId } = use(params);
     const { user } = useAuth();
@@ -82,6 +87,72 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
     // Dynamic learning materials
     const [dynamicMaterials, setDynamicMaterials] = useState<Record<number, { hints: string; resources: { title: string; url: string; description: string }[] }>>({});
     const [generatingMaterials, setGeneratingMaterials] = useState<Set<number>>(new Set());
+
+    // Generate subtasks
+    const [generatingSubtasks, setGeneratingSubtasks] = useState<Set<number>>(new Set());
+    const [subtaskGenerationStatus, setSubtaskGenerationStatus] = useState<Record<number, SubtaskGenerationStatus>>({});
+
+    const generateSubtasks = async (milestoneId: number, regenerate = false) => {
+        if (!user) return;
+        setSubtaskGenerationStatus(prev => ({
+            ...prev,
+            [milestoneId]: {
+                kind: "info",
+                message: regenerate ? "Regenerating subtasks..." : "Generating subtasks...",
+            },
+        }));
+        setGeneratingSubtasks(prev => new Set(prev).add(milestoneId));
+        try {
+            const response = await api.post(`/roadmap/milestones/${milestoneId}/generate-subtasks?regenerate=${regenerate}`);
+            // Update the stream with the new subtasks
+            setStream(prev => {
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    milestones: prev.milestones.map(m => {
+                        if (m.id !== milestoneId) return m;
+                        return {
+                            ...m,
+                            subtasks: response.data.subtasks,
+                            prerequisites: response.data.prerequisites,
+                            what_to_submit: response.data.what_to_submit,
+                        };
+                    }),
+                };
+            });
+
+            const source = response.data?.source;
+            const subtasksCount = Array.isArray(response.data?.subtasks) ? response.data.subtasks.length : 0;
+            const statusMessage = source === "cached"
+                ? `Using saved subtasks (${subtasksCount}).`
+                : source === "cached_fallback"
+                    ? "AI generation failed. Using your previously saved subtasks."
+                    : `Generated ${subtasksCount} subtasks successfully.`;
+
+            setSubtaskGenerationStatus(prev => ({
+                ...prev,
+                [milestoneId]: {
+                    kind: "success",
+                    message: statusMessage,
+                },
+            }));
+        } catch (error) {
+            console.error("Failed to generate subtasks:", error);
+            setSubtaskGenerationStatus(prev => ({
+                ...prev,
+                [milestoneId]: {
+                    kind: "error",
+                    message: "Failed to generate subtasks. Please try again.",
+                },
+            }));
+        } finally {
+            setGeneratingSubtasks(prev => {
+                const next = new Set(prev);
+                next.delete(milestoneId);
+                return next;
+            });
+        }
+    };
 
     // Chatbot state
     const [chatOpen, setChatOpen] = useState(false);
@@ -443,15 +514,35 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
                                                                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                                                             Task Action Plan ({milestone.completed_subtask_ids?.length || 0} / {milestone.subtasks.length} Done)
                                                                         </p>
-                                                                        {milestone.completed_subtask_ids && milestone.completed_subtask_ids.length > 0 && (
-                                                                            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
-                                                                                {Math.round(((milestone.completed_subtask_ids.length) / milestone.subtasks.length) * 100)}% Progress
+                                                                        <div className="flex items-center gap-2">
+                                                                            {milestone.completed_subtask_ids && milestone.completed_subtask_ids.length > 0 && (
+                                                                                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                                                                                    {Math.round(((milestone.completed_subtask_ids.length) / milestone.subtasks.length) * 100)}% Progress
+                                                                                </span>
+                                                                            )}
+                                                                            <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                                                                                ~{milestone.subtasks.reduce((sum, st) => sum + (st.estimated_minutes || 0), 0)} min total
                                                                             </span>
-                                                                        )}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="mb-3 flex justify-end">
+                                                                        <button
+                                                                            onClick={() => generateSubtasks(milestone.id, true)}
+                                                                            disabled={generatingSubtasks.has(milestone.id)}
+                                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-violet-700 bg-violet-50 border border-violet-200 hover:bg-violet-100 disabled:opacity-60 disabled:cursor-not-allowed"
+                                                                        >
+                                                                            {generatingSubtasks.has(milestone.id) ? (
+                                                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                                            ) : (
+                                                                                <Sparkles className="w-3.5 h-3.5" />
+                                                                            )}
+                                                                            Regenerate with AI
+                                                                        </button>
                                                                     </div>
 
                                                                     <div className="space-y-2.5">
-                                                                        {milestone.subtasks.map((st) => {
+                                                                        {milestone.subtasks.map((st, index) => {
                                                                             const isChecked = milestone.completed_subtask_ids?.includes(st.id) || false;
                                                                             return (
                                                                                 <div
@@ -465,7 +556,8 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
                                                                                         <button
                                                                                             type="button"
                                                                                             onClick={() => toggleSubtask(milestone.id, st.id, !isChecked)}
-                                                                                            className="mt-0.5 flex-shrink-0 cursor-pointer"
+                                                                                            disabled={generatingSubtasks.has(milestone.id)}
+                                                                                            className="mt-0.5 flex-shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                                                                                         >
                                                                                             {isChecked ? (
                                                                                                 <CheckCircle2 className="w-5 h-5 text-emerald-600 fill-emerald-50" />
@@ -476,6 +568,7 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
                                                                                         <div className="flex-1 min-w-0">
                                                                                             <div className="flex items-center justify-between gap-2">
                                                                                                 <h4 className={clsx("text-sm font-bold", isChecked ? "text-slate-500 line-through" : "text-slate-900")}>
+                                                                                                    <span className="text-[10px] font-black mr-2 text-slate-400 uppercase">Step {index + 1}</span>
                                                                                                     {st.title}
                                                                                                 </h4>
                                                                                                 {st.estimated_minutes && (
@@ -515,6 +608,40 @@ export default function StreamDetailPage({ params }: { params: Promise<{ streamI
                                                                             );
                                                                         })}
                                                                     </div>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Generate Subtasks Button when none exist */}
+                                                            {(!milestone.subtasks || milestone.subtasks.length === 0) && (
+                                                                <div className="flex justify-center py-2">
+                                                                    <button
+                                                                        onClick={() => generateSubtasks(milestone.id, false)}
+                                                                        disabled={generatingSubtasks.has(milestone.id)}
+                                                                        className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        {generatingSubtasks.has(milestone.id) ? (
+                                                                            <>
+                                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                                                Generating Subtasks...
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <Sparkles className="w-4 h-4" />
+                                                                                Generate Subtasks
+                                                                            </>
+                                                                        )}
+                                                                    </button>
+                                                                </div>
+                                                            )}
+
+                                                            {subtaskGenerationStatus[milestone.id] && (
+                                                                <div className={clsx(
+                                                                    "rounded-lg border px-3 py-2 text-xs font-semibold",
+                                                                    subtaskGenerationStatus[milestone.id].kind === "success" && "bg-emerald-50 border-emerald-200 text-emerald-800",
+                                                                    subtaskGenerationStatus[milestone.id].kind === "error" && "bg-rose-50 border-rose-200 text-rose-700",
+                                                                    subtaskGenerationStatus[milestone.id].kind === "info" && "bg-slate-50 border-slate-200 text-slate-600"
+                                                                )}>
+                                                                    {subtaskGenerationStatus[milestone.id].message}
                                                                 </div>
                                                             )}
 

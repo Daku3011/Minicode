@@ -5,7 +5,9 @@ from pydantic import BaseModel
 import logging
 import json
 import os
+import re
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 from google import genai
 
 from core.database import get_session, engine
@@ -17,6 +19,106 @@ from services.ai_generator import generate_content_with_retry, extract_text_from
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/roadmap", tags=["roadmap"])
+
+
+def _strip_json_fences(value: str) -> str:
+    cleaned = value.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?", "", cleaned, flags=re.IGNORECASE).strip()
+        cleaned = re.sub(r"```$", "", cleaned).strip()
+    return cleaned
+
+
+def _safe_json_loads(value: str):
+    return json.loads(_strip_json_fences(value))
+
+
+def _slugify_subtask_id(value: str, index: int) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    if not slug:
+        slug = f"subtask-{index + 1}"
+    return slug[:64]
+
+
+def _normalize_subtasks(raw_subtasks, milestone_title: str):
+    if not isinstance(raw_subtasks, list):
+        raw_subtasks = []
+
+    normalized = []
+    seen_ids = set()
+
+    for index, raw in enumerate(raw_subtasks[:5]):
+        if not isinstance(raw, dict):
+            continue
+
+        title = str(raw.get("title") or "").strip() or f"Step {index + 1}: {milestone_title}"
+        description = str(raw.get("description") or "").strip() or "Complete this step to move forward in the milestone."
+        starting_point = str(raw.get("starting_point") or "").strip() or "Start from the milestone learning materials and define your first concrete action."
+        what_to_submit = str(raw.get("what_to_submit") or "").strip() or "A short proof of completion for this step."
+
+        estimated_minutes_raw = raw.get("estimated_minutes")
+        try:
+            estimated_minutes = int(estimated_minutes_raw)
+        except (TypeError, ValueError):
+            estimated_minutes = 30
+        estimated_minutes = max(10, min(240, estimated_minutes))
+
+        resource_url_raw = str(raw.get("resource_url") or "").strip()
+        resource_url = None
+        if resource_url_raw:
+            parsed = urlparse(resource_url_raw)
+            if parsed.scheme in {"http", "https"} and parsed.netloc:
+                resource_url = resource_url_raw
+
+        subtask_id = str(raw.get("id") or "").strip() or _slugify_subtask_id(title, index)
+        subtask_id = _slugify_subtask_id(subtask_id, index)
+        if subtask_id in seen_ids:
+            subtask_id = _slugify_subtask_id(f"{subtask_id}-{index + 1}", index)
+        seen_ids.add(subtask_id)
+
+        normalized_subtask = {
+            "id": subtask_id,
+            "title": title,
+            "description": description,
+            "starting_point": starting_point,
+            "what_to_submit": what_to_submit,
+            "estimated_minutes": estimated_minutes,
+        }
+        if resource_url:
+            normalized_subtask["resource_url"] = resource_url
+
+        normalized.append(normalized_subtask)
+
+    return normalized
+
+
+def _default_subtasks_for_milestone(milestone_title: str):
+    return [
+        {
+            "id": "plan-foundation",
+            "title": f"Define scope for {milestone_title}",
+            "description": "Break the milestone into a small checklist and define clear acceptance criteria.",
+            "starting_point": "Read the milestone description and draft a checklist of outcomes in your notes.",
+            "what_to_submit": "A short checklist with 3-5 clear outcomes and assumptions.",
+            "estimated_minutes": 20,
+        },
+        {
+            "id": "build-core",
+            "title": "Implement the core solution",
+            "description": "Build the main implementation based on your checklist and validate each requirement.",
+            "starting_point": "Create the core files first and complete the highest-impact requirement before polishing.",
+            "what_to_submit": "Working implementation artifacts (code/docs/screenshots) showing core behavior.",
+            "estimated_minutes": 45,
+        },
+        {
+            "id": "verify-and-polish",
+            "title": "Verify results and polish submission",
+            "description": "Run checks, fix edge cases, and prepare concise proof of completion.",
+            "starting_point": "Run available tests/lint and capture evidence that your output matches milestone goals.",
+            "what_to_submit": "Final proof bundle: result summary, key artifacts, and validation evidence.",
+            "estimated_minutes": 25,
+        },
+    ]
 
 
 class ChatRequest(BaseModel):
@@ -570,6 +672,7 @@ async def generate_learning_materials(
 @router.post("/milestones/{milestone_id}/generate-subtasks")
 async def generate_subtasks(
     milestone_id: int,
+    regenerate: bool = Query(False),
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -581,6 +684,20 @@ async def generate_subtasks(
     milestone = session.get(Milestone, milestone_id)
     if not milestone:
         raise HTTPException(status_code=404, detail="Milestone not found")
+
+    if milestone.subtasks and not regenerate:
+        try:
+            existing_subtasks = json.loads(milestone.subtasks)
+        except json.JSONDecodeError:
+            existing_subtasks = []
+
+        return {
+            "milestone_id": milestone_id,
+            "prerequisites": milestone.prerequisites or "",
+            "what_to_submit": milestone.what_to_submit or "",
+            "subtasks": existing_subtasks,
+            "source": "cached",
+        }
 
     stream = session.get(Stream, milestone.stream_id)
     all_milestones = session.exec(
@@ -651,11 +768,20 @@ Make the guidance PRACTICAL and SPECIFIC. Students are beginners to intermediate
         response_text = await generate_content_with_retry(
             client, prompt, response_mime_type="application/json"
         )
-        result = json.loads(response_text)
+        result = _safe_json_loads(response_text)
+        if not isinstance(result, dict):
+            raise ValueError("Subtask generation output is not a JSON object")
 
-        subtasks = result.get("subtasks", [])
-        prerequisites = result.get("prerequisites", "")
-        what_to_submit = result.get("what_to_submit", "")
+        subtasks = _normalize_subtasks(result.get("subtasks", []), milestone.title)
+        if not subtasks:
+            subtasks = _default_subtasks_for_milestone(milestone.title)
+        prerequisites = str(result.get("prerequisites") or "").strip()
+        what_to_submit = str(result.get("what_to_submit") or "").strip()
+
+        if not prerequisites:
+            prerequisites = "Review the milestone description, keep your development environment ready, and allocate focused time for each step."
+        if not what_to_submit:
+            what_to_submit = "Submit your final implementation artifact and a short explanation of the approach you used."
 
         # Persist to DB so they don't need to be regenerated each time
         milestone.subtasks = json.dumps(subtasks)
@@ -671,10 +797,23 @@ Make the guidance PRACTICAL and SPECIFIC. Students are beginners to intermediate
             "prerequisites": prerequisites,
             "what_to_submit": what_to_submit,
             "subtasks": subtasks,
+            "source": "generated",
         }
 
     except Exception as e:
         logger.error(f"Gemini subtask generation failed: {e}")
+        if milestone.subtasks:
+            try:
+                fallback_subtasks = json.loads(milestone.subtasks)
+                return {
+                    "milestone_id": milestone_id,
+                    "prerequisites": milestone.prerequisites or "",
+                    "what_to_submit": milestone.what_to_submit or "",
+                    "subtasks": fallback_subtasks,
+                    "source": "cached_fallback",
+                }
+            except json.JSONDecodeError:
+                pass
         raise HTTPException(
             status_code=500,
             detail="AI subtask generation failed. Please try again in a moment.",
