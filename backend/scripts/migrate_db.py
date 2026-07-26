@@ -11,6 +11,10 @@ from core.database import engine
 from core.models import User, Problem, Submission, TestCase, NewsItem, Notification, CohortJoinRequest
 from core.models import AlumniProfile, AlumniNotification, ContactRequest, Stream, Milestone, UserMilestoneProgress
 from core.models_events import Event, EventParticipant, EventSubmission
+from core.models_achievements import Badge, UserBadge, Achievement, UserStreak
+from core.models_review import CodeReview, ReviewComment, ReviewRequest
+from core.models_plugin import Plugin, PluginInstallation
+from core.models_snippets import CodeSnippet, SnippetVote, SnippetComment
 from services.email_verification import EmailVerification
 
 

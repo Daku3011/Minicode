@@ -6,9 +6,9 @@ import InteractiveBackground from "@/components/InteractiveBackground";
 import PageLoader from "@/components/PageLoader";
 import DesktopEnforcer from "@/components/DesktopEnforcer";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import WelcomeModal from '@/components/WelcomeModal';
+import ChatAssistant from '@/components/ChatAssistant';
 
 export const metadata: Metadata = {
   title: "MiniCode | Code. Compete. Evolve.",
@@ -29,6 +29,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body className="min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <ThemeProvider>
         <AuthProvider>
           <DesktopEnforcer>
             <Suspense fallback={null}>
@@ -42,10 +43,10 @@ export default function RootLayout({
               </Suspense>
             </main>
               <WelcomeModal />
-            <Analytics mode="production" />
-            <SpeedInsights />
+              <ChatAssistant />
           </DesktopEnforcer>
         </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

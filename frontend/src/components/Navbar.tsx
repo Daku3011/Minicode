@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles, Map } from "lucide-react";
+import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles, Map, Sun, Moon } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import NewsPanel from "@/components/NewsPanel";
 import { Logo } from "@/components/Logo";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
@@ -89,7 +90,7 @@ export default function Navbar() {
 
     return (
         <header className="sticky top-0 z-50 px-4 md:px-8 py-3">
-            <div className="max-w-[1600px] mx-auto bg-white rounded-2xl h-16 flex items-center justify-between px-6 relative border border-gray-200 shadow-sm">
+            <div className="max-w-[1600px] mx-auto bg-white dark:bg-gray-900 rounded-2xl h-16 flex items-center justify-between px-6 relative border border-gray-200 dark:border-gray-700 shadow-sm">
                 {/* Logo Section */}
                 <Link 
                     href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/profile' : '/problems') : "/"} 
@@ -104,8 +105,8 @@ export default function Navbar() {
                 </Link>
 
                 {/* Navigation Links */}
-                {user && (
-                    <nav className="hidden lg:flex items-center gap-1 bg-white/[0.02] p-1 rounded-xl border border-white/5">
+                    {user && (
+                    <nav className="hidden lg:flex items-center gap-1 bg-white/[0.02] dark:bg-gray-800/[0.02] p-1 rounded-xl border border-white/5">
                         {navItems.map((item) => {
                             const isActive = pathname.startsWith(item.href);
                             return (
@@ -116,7 +117,7 @@ export default function Navbar() {
                                         "relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all",
                                         isActive 
                                             ? "text-white bg-blue-600 shadow-sm" 
-                                            : "text-slate-500 hover:text-slate-900 hover:bg-blue-50"
+                                            : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-gray-800"
                                     )}
                                 >
                                     <item.icon className="w-4 h-4" />
@@ -133,7 +134,7 @@ export default function Navbar() {
                         <>
                             <button 
                                 onClick={() => setShowNews(true)}
-                                className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all relative"
+                                className="p-2.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all relative"
                                 title="Notifications"
                             >
                                 <Bell className="w-5 h-5" />
@@ -144,15 +145,17 @@ export default function Navbar() {
                                 )}
                             </button>
 
+                            <ThemeToggle />
+
                             <Link 
                                 href="/faq"
-                                className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
+                                className="p-2.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all"
                                 title="Help"
                             >
                                 <HelpCircle className="w-5 h-5" />
                             </Link>
 
-                            <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block" />
+                            <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1 hidden sm:block" />
 
                             <Link 
                                 href={user.role === "faculty" || user.role === "admin" ? "/faculty/profile" : "/profile"} 
@@ -169,7 +172,7 @@ export default function Navbar() {
                             
                             <button 
                                 onClick={logout}
-                                className="p-2.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                                className="p-2.5 text-gray-400 dark:text-gray-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all"
                                 title="Logout"
                             >
                                 <LogOut className="w-5 h-5" />
@@ -177,9 +180,10 @@ export default function Navbar() {
                         </>
                     ) : !loading && !user ? (
                         <>
+                            <ThemeToggle />
                             <Link
                                 href="/faq"
-                                className="p-2.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all"
+                                className="p-2.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all"
                                 title="Help"
                             >
                                 <HelpCircle className="w-5 h-5" />

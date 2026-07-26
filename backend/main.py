@@ -173,6 +173,19 @@ from routers.labs import router as labs_router
 from routers.hackathons import router as hackathons_router
 from routers.alumni import router as alumni_router
 from routers.roadmap import router as roadmap_router
+from routers.collab import router as collab_router
+from routers.discussions import router as discussions_router
+from routers.assistant import router as assistant_router
+from routers.learning import router as learning_router
+from routers.interviews import router as interviews_router
+from routers.achievements import router as achievements_router
+from routers.reviews import router as reviews_router
+from routers.plugins import router as plugins_router
+from routers.snippets import router as snippets_router
+from routers.sandbox_admin import router as sandbox_admin_router
+from routers.external_judges import router as external_judges_router
+from routers.contests import router as contests_router
+from routers.team_formation import router as team_formation_router
 
 app.include_router(auth_router)
 app.include_router(problems_router)
@@ -190,6 +203,19 @@ app.include_router(labs_router)
 app.include_router(hackathons_router)
 app.include_router(alumni_router)
 app.include_router(roadmap_router)
+app.include_router(collab_router)
+app.include_router(discussions_router)
+app.include_router(assistant_router)
+app.include_router(learning_router)
+app.include_router(interviews_router)
+app.include_router(achievements_router)
+app.include_router(reviews_router)
+app.include_router(plugins_router)
+app.include_router(snippets_router)
+app.include_router(sandbox_admin_router)
+app.include_router(contests_router)
+app.include_router(team_formation_router)
+app.include_router(external_judges_router)
 
 if __name__ == "__main__":
     import uvicorn
