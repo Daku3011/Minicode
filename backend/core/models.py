@@ -272,6 +272,9 @@ class Milestone(SQLModel, table=True):
     content: Optional[str] = None
     hints: Optional[str] = None
     resources: Optional[str] = None
+    subtasks: Optional[str] = None  # JSON list of subtask objects
+    prerequisites: Optional[str] = None  # What students need to start
+    what_to_submit: Optional[str] = None  # Clear submission deliverables
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     stream: Stream = Relationship(back_populates="milestones")
@@ -285,6 +288,7 @@ class UserMilestoneProgress(SQLModel, table=True):
     milestone_id: int = Field(foreign_key="milestones.id", index=True)
     status: str = Field(default="locked")  # locked, in_progress, completed, rewarded
     note: Optional[str] = None
+    completed_subtask_ids: Optional[str] = None  # JSON list of completed subtask IDs
     completed_at: Optional[datetime] = None
     rewarded_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

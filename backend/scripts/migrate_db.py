@@ -129,8 +129,8 @@ def run_migrations():
             except Exception as e:
                 print(f"Column notes in cohorts: {e}")
 
-            # Add hints and resources to milestones table
-            for col_name, col_type in [("hints", "TEXT"), ("resources", "TEXT")]:
+            # Add hints, resources, subtasks, prerequisites, what_to_submit to milestones table
+            for col_name, col_type in [("hints", "TEXT"), ("resources", "TEXT"), ("subtasks", "TEXT"), ("prerequisites", "TEXT"), ("what_to_submit", "TEXT")]:
                 try:
                     conn.execute(
                         text(f"ALTER TABLE milestones ADD COLUMN IF NOT EXISTS {col_name} {col_type};")
@@ -138,6 +138,15 @@ def run_migrations():
                     print(f"Added {col_name} to milestones")
                 except Exception as e:
                     print(f"Column {col_name} in milestones: {e}")
+
+            # Add completed_subtask_ids to user_milestone_progress table
+            try:
+                conn.execute(
+                    text("ALTER TABLE user_milestone_progress ADD COLUMN IF NOT EXISTS completed_subtask_ids TEXT;")
+                )
+                print("Added completed_subtask_ids to user_milestone_progress")
+            except Exception as e:
+                print(f"Column completed_subtask_ids in user_milestone_progress: {e}")
 
         elif dialect == "sqlite":
             SQLModel.metadata.create_all(engine, checkfirst=True)
@@ -225,8 +234,8 @@ def run_migrations():
 
             # Note: email_verifications table is already created by create_all if it's in SQLModel metadata.
 
-            # Add hints and resources to milestones table
-            for col_name, col_type in [("hints", "TEXT"), ("resources", "TEXT")]:
+            # Add hints, resources, subtasks, prerequisites, what_to_submit to milestones table
+            for col_name, col_type in [("hints", "TEXT"), ("resources", "TEXT"), ("subtasks", "TEXT"), ("prerequisites", "TEXT"), ("what_to_submit", "TEXT")]:
                 try:
                     conn.execute(
                         text(f"ALTER TABLE milestones ADD COLUMN {col_name} {col_type};")
@@ -237,6 +246,18 @@ def run_migrations():
                         print(f"Column {col_name} already exists in milestones")
                     else:
                         print(f"Column {col_name} in milestones: {e}")
+
+            # Add completed_subtask_ids to user_milestone_progress table
+            try:
+                conn.execute(
+                    text("ALTER TABLE user_milestone_progress ADD COLUMN completed_subtask_ids TEXT;")
+                )
+                print("Added completed_subtask_ids to user_milestone_progress")
+            except Exception as e:
+                if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                    print("Column completed_subtask_ids already exists in user_milestone_progress")
+                else:
+                    print(f"Column completed_subtask_ids in user_milestone_progress: {e}")
 
         conn.commit()
         print("Migrations completed.")

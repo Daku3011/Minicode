@@ -99,6 +99,9 @@ def get_stream(
         else:
             status = "in_progress" if all_completed_before else "locked"
 
+        completed_subtasks = json.loads(prog.completed_subtask_ids) if (prog and prog.completed_subtask_ids) else []
+        subtasks_list = json.loads(m.subtasks) if m.subtasks else []
+
         result_milestones.append(
             {
                 "id": m.id,
@@ -109,6 +112,10 @@ def get_stream(
                 "content": m.content,
                 "hints": m.hints,
                 "resources": json.loads(m.resources) if m.resources else [],
+                "subtasks": subtasks_list,
+                "prerequisites": m.prerequisites,
+                "what_to_submit": m.what_to_submit,
+                "completed_subtask_ids": completed_subtasks,
                 "status": status,
                 "completed_at": prog.completed_at.isoformat() if prog and prog.completed_at else None,
                 "rewarded_at": prog.rewarded_at.isoformat() if prog and prog.rewarded_at else None,
@@ -126,6 +133,58 @@ def get_stream(
         "icon": stream.icon,
         "color": stream.color,
         "milestones": result_milestones,
+    }
+
+
+class SubtaskToggleRequest(BaseModel):
+    subtask_id: str
+    completed: bool
+
+
+@router.post("/milestones/{milestone_id}/subtask-toggle")
+def toggle_subtask(
+    milestone_id: int,
+    req: SubtaskToggleRequest,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    milestone = session.get(Milestone, milestone_id)
+    if not milestone:
+        raise HTTPException(status_code=404, detail="Milestone not found")
+
+    progress = session.exec(
+        select(UserMilestoneProgress).where(
+            UserMilestoneProgress.user_id == user.id,
+            UserMilestoneProgress.milestone_id == milestone_id,
+        )
+    ).first()
+
+    if not progress:
+        progress = UserMilestoneProgress(
+            user_id=user.id,
+            milestone_id=milestone_id,
+            status="in_progress",
+            completed_subtask_ids=json.dumps([]),
+        )
+        session.add(progress)
+
+    completed_ids = json.loads(progress.completed_subtask_ids) if progress.completed_subtask_ids else []
+
+    if req.completed:
+        if req.subtask_id not in completed_ids:
+            completed_ids.append(req.subtask_id)
+    else:
+        if req.subtask_id in completed_ids:
+            completed_ids.remove(req.subtask_id)
+
+    progress.completed_subtask_ids = json.dumps(completed_ids)
+    session.add(progress)
+    session.commit()
+    session.refresh(progress)
+
+    return {
+        "milestone_id": milestone_id,
+        "completed_subtask_ids": completed_ids,
     }
 
 
@@ -508,6 +567,120 @@ async def generate_learning_materials(
         }
 
 
+@router.post("/milestones/{milestone_id}/generate-subtasks")
+async def generate_subtasks(
+    milestone_id: int,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """
+    Use Gemini to generate a structured action plan (subtasks) for a milestone.
+    Results are saved to the DB so they persist across sessions.
+    Pass ?regenerate=true to force a fresh generation.
+    """
+    milestone = session.get(Milestone, milestone_id)
+    if not milestone:
+        raise HTTPException(status_code=404, detail="Milestone not found")
+
+    stream = session.get(Stream, milestone.stream_id)
+    all_milestones = session.exec(
+        select(Milestone)
+        .where(Milestone.stream_id == milestone.stream_id)
+        .order_by(Milestone.order)
+    ).all()
+
+    milestones_context = "\n".join(
+        f"  {idx+1}. {m.title}: {m.description or 'No description'}"
+        for idx, m in enumerate(all_milestones)
+    )
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="AI configuration missing")
+
+    prompt = f"""You are an expert curriculum designer and mentor on the MiniCode coding education platform.
+Your job is to create a detailed, actionable ACTION PLAN (subtasks) for students to complete a specific learning milestone.
+
+=== LEARNING STREAM ===
+Stream Name: {stream.name if stream else 'Unknown'}
+Stream Description: {stream.description if stream else 'No description'}
+
+=== FULL CURRICULUM (all milestones in order) ===
+{milestones_context}
+
+=== TARGET MILESTONE (what the student needs to complete) ===
+Title: {milestone.title}
+Description: {milestone.description or 'No description'}
+Position: Milestone {milestone.order} of {len(all_milestones)}
+
+=== YOUR TASK ===
+Generate a structured action plan with 3-5 concrete subtasks that guide the student step-by-step through this milestone.
+
+Each subtask must:
+- Have a clear, specific title (action-oriented)
+- Explain exactly WHAT to do (not vague)
+- Give a concrete starting_point: WHERE to start, WHAT tool/resource/command to use first
+- Specify what_to_submit: the tangible deliverable for THIS subtask
+- Include a realistic time estimate in minutes
+
+Also generate:
+- prerequisites: What knowledge/tools the student needs BEFORE starting (2-3 sentences)
+- what_to_submit: The overall final deliverable to mark the whole milestone done (2-3 sentences)
+
+Return ONLY valid JSON (no markdown, no explanation):
+{{
+  "prerequisites": "string - what student needs before starting",
+  "what_to_submit": "string - final deliverable for the whole milestone",
+  "subtasks": [
+    {{
+      "id": "unique-slug-like-id",
+      "title": "Action-verb title",
+      "description": "What this subtask covers and why it matters",
+      "starting_point": "Exact first step: tool to open, command to run, URL to visit, or concept to read",
+      "what_to_submit": "Tangible output or checkpoint for this subtask",
+      "estimated_minutes": 45
+    }}
+  ]
+}}
+
+Make the guidance PRACTICAL and SPECIFIC. Students are beginners to intermediate. Use real tools, real URLs, real commands where possible.
+"""
+
+    try:
+        client = genai.Client(api_key=api_key)
+        response_text = await generate_content_with_retry(
+            client, prompt, response_mime_type="application/json"
+        )
+        result = json.loads(response_text)
+
+        subtasks = result.get("subtasks", [])
+        prerequisites = result.get("prerequisites", "")
+        what_to_submit = result.get("what_to_submit", "")
+
+        # Persist to DB so they don't need to be regenerated each time
+        milestone.subtasks = json.dumps(subtasks)
+        milestone.prerequisites = prerequisites
+        milestone.what_to_submit = what_to_submit
+        session.add(milestone)
+        session.commit()
+
+        logger.info(f"Generated {len(subtasks)} subtasks for milestone {milestone_id}: {milestone.title}")
+
+        return {
+            "milestone_id": milestone_id,
+            "prerequisites": prerequisites,
+            "what_to_submit": what_to_submit,
+            "subtasks": subtasks,
+        }
+
+    except Exception as e:
+        logger.error(f"Gemini subtask generation failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="AI subtask generation failed. Please try again in a moment.",
+        )
+
+
 async def generate_next_milestone(session: Session, milestone: Milestone):
     stream = session.get(Stream, milestone.stream_id)
     if not stream:
@@ -667,6 +840,37 @@ def _get_all_streams_data():
                     "description": "Understand TCP/IP, DNS, and network protocols.",
                     "xp_reward": 100,
                     "hints": "Focus on the OSI model layers. Understand how data flows from one machine to another. Practice with Wireshark to see packets in action.",
+                    "prerequisites": "Basic OS knowledge (Linux/Windows terminal), Wireshark installed.",
+                    "what_to_submit": "Wireshark packet capture file (.pcap) demonstrating a DNS query & HTTP handshake, along with a 1-page summary PDF/DOCX of OSI layer mappings.",
+                    "subtasks": json.dumps([
+                        {
+                            "id": "st_net_1",
+                            "title": "Step 1: OSI 7-Layer Architecture Deep Dive",
+                            "description": "Study Physical, Data Link, Network, Transport, Session, Presentation, Application layers.",
+                            "starting_point": "Watch freeCodeCamp Networking Course (Chapters 1-3) and map out each layer's primary protocol.",
+                            "what_to_submit": "Notes or diagram mapping common protocols (HTTP, TCP, IP, Ethernet) to their respective OSI layer.",
+                            "resource_url": "https://www.youtube.com/watch?v=qiQR5rTSshw",
+                            "estimated_minutes": 45
+                        },
+                        {
+                            "id": "st_net_2",
+                            "title": "Step 2: Interactive Subnetting Calculations",
+                            "description": "Calculate subnets, network IDs, broadcast IDs, and host ranges for CIDR notation /24 to /28.",
+                            "starting_point": "Complete 5 interactive subnetting exercises on SubnettingPractice.com.",
+                            "what_to_submit": "Screenshot or written answers for subnet mask calculations.",
+                            "resource_url": "https://subnettingpractice.com/",
+                            "estimated_minutes": 30
+                        },
+                        {
+                            "id": "st_net_3",
+                            "title": "Step 3: Wireshark Live Packet Analysis",
+                            "description": "Capture live network packets, filter for DNS requests (`dns`) and TCP handshakes (`tcp.flags.syn==1`).",
+                            "starting_point": "Open Wireshark, select your active interface, visit example.com in browser, and filter captured traffic.",
+                            "what_to_submit": "Saved .pcap capture file showing DNS query response pair.",
+                            "resource_url": "https://www.wireshark.org/docs/wsug_html/",
+                            "estimated_minutes": 45
+                        }
+                    ]),
                     "resources": json.dumps([
                         {"title": "Computer Networking Course (freeCodeCamp)", "url": "https://www.youtube.com/watch?v=qiQR5rTSshw", "description": "Full 4-hour networking course covering all fundamentals"},
                         {"title": "Subnetting Practice", "url": "https://subnettingpractice.com/", "description": "Interactive subnetting exercises"},
