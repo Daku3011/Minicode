@@ -42,6 +42,13 @@ def test_leaderboard_logic(client, session: Session):
     session.add_all([s1, s2, s3, s4, s5])
     session.commit()
     
+    # Set XP values (leaderboard uses user.xp in global mode)
+    user1.xp = 150
+    user2.xp = 90
+    session.add(user1)
+    session.add(user2)
+    session.commit()
+    
     # Hit leaderboard
     response = client.get("/leaderboard")
     assert response.status_code == 200
