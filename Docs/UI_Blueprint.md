@@ -12,6 +12,9 @@
 - `/problems/[id]`  
   **Purpose:** Problem detail, start repo, submit solution, view results.  
   **Auth:** Student, Faculty, Admin  
+- `/problems/[id]/discussion`  
+  **Purpose:** Per-problem threaded discussion forum.  
+  **Auth:** Student, Faculty, Admin  
 - `/cohorts`  
   **Purpose:** List/join cohorts (students), create/manage (faculty).  
   **Auth:** Student, Faculty, Admin  
@@ -24,12 +27,60 @@
 - `/profile`  
   **Purpose:** View/edit own profile, stats, email verification.  
   **Auth:** Student, Faculty, Admin  
+- `/profile/achievements`  
+  **Purpose:** View earned badges, achievements, and streak progress.  
+  **Auth:** Student, Faculty, Admin  
 - `/events`  
   **Purpose:** List events, join/submit.  
   **Auth:** Student, Faculty, Admin  
 - `/events/[id]`  
   **Purpose:** Event detail, join/submit, view leaderboard.  
   **Auth:** Student, Faculty, Admin  
+- `/contests`  
+  **Purpose:** List timed coding contests.  
+  **Auth:** Student, Faculty, Admin  
+- `/contests/[id]`  
+  **Purpose:** Contest detail and registration.  
+  **Auth:** Student, Faculty, Admin  
+- `/contests/[id]/arena`  
+  **Purpose:** Live contest coding arena with timer and standings.  
+  **Auth:** Student, Faculty, Admin  
+- `/dashboard`  
+  **Purpose:** Learning dashboard with recommendations and weak area analysis.  
+  **Auth:** Student, Faculty, Admin  
+- `/interviews`  
+  **Purpose:** List available interview modes and sessions.  
+  **Auth:** Student, Faculty, Admin  
+- `/interviews/[id]`  
+  **Purpose:** Interview mode detail and start.  
+  **Auth:** Student, Faculty, Admin  
+- `/interviews/session/[sessionId]`  
+  **Purpose:** Active interview session with timer.  
+  **Auth:** Student, Faculty, Admin  
+- `/reviews`  
+  **Purpose:** List code review requests.  
+  **Auth:** Student, Faculty, Admin  
+- `/reviews/[id]`  
+  **Purpose:** Code review detail with inline comments.  
+  **Auth:** Student, Faculty, Admin  
+- `/snippets`  
+  **Purpose:** Browse reusable code snippets.  
+  **Auth:** Student, Faculty, Admin  
+- `/snippets/[id]`  
+  **Purpose:** Snippet detail and voting.  
+  **Auth:** Student, Faculty, Admin  
+- `/snippets/create`  
+  **Purpose:** Create a new code snippet.  
+  **Auth:** Student, Faculty, Admin  
+- `/team-formation`  
+  **Purpose:** Find teammates and manage team requests.  
+  **Auth:** Student, Faculty, Admin  
+- `/settings/integrations`  
+  **Purpose:** Connect external judge accounts (LeetCode, Codeforces, CodeChef).  
+  **Auth:** Student, Faculty, Admin  
+- `/u/[username]`  
+  **Purpose:** Public portfolio page with XP charts and activity heatmap.  
+  **Auth:** Public  
 - `/privacy`, `/terms`  
   **Purpose:** Static info pages.  
   **Auth:** Public
@@ -70,6 +121,94 @@
   **Auth:** Admin
 
 ## 2. Component Inventory
+
+### New Feature Components
+
+#### `AchievementBadge`
+- **Path:** `frontend/src/components/AchievementBadge.tsx`
+- **Purpose:** Display a single achievement badge with icon, name, progress, and unlock state.
+- **Key Props:** `badge: Badge`, `size?: 'sm' | 'md' | 'lg'`, `showProgress?: boolean`
+
+#### `AchievementProgress`
+- **Path:** `frontend/src/components/AchievementProgress.tsx`
+- **Purpose:** Show overall achievement progress bar (X of Y badges earned).
+- **Key Props:** `earned: number`, `total: number`, `xp?: number`
+
+#### `ActivityHeatmap`
+- **Path:** `frontend/src/components/ActivityHeatmap.tsx`
+- **Purpose:** GitHub-style contribution heatmap for coding activity. Accepts daily submission counts.
+- **Key Props:** `data: Record<string, number>`, `year?: number`
+
+#### `ChatAssistant`
+- **Path:** `frontend/src/components/ChatAssistant.tsx`
+- **Purpose:** Persistent AI chatbot widget for coding help, accessible from any page.
+- **Key Props:** (self-contained, uses internal state + API)
+
+#### `CodeReviewPanel`
+- **Path:** `frontend/src/components/CodeReviewPanel.tsx`
+- **Purpose:** Displays code diff with inline review comments, approval status, and action buttons.
+- **Key Props:** `review: Review`, `onApprove?: () => void`, `onRequestChanges?: () => void`
+
+#### `ContestTimer`
+- **Path:** `frontend/src/components/ContestTimer.tsx`
+- **Purpose:** Countdown timer component that syncs with server time for contests.
+- **Key Props:** `endTime: string`, `onEnd?: () => void`
+
+#### `DiscussionPanel`
+- **Path:** `frontend/src/components/DiscussionPanel.tsx`
+- **Purpose:** Threaded discussion view with markdown rendering, voting, and reply support.
+- **Key Props:** `problemId: number`, `threads: Thread[]`
+
+#### `ExternalPlatformCard`
+- **Path:** `frontend/src/components/ExternalPlatformCard.tsx`
+- **Purpose:** Card for managing external judge account connections (LeetCode, Codeforces, CodeChef).
+- **Key Props:** `platform: string`, `connected: boolean`, `onConnect: () => void`, `onSync: () => void`
+
+#### `PortfolioHeader`
+- **Path:** `frontend/src/components/PortfolioHeader.tsx`
+- **Purpose:** Public profile header with avatar, bio, XP total, and social links.
+- **Key Props:** `user: PortfolioUser`, `isOwner?: boolean`
+
+#### `RecommendationCard`
+- **Path:** `frontend/src/components/RecommendationCard.tsx`
+- **Purpose:** Card displaying an AI-generated problem recommendation with relevance score.
+- **Key Props:** `recommendation: Recommendation`, `onStart?: () => void`
+
+#### `SnippetCard`
+- **Path:** `frontend/src/components/SnippetCard.tsx`
+- **Purpose:** Card for code snippet preview with language badge, votes, and tags.
+- **Key Props:** `snippet: Snippet`, `onVote?: (id: number, dir: 1 | -1) => void`
+
+#### `StreakDisplay`
+- **Path:** `frontend/src/components/StreakDisplay.tsx`
+- **Purpose:** Flame icon with current streak count and motivational message.
+- **Key Props:** `currentStreak: number`, `longestStreak?: number`
+
+#### `TeamCard`
+- **Path:** `frontend/src/components/TeamCard.tsx`
+- **Purpose:** Card showing a team formation request with required skills and apply button.
+- **Key Props:** `request: TeamRequest`, `onApply?: () => void`
+
+#### `ThemeToggle`
+- **Path:** `frontend/src/components/ThemeToggle.tsx`
+- **Purpose:** Dark/light/system mode toggle with sun/moon icons.
+- **Key Props:** (self-contained, uses ThemeContext)
+
+#### `WeakAreasChart`
+- **Path:** `frontend/src/components/WeakAreasChart.tsx`
+- **Purpose:** Radar/spider chart showing relative strength across coding categories.
+- **Key Props:** `data: { category: string; score: number }[]`
+
+#### `XPChart`
+- **Path:** `frontend/src/components/XPChart.tsx`
+- **Purpose:** Line chart showing XP accumulation over time.
+- **Key Props:** `data: { date: string; xp: number }[]`
+
+### Contexts
+
+#### `ThemeContext`
+- **Path:** `frontend/src/contexts/ThemeContext.tsx`
+- **Purpose:** Provides `theme`, `setTheme`, and `resolvedTheme` globally, syncs with localStorage and system preference.
 
 ### Primitives & Reusable Components
 

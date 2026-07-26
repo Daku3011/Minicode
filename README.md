@@ -69,6 +69,23 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 - [x] **AI Plagiarism Detection** - Identifies AI-generated submissions
 - [x] **Cohorts & Labs** - Organized student groups for faculty management
 - [x] **Dynamic Email Verification** - Secure student email verification flow correctly routing codes to users
+- [x] **CI/CD Pipeline** - Automated testing, linting, and deployment via GitHub Actions
+- [x] **Code Execution Sandbox** - Isolated Docker-based execution for Python, Node.js, and Java with seccomp security profiles
+- [x] **Collaborative Coding** - Real-time collaborative sessions with WebSocket-based synchronization
+- [x] **Discussion Forum** - Per-problem threaded discussions with voting and markdown support
+- [x] **AI Chatbot Assistant** - Platform-wide AI assistant for coding help, hints, and explanations
+- [x] **Achievements & Badges** - Gamified achievement system with unlockable badges and progress tracking
+- [x] **Streaks** - Daily login streaks with motivational tracking and rewards
+- [x] **Contests** - Timed coding competitions with live leaderboards and auto-scoring
+- [x] **Team Formation** - Matchmaking system for finding coding partners and forming teams
+- [x] **Code Reviews** - Peer code review system with inline comments and approval workflow
+- [x] **Plugin System** - Extensible plugin architecture for custom functionality
+- [x] **Code Snippets** - Reusable code snippet library with search and voting
+- [x] **Learning Dashboard** - Personalized recommendations and weak area analysis
+- [x] **Interview Mode** - Simulated technical interview environment with timed sessions
+- [x] **Portfolio Pages** - Public portfolio profiles with XP charts and activity heatmaps
+- [x] **External Judges** - Import and sync submissions from LeetCode, Codeforces, and CodeChef
+- [x] **Dark Mode** - System-aware dark mode with toggle support
 
 ### Authentication
 
@@ -156,6 +173,10 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 | **AI Judge** | Google Gemini | 2.5 |
 | **Auth** | JWT + OAuth2 | - |
 | **Container** | Docker | 24+ |
+| **Sandbox** | Docker + seccomp | Python/Node/Java |
+| **CI/CD** | GitHub Actions | Auto-test + lint |
+| **WebSocket** | FastAPI WebSockets | Real-time collab |
+| **Plugin Engine** | Python import hook | Extensible modules |
 
 ### Repository Structure
 
@@ -163,19 +184,23 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 Minicode/
 ├── frontend/                  # Next.js application
 │   ├── src/
-│   │   ├── app/            # App Router pages (roadmap, faq, terms, privacy, problems, events, ...)
-│   │   ├── components/      # React components
-│   │   ├── lib/           # Utilities
+│   │   ├── app/            # App Router pages (roadmap, faq, terms, privacy, problems, events, contests, interviews, ...)
+│   │   ├── components/      # React components (AchievementBadge, ChatAssistant, CodeReviewPanel, ...)
+│   │   ├── contexts/       # React contexts (ThemeContext, AuthContext)
+│   │   ├── lib/           # Utilities & API wrappers
 │   │   └── styles/        # Global styles
 │   └── public/            # Static assets
 ├── backend/                 # FastAPI application
-│   ├── routers/           # API route handlers (roadmap, problems, submissions, auth, ...)
-│   ├── core/              # Database & SQLModel definitions
-│   ├── services/          # Business logic (auth, judge, email, ai_generator)
-│   ├── utils/             # Shared utilities (caching)
+│   ├── routers/           # API route handlers (problems, contests, collab, reviews, plugins, ...)
+│   ├── core/              # Database & SQLModel definitions (models for all features)
+│   ├── services/          # Business logic (auth, judge, sandbox, collab_manager, achievement_service, ...)
+│   ├── sandbox/           # Code execution sandbox (runner.py, Dockerfiles, seccomp profile)
+│   ├── plugins/           # Plugin system (extensible via Python import hooks)
+│   ├── utils/             # Shared utilities (caching, sandbox helpers)
 │   ├── worker.py          # Celery worker
 │   └── scripts/          # DB migration & seeding
 ├── Docs/                    # Documentation (USER_MANUAL, DEPLOYMENT, DESIGN_VISION, ...)
+├── .github/workflows/      # GitHub Actions CI/CD pipeline
 ├── docker-compose.yml       # Full local stack
 ├── .env.example         # Environment template
 └── README.md            # This file
@@ -275,11 +300,11 @@ Seed data provides:
 | Document | Description |
 |----------|-------------|
 | [API Reference](http://localhost:8000/docs) | Interactive Swagger/OpenAPI documentation (auto-generated) |
-| [USER_MANUAL.md](./USER_MANUAL.md) | Complete user guide by role |
-| [backend/Dev.md](./backend/Dev.md) | Backend developer reference |
-| [DEPLOYMENT.md](./DEPLOYMENT.md) | Deployment guide |
-| [DESIGN_VISION.md](./DESIGN_VISION.md) | UI/UX design philosophy |
-| [SKILLS.md](./SKILLS.md) | Development guidelines |
+| [USER_MANUAL.md](./Docs/USER_MANUAL.md) | Complete user guide by role |
+| [backend/Dev.md](./backend/Dev.md) | Backend developer reference (models, APIs, sandbox, plugins) |
+| [DEPLOYMENT.md](./Docs/DEPLOYMENT.md) | Deployment guide |
+| [DESIGN_VISION.md](./Docs/DESIGN_VISION.md) | UI/UX design philosophy |
+| [UI_Blueprint.md](./Docs/UI_Blueprint.md) | Detailed site map and component inventory |
 
 ---
 
@@ -290,13 +315,18 @@ Seed data provides:
 │   Start     │───▶│    Code     │───▶│   Submit    │───▶│   Pending   │
 │  Problem    │    │   Locally   │    │   Code      │    │   Queue     │
 └─────────────┘    └─────────────┘    └─────────────┘    └─────┬───────┘
-                                                               │
-         ┌─────────────────────────────────────────────────────┘
+                                                                │
+         ┌──────────────────────────────────────────────────────┘
          ▼
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Fetch     │───▶│   AI Judge  │───▶│   Update    │───▶│   Notify    │
-│  from GitHub│    │  (Gemini)   │    │  & Score    │    │ (WebSocket) │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+│   Fetch     │───▶│   Sandbox   │───▶│   AI Judge  │───▶│   Update    │
+│  from GitHub│    │  Execution   │    │  (Gemini)   │    │  & Score    │
+└─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘
+                                                                 │
+                                                          ┌──────▼──────┐
+                                                          │   Notify    │
+                                                          │ (WebSocket) │
+                                                          └─────────────┘
 ```
 
 1. **Start Problem** - Creates private GitHub repository
@@ -304,9 +334,10 @@ Seed data provides:
 3. **Submit** - Triggers async evaluation pipeline
 4. **Pending** - Celery worker picks up task
 5. **Fetch** - Worker retrieves code from GitHub
-6. **AI Judge** - Gemini analyzes code and test cases
-7. **Update** - Stores score, feedback, and XP
-8. **Notify** - Real-time WebSocket update to UI
+6. **Sandbox Execution** - Runs code in isolated Docker container with seccomp security (Python/Node/Java)
+7. **AI Judge** - Gemini analyzes code, test results, and provides detailed feedback
+8. **Update** - Stores score, feedback, XP, achievements, and streak
+9. **Notify** - Real-time WebSocket and Redis pub/sub update to UI
 
 ---
 

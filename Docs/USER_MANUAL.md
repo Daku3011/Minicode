@@ -10,7 +10,17 @@
 |------|-----------|-----------|
 | **Students** | [Getting Started](#getting-started) | Browse Problems → Start → Code → Submit |
 | **Students** | [Learning Paths](#page-8-learning-paths-roadmaps) | Pick a Stream → Complete Milestones → Chat with AI Assistant |
+| **Students** | [Learning Dashboard](#page-11-learning-dashboard) | View weak areas → Get AI recommendations |
+| **Students** | [Achievements & Streaks](#page-12-achievements--streaks) | Earn badges → Maintain streaks |
+| **Students** | [Portfolio](#page-14-student-portfolio) | Share your coding journey |
+| **Students** | [Code Snippets](#page-15-code-snippet-library) | Save & share reusable code |
+| **Students** | [External Integrations](#page-16-external-judge-integration) | Sync Codeforces/LeetCode |
+| **Students** | [Discussion Forum](#page-10-discussion-forum) | Ask questions per problem |
+| **Students** | [AI Chatbot](#page-9-ai-teaching-assistant) | Get programming help anytime |
 | **Faculty** | [Faculty Dashboard](#faculty-dashboard) | Create Problems → Track Students → Manage Events |
+| **Faculty** | [Code Review](#page-13-code-review-system) | Review student submissions |
+| **Faculty** | [Interview Mode](#page-14-interview-mode) | Conduct timed coding interviews |
+| **Faculty** | [Contests](#page-11-time-based-contests) | Run live coding competitions |
 | **Admins** | [Admin Panel](#admin-panel) | Manage Users → View Stats → Sync XP |
 
 ---
@@ -79,6 +89,17 @@ Your student dashboard provides:
 - **Leaderboard Position** - Class ranking
 - **Activity Heatmap** - GitHub-style contribution graph
 - **Recent Activity** - Latest submissions and achievements
+
+### Learning Dashboard (`/dashboard`)
+
+Your personalized AI-powered learning dashboard:
+
+- **XP/Level Overview** - Current stats at a glance
+- **Weak Areas Chart** - Bar chart showing your weakest subjects based on submission scores
+- **AI Recommendations** - Smart problem suggestions targeting your weak areas and current level
+- **Recent Activity Feed** - Latest submissions and achievements timeline
+- **Subject Breakdown** - Solved vs unsolved problems per topic area
+- **Learning Path Progress** - Milestone completion across all streams
 
 ### Page 1: Problem Browser
 
@@ -268,6 +289,16 @@ The AI judge provides:
 └────────────────────────────────────────────────────────────┘
 ```
 
+#### Sandbox Execution
+
+Submissions are now evaluated in an isolated Docker sandbox:
+
+1. Your code is extracted from your GitHub repository
+2. It runs inside a secure container (Python/Node.js/Java) against test cases
+3. Actual execution results (passed/failed test cases) are captured
+4. Results are sent to Gemini AI for quality feedback and code review
+5. If Docker is unavailable, the system falls back to AI-only evaluation
+
 #### Resubmission
 
 1. View feedback and identify issues
@@ -281,19 +312,22 @@ The AI judge provides:
 
 #### Leveling System
 
-| Level | XP Required | Unlock |
-|-------|-------------|--------|
-| 1 | 0 | Basic problems |
-| 2 | 100 | Medium problems |
-| 3 | 300 | Advanced topics |
-| 4 | 600 | Hard problems |
-| 5 | 1000 | Expert challenges |
+| Level | XP Required | Title | Unlock |
+|-------|-------------|-------|--------|
+| 1 | 0 | Beginner | Basic problems |
+| 2 | 100 | Explorer | Medium problems |
+| 3 | 300 | Ninja | Advanced topics |
+| 4 | 600 | Warrior | Hard problems |
+| 5 | 1000 | Master | Expert challenges |
+| 6 | 1500 | Legend | Elite challenges |
 
 #### XP Awards
 
 - **First solve:** Full problem XP reward
 - **Score improvement:** Difference in XP (scaled by score %)
 - **Faculty bonus:** Additional XP awards from faculty
+- **Streak bonuses:** Extra XP for maintaining daily streaks (3, 7, 14, 30, 60, 100 days)
+- **Achievement badges:** XP rewards for earning badges
 
 #### Leaderboard
 
@@ -393,6 +427,266 @@ Each stream has an AI assistant:
 4. Supports Markdown responses with code blocks, lists, and links
 5. Resizable from top and left edges
 
+### Page 9: AI Teaching Assistant
+
+The AI Teaching Assistant is available globally from any page via the floating chat widget.
+
+#### Accessing the Assistant
+
+1. Look for the chat bubble icon at the **bottom-right corner** of any page
+2. Click to expand the chat window
+3. Type your question and press Enter
+
+#### What You Can Ask
+
+- **General programming help:** "Explain recursion in Python"
+- **Problem hints:** "Give me a hint for Two Sum without giving the answer"
+- **Code explanations:** "Why did my submission fail?" (uses your submission history)
+- **Concept clarifications:** "What's the difference between HTTP and HTTPS?"
+- **Learning advice:** "What should I learn after arrays?"
+
+#### Context-Aware Responses
+
+The assistant knows:
+- Your current XP level and role
+- Which problems you've attempted
+- Your recent activity
+- Your skill level (adjusts explanation complexity accordingly)
+
+> **Rate limit:** 20 requests per minute per user.
+
+### Page 10: Discussion Forum
+
+Every problem now has a built-in discussion forum for asking questions and sharing knowledge.
+
+#### Accessing Discussions
+
+1. Open any problem detail page
+2. Click the **"Discussion"** panel (collapsible sidebar)
+3. Browse existing threads or start a new one
+
+#### Creating a Thread
+
+1. Click **"New Thread"**
+2. Enter a descriptive title
+3. Write your question or observation (supports Markdown)
+4. Click **"Post"**
+
+#### Replying & Voting
+
+- **Reply:** Add your answer to any thread
+- **Upvote/Downvote:** Vote on helpful answers
+- **Accepted Answer:** The thread author can mark the best answer
+- **Sort:** By newest, top-voted, or unresolved first
+
+### Page 11: Time-based Contests
+
+Live synchronous coding competitions with real-time leaderboards.
+
+#### Contest Types
+
+| Type | Duration | Scoring |
+|------|----------|---------|
+| **Standard** | 1-3 hours | Score per problem |
+| **ICPC-style** | 3-5 hours | ICPC scoring (penalty time) |
+| **Short Sprint** | 30-60 min | 1-2 problems, speed matters |
+
+#### Participating in a Contest
+
+1. Navigate to `/contests`
+2. Browse upcoming/active/completed contests
+3. Click **"Register"** on an upcoming contest
+4. At start time, click **"Enter Arena"**
+
+#### Contest Arena
+
+The contest arena provides:
+
+- **Problem List** — Indexed problems (A, B, C, D...) in a sidebar
+- **Code Editor** — Monaco Editor for writing solutions
+- **Countdown Timer** — Shows remaining time
+- **Live Standings** — Real-time leaderboard during the contest
+- **Submit Button** — Submit per problem with time tracking
+
+#### Scoring
+
+- Points awarded per problem based on difficulty
+- ICPC-style: penalties for incorrect submissions before acceptance
+- Final standings calculated when contest ends
+- Top 3 winners receive XP bonuses
+
+### Page 12: Achievements & Streaks
+
+Earn badges and maintain streaks to gamify your learning journey.
+
+#### Available Badges
+
+| Badge | Category | How to Earn |
+|-------|----------|-------------|
+| **First Blood** | Milestone | Submit your first problem |
+| **Problem Solver** | Progression | Solve 10 problems |
+| **Code Warrior** | Progression | Solve 25 problems |
+| **Marathon Runner** | Progression | Solve 50 problems |
+| **Speed Demon** | Performance | Submit correct solution within 10 minutes |
+| **Bug Hunter** | Persistence | Submit 3+ times on same problem until accepted |
+| **Perfect Score** | Excellence | Get 100/100 on any problem |
+| **Social Butterfly** | Community | Join a cohort |
+| **Level Master** | Progression | Reach Level 5 |
+| **Streak King** | Consistency | Maintain a 30-day streak |
+
+#### Viewing Badges
+
+1. Navigate to `/profile/achievements`
+2. Browse all available badges by category
+3. See which ones you've earned (with dates) and which are still locked
+4. View progress toward incomplete badges
+
+#### Streaks System
+
+Login and submission streaks reward daily consistency:
+
+| Streak Length | Bonus |
+|--------------|-------|
+| 3 days | +10 XP |
+| 7 days | +25 XP |
+| 14 days | +50 XP |
+| 30 days | +100 XP |
+| 60 days | +250 XP |
+| 100 days | +500 XP |
+
+Your streak is displayed on your profile with:
+- **Fire icon** with current streak count
+- **Max streak** record
+- **30-day calendar** showing activity with colored dots
+
+### Page 13: Code Review System
+
+Request and provide peer code reviews.
+
+#### Requesting a Review
+
+1. After submitting a problem, navigate to its submission page
+2. Click **"Request Review"**
+3. Specify any areas you want feedback on
+
+#### Reviewing Code
+
+1. Navigate to `/reviews` to see pending review assignments
+2. Open a review request to see:
+   - The student's code with syntax highlighting
+   - AI judge results for reference
+   - Inline commenting on specific lines
+3. Submit scores for:
+   - Overall quality (1-100)
+   - Code complexity
+   - Readability
+4. Add inline comments on specific lines of code
+5. Provide an overall summary
+
+#### Review States
+
+| State | Description |
+|-------|-------------|
+| `pending` | Waiting for reviewers |
+| `in_progress` | Being reviewed |
+| `completed` | Review submitted |
+| `resolved` | All comments addressed |
+
+### Page 14: Student Portfolio
+
+Every student gets an auto-generated public portfolio page.
+
+#### Viewing Your Portfolio
+
+Your portfolio is automatically generated at `/u/{your-username}` and includes:
+
+- **Profile Header** — Avatar, name, XP, level with gradient banner
+- **Stats Grid** — Problems solved, total submissions, max streak, badges earned
+- **Achievement Badges** — All earned badges displayed
+- **Solved Problems Table** — Filterable by difficulty and subject
+- **Activity Heatmap** — GitHub-style contribution graph showing submission frequency
+- **XP Progression Chart** — SVG line chart of XP growth over time
+- **Recent Activity** — Latest submissions and achievements
+- **Share Button** — Copy your portfolio link to share
+
+> **Public Access:** Anyone with the link can view your portfolio. No login required for the public version.
+
+### Page 14: Interview Mode
+
+Timed coding interview platform for faculty to assess students.
+
+#### For Students: Taking an Interview
+
+1. You'll receive an interview invitation link
+2. Open the link at the scheduled time
+3. The interview session opens with:
+   - **Problem Description** panel
+   - **Monaco Code Editor**
+   - **Countdown Timer**
+   - **Auto-save** — Your code is saved automatically as you type
+4. Problems are displayed one at a time
+5. When time expires, your final code is captured automatically
+6. Faculty receives AI evaluation of your performance
+
+#### Features
+
+- **Recording:** Code changes are tracked throughout the session
+- **Auto-save:** Code persists even if connection drops
+- **AI Evaluation:** Post-interview analysis of your approach, code quality, and problem-solving
+
+### Page 15: Code Snippet Library
+
+Save, share, and discover reusable code snippets.
+
+#### Browsing Snippets
+
+1. Navigate to `/snippets`
+2. Search by title, language, or tags
+3. Filter by programming language
+4. View trending snippets (most upvoted this week)
+
+#### Creating a Snippet
+
+1. Click **"New Snippet"**
+2. Add a descriptive title and optional description
+3. Write or paste your code (syntax-highlighted editor)
+4. Select the programming language
+5. Add tags (comma-separated)
+6. Choose visibility (public or private)
+7. Click **"Save"**
+
+#### Interacting with Snippets
+
+- **Upvote/Downvote** — Rate useful snippets
+- **Comment** — Discuss improvements
+- **Copy** — One-click copy to clipboard
+- **Report** — Flag inappropriate content
+
+### Page 16: External Judge Integration
+
+Connect your accounts from other coding platforms to track all your achievements in one place.
+
+#### Supported Platforms
+
+| Platform | Data Synced |
+|----------|-------------|
+| **Codeforces** | Submission history, problems solved, rating |
+| **LeetCode** | Solved problems, submission stats |
+| **HackerRank** | Challenge completions, badges |
+
+#### Linking an Account
+
+1. Navigate to `/settings/integrations`
+2. Select the platform from the dropdown
+3. Enter your username on that platform
+4. Click **"Link Account"**
+
+#### Syncing Data
+
+- Click **"Sync"** on individual platform cards
+- Or click **"Sync All"** to refresh all linked platforms
+- Cross-platform stats show: total submissions, accepted, acceptance rate
+
 ### Page 9: Notifications
 
 #### Notification Types
@@ -403,6 +697,9 @@ Each stream has an AI assistant:
 | **Level Up** | Level progression | 🏆 |
 | **Submission** | Judge complete | ✅ |
 | **Event** | Event updates | 🎯 |
+| **Achievement** | Badge earned | 🏅 |
+| **Streak** | Streak milestone | 🔥 |
+| **Review** | Code review complete | 👁️ |
 | **System** | Platform announcements | 📢 |
 
 #### Managing Notifications
@@ -483,6 +780,8 @@ Your faculty dashboard provides:
    - Problems solved
    - Submission history
    - Activity timeline
+   - Badges earned
+   - Current streaks
 
 #### Problem Analytics
 
@@ -537,6 +836,30 @@ Faculty can trigger XP sync for all students:
 - **Submissions** - Entry list
 - **Analytics** - Participation metrics
 
+### Page 6: Contests Management
+
+#### Creating Contests
+
+1. Navigate to `/contests`
+2. Click **"Create Contest"**
+3. Configure:
+
+| Setting | Description |
+|---------|-------------|
+| Title | Contest name |
+| Description | Rules and details |
+| Start/End Time | Scheduled window |
+| Duration | Minutes for the contest |
+| Scoring Type | Standard or ICPC |
+| Problems | Select problems for the contest |
+
+#### Contest Administration
+
+- **View Standings** - Real-time leaderboard
+- **End Contest** - Manually end and finalize results
+- **Auto-award XP** - Top 3 receive XP bonuses
+- **Monitor Participants** - See who registered and started
+
 ### Page 6: Cohorts & Labs
 
 #### Managing Cohorts
@@ -574,6 +897,65 @@ Faculty can trigger XP sync for all students:
 - Individual notifications for specific students
 - Batch notification for cohorts
 
+### Page 8: Code Review Management
+
+#### Viewing Review Requests
+
+1. Navigate to `/reviews`
+2. See all pending review requests from students
+3. Filter by problem, student, or date
+
+#### Providing Reviews
+
+1. Open a review request
+2. View the student's code with inline commenting
+3. Score: Overall quality, complexity, readability
+4. Add line-by-line feedback
+5. Submit review — student receives notification
+
+### Page 9: Interview Management
+
+#### Scheduling Interviews
+
+1. Navigate to `/interviews`
+2. Click **"New Interview"**
+3. Select candidate(s)
+4. Choose problems for the assessment
+5. Set duration and scheduled time
+
+#### Monitoring Interviews
+
+- **Live Sessions** - See active interview status
+- **Recording** - Code changes are tracked
+- **AI Evaluation** - Post-interview analysis of candidate performance
+
+### Page 10: Team Formation
+
+#### Reviewing Team Requests
+
+Students can form teams for events and contests:
+- View open team formation requests
+- See student profiles with skill tags
+- Approve or reject team applications
+
+### Page 10: Plugin Management
+
+#### Installing Plugins
+
+1. Navigate to plugins admin
+2. Browse available plugins
+3. Install/uninstall as needed
+4. Configure plugin settings per plugin
+
+#### Available Plugin Hooks
+
+| Hook | Triggered When |
+|------|---------------|
+| `before_submission` | Before a submission is evaluated |
+| `after_judge` | After evaluation is complete |
+| `on_problem_create` | When a new problem is created |
+| `on_user_login` | When a user logs in |
+
 ---
 
 ## Admin Panel
@@ -586,7 +968,7 @@ Your admin dashboard shows:
 
 - **Platform Stats** - Total users, problems, submissions
 - **Active Users** - Online now
-- **System Health** - API, database, worker status
+- **System Health** - API, database, worker, sandbox status
 - **Recent Activity** - Audit log
 
 ### Page 2: User Management
@@ -605,7 +987,7 @@ Navigate to `/admin/users`:
 
 1. Click user row
 2. Click **"Change Role"**
-3. Select new role: Student / Faculty / Admin
+3. Select new role: Student / Faculty / Admin / Alumni
 4. Confirm
 
 > **Warning:** Role changes take effect immediately. Document changes for audit.
@@ -630,6 +1012,24 @@ Trigger global XP sync:
 3. Confirm action
 4. View sync results
 
+#### Sandbox Health
+
+Monitor the code execution sandbox:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /admin/sandbox/status` | Check sandbox availability |
+| `POST /admin/sandbox/build` | Build all sandbox images |
+| `POST /admin/sandbox/build/{language}` | Build specific language image |
+
+#### Plugin Management
+
+Admin can:
+- View all installed plugins
+- Enable/disable plugins
+- Uninstall plugins
+- Configure plugin settings
+
 #### Platform Stats
 
 View detailed statistics:
@@ -651,6 +1051,82 @@ View detailed statistics:
 | Gemini Settings | AI judge configuration |
 | Email Provider | Resend/SMTP settings |
 | Rate Limits | API rate limiting |
+| Sandbox | Docker sandbox configuration |
+| External Integrations | Platform connection settings |
+
+---
+
+## Collaborative Coding
+
+MiniCode supports real-time collaborative code editing sessions.
+
+### Creating a Session
+
+1. Navigate to the collaboration page
+2. Click **"New Session"**
+3. Share the session link with teammates
+4. Start coding together in real-time
+
+### Features
+
+- **Real-time sync** — Code changes appear instantly for all participants
+- **Cursor tracking** — See where others are editing
+- **Session snapshots** — Periodic saves of code state
+- **Participant management** — Join/leave sessions
+
+### Use Cases
+
+- Pair programming practice
+- Group problem solving
+- Teaching/demonstration sessions
+- Team contest preparation
+
+---
+
+## Team Formation
+
+Find teammates for events and contests based on complementary skills.
+
+### Setting Up Your Profile
+
+1. Navigate to `/team-formation`
+2. Click **"Edit Profile"**
+3. Select your preferred roles (Frontend, Backend, Full-stack, etc.)
+4. Add your skill tags (Python, React, Docker, etc.)
+5. Set availability preferences
+
+### Finding a Team
+
+- **Browse Requests** — See open team formation requests
+- **Create Request** — Post your own looking-for-team ad
+- **Smart Match** — Get AI-suggested teammates based on complementary skills
+- **Apply** — Send applications to teams that interest you
+
+### Application Flow
+
+1. Find a team request that matches your interests
+2. Click **"Apply"** with a brief message
+3. The team creator reviews your profile and skills
+4. They accept or reject your application
+5. Once accepted, you're added to the team
+
+---
+
+## Dark Mode
+
+MiniCode supports three theme modes to suit your preference.
+
+### Switching Themes
+
+Click the **Sun/Moon icon** in the navbar (top-right) to cycle through:
+
+| Mode | Description |
+|------|-------------|
+| ☀️ **Light** | Bright, clean interface optimized for daytime |
+| 🌙 **Dark** | Reduced eye strain for late-night coding |
+| 💻 **System** | Follows your device's system preference |
+
+The theme preference is saved to your browser and persists across sessions.
 
 ---
 
@@ -663,6 +1139,9 @@ View detailed statistics:
 3. **Read Feedback** - AI suggestions are valuable
 4. **Iterate** - Improve scores by resubmitting
 5. **Join Events** - Earn bonus XP and badges
+6. **Maintain Streaks** - Daily consistency earns bonus XP
+7. **Use the AI Assistant** - Ask for hints when stuck
+8. **Build Your Portfolio** - Share your achievements
 
 ### For Faculty
 
@@ -671,13 +1150,18 @@ View detailed statistics:
 3. **Timely Feedback** - Review submissions regularly
 4. **Encourage** - Use XP awards for motivation
 5. **Monitor** - Watch for AI-generated submissions
+6. **Use Contests** - Run timed competitions for engagement
+7. **Review Code** - Provide personalized feedback via code reviews
+8. **Schedule Interviews** - Assess candidates with timed coding sessions
 
 ### For Admins
 
 1. **Audit Trail** - Document role changes
-2. **Monitor Health** - Check system metrics
+2. **Monitor Health** - Check system metrics, sandbox status
 3. **Backup Data** - Schedule regular backups
 4. **Update Docs** - Keep this manual current
+5. **Manage Plugins** - Keep plugins updated
+6. **Monitor Sandbox** - Ensure Docker sandbox is operational
 
 ---
 
@@ -693,6 +1177,8 @@ View detailed statistics:
 | Repo not found | Re-start problem |
 | Score 0 | Check code for errors |
 | XP not updating | Trigger XP sync |
+| Sandbox errors | Check Docker is running |
+| Plugin errors | Disable and re-enable plugin |
 
 ### Error Codes
 
@@ -703,6 +1189,7 @@ View detailed statistics:
 | `E003` | Worker down | Check Celery service |
 | `E004` | Judge timeout | Resubmit later |
 | `E005` | Redis unavailable | Check Redis connection |
+| `E006` | Sandbox unavailable | Check Docker service |
 
 ### Getting Help
 

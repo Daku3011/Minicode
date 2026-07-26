@@ -89,4 +89,18 @@ For developers converting this vision to actual frontend code (or utilizing gene
 
 ---
 
+### F. New Feature Screens
+
+The following new screens follow the same design philosophy:
+
+- **Contest Arena** - A high-stakes, distraction-free timer-driven coding environment with live standings and progress bars
+- **Collaborative Sessions** - Shared coding spaces with real-time cursor presence and chat, styled as a modern pair-programming tool
+- **Code Review Panel** - A diff-style review interface with threaded inline comments and approval badges
+- **Achievement Showcase** - A badge grid with unlock animations and XP celebrations, gamifying every milestone
+- **Portfolio Pages** - Public profiles with GitHub-style activity heatmaps and XP charts, reflecting the student's coding journey
+- **Learning Dashboard** - AI-powered recommendation cards and weak-area radar charts for targeted improvement
+- **Interview Mode** - A clean, timer-based mock interview flow with company-tagged question sets
+- **Discussion Forum** - Per-problem Q&A with threaded replies, upvoting, and markdown rendering
+- **Dark Mode Toggle** - System-aware theme switching with smooth transitions between light and dark palettes
+
 By unifying under this design vision, MiniCode breaks away from the sterile reality of online judges and builds an immersive, engaging platform for the next generation of engineers.

@@ -11,22 +11,31 @@ We have designed MiniCode to be deployable for **absolutely $0/month** for small
 MiniCode's architecture is built on modern, scalable cloud primitives:
 
 ```text
-┌─────────────────┐       ┌────────────────────┐       ┌──────────────────┐
-│                 │       │                    │       │                  │
-│    Frontend     │──────▶│    Backend API     │──────▶│   PostgreSQL     │
-│  (Next.js 16)   │       │ (FastAPI/Gunicorn) │       │ (PostgreSQL 15)  │
-│  Vercel/Render  │       │   Render/Railway   │       │                  │
-│                 │       │                    │       │                  │
-└─────────────────┘       └─────────┬──────────┘       └──────────────────┘
-                                     │
-     ┌───────────────────────────────┼───────────────────────────────┐
-     ▼                               ▼                               ▼
- ┌──────────────┐             ┌──────────────┐               ┌──────────────┐
- │  GitHub API  │             │   Redis DB   │               │ Celery Fleet │
- │ (OAuth, Repos│             │ (Rate Limits,│               │ (Async Judge │
- │  & Commits)  │             │  Caching)    │               │  Execution)  │
- └──────────────┘             └──────────────┘               └──────────────┘
-                                     │
+┌─────────────────┐       ┌───────────────────────────┐       ┌──────────────────┐
+│                 │       │                           │       │                  │
+│    Frontend     │──────▶│      Backend API          │──────▶│   PostgreSQL     │
+│  (Next.js 16)   │       │  (FastAPI/Gunicorn)       │       │ (PostgreSQL 15)  │
+│  Vercel/Render  │       │  ┌─────────────────────┐  │       │                  │
+│                 │       │  │ - Auth               │  │       └──────────────────┘
+│  WebSocket      │◀──────│  │ - Problems           │  │
+│  (Collab/Status)│       │  │ - Contests           │───────┐
+└─────────────────┘       │  │ - Collab Coding      │       │
+                          │  │ - Reviews             │       │
+                          │  │ - Achievements        │       │
+                          │  │ - Portfolio           │       │
+                          │  │ - Learning            │       │
+                          │  └─────────────────────┘  │       │
+                          └───────────────────────────┘       │
+                                     │                        │
+     ┌───────────────────────────────┼────────────────────────┼──────────────┐
+     ▼                               ▼                        ▼              ▼
+ ┌──────────────┐             ┌──────────────┐         ┌──────────────┐  ┌───────────┐
+ │  GitHub API  │             │   Redis DB   │         │  Code Sandbox│  │  Plugin   │
+ │ (OAuth, Repos│             │ (Cache,      │         │  Docker-based │  │  Engine   │
+ │  & Commits)  │             │  Broker,     │         │  (seccomp)   │  │ (Extend)  │
+ └──────────────┘             │  Collab)     │         │ Python/Node/  │  └───────────┘
+                              └──────┬───────┘         │ Java         │
+                                     │                 └──────────────┘
                                      ▼
                               ┌──────────────┐
                               │  Gemini 2.5  │
@@ -140,6 +149,7 @@ If you want to deploy MiniCode without spending a dime, follow this "Multi-Cloud
 
 #### 3. Backend API & Worker: [Render](https://render.com/) (Free Web Service)
 Render's Free Tier only allows one Web Service. We have optimized the code to run both the API and the Celery worker in a single container.
+**Note:** The code execution sandbox (Docker-in-Docker) requires a Docker runtime and is not available on Render's free tier. For sandbox execution, consider a VPS (DigitalOcean $6/mo) or use the AI-only judge fallback.
 - Create a new **Web Service**.
 - Set **Runtime** to `Docker`.
 - Add These Environment Variables:
@@ -196,7 +206,37 @@ Railway provides a simple deployment path with a pre-configured `railway.json` i
 }
 ```
 
-### 7️⃣ Keeping the Backend Awake (Anti-Sleep)
+### 7️⃣ Building Sandbox Docker Images
+
+The code execution sandbox requires custom Docker images for Python, Node.js, and Java:
+
+```bash
+# Build all sandbox images locally
+cd backend
+python -c "import asyncio; from sandbox.runner import build_sandbox_images; asyncio.run(build_sandbox_images())"
+
+# Or manually:
+docker build -t sandbox-python:latest -f sandbox/Dockerfile.python sandbox/
+docker build -t sandbox-node:latest -f sandbox/Dockerfile.node sandbox/
+docker build -t sandbox-java:latest -f sandbox/Dockerfile.java sandbox/
+```
+
+These images are used by the sandbox runner for isolated code execution with:
+- Seccomp security profiles
+- Network disabled (`--network none`)
+- Read-only root filesystem
+- Memory and CPU limits
+- PIDs limit
+
+### 8️⃣ CI/CD Pipeline
+
+The project includes a GitHub Actions workflow (`.github/workflows/ci.yml`) that:
+- Runs on push/PR to `main` and `dev` branches
+- Lints and typechecks the frontend
+- Runs backend tests with pytest
+- Lints backend Python with ruff
+
+### 9️⃣ Keeping the Backend Awake (Anti-Sleep)
 Render's Free Tier spins down after 15 minutes of inactivity. To keep it responsive:
 1. Use a free monitoring service like [Cron-job.org](https://cron-job.org/) or [Better Stack](https://betterstack.com/).
 2. Set it to ping your backend's `/health` endpoint every **14 minutes**.
