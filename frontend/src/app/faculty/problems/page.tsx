@@ -67,7 +67,10 @@ export default function FacultyProblemsPage() {
                 api.get("/problems"),
                 api.get("/admin/users").catch(() => ({ data: [] })),
             ]);
-            setProblems(problemsRes.data);
+            const problemsList = Array.isArray(problemsRes.data)
+                ? problemsRes.data
+                : (problemsRes.data?.items ?? []);
+            setProblems(problemsList);
             const userMap: Record<number, User> = {};
             usersRes.data.forEach((u: User) => { userMap[u.id] = u; });
             setUsers(userMap);

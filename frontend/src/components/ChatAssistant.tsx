@@ -231,7 +231,7 @@ export default function ChatAssistant() {
                     "w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all",
                     isOpen
                         ? "bg-rose-500 hover:bg-rose-600"
-                        : "bg-primary hover:bg-primary/80"
+                        : "bg-slate-900 hover:bg-slate-800/80"
                 )}
             >
                 {isOpen ? (

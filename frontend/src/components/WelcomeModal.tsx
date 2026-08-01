@@ -72,14 +72,14 @@ export default function WelcomeModal() {
         onClick={() => handleClose(true)}
       />
 
-      <div className="relative max-w-xl mx-4 w-full bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 ring-1 ring-slate-900/5">
+      <div className="relative max-w-xl mx-4 w-full bg-slate-900 rounded-xl shadow-lg p-6 ring-1 ring-slate-900/5">
         <h2 className="text-2xl font-semibold mb-2 text-white">Welcome to MiniCode</h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+        <p className="text-sm text-slate-300 mb-4">
           MiniCode is a learning and competition platform for students — solve problems, participate in
           hackathons, and earn XP to level up. Here are a few places to get started:
         </p>
 
-        <ul className="list-disc list-inside text-sm space-y-2 mb-4 text-slate-700 dark:text-slate-200">
+        <ul className="list-disc list-inside text-sm space-y-2 mb-4 text-slate-200">
           <li><strong>Problems</strong>: Browse and attempt challenges in the Problems section.</li>
           <li><strong>Leaderboard</strong>: See how you compare with peers.</li>
           <li><strong>Profile</strong>: Track your progress and XP badges.</li>
@@ -115,7 +115,7 @@ export default function WelcomeModal() {
               </button> */}
               <button
                 onClick={() => handleClose(true)}
-                className="px-3 py-1.5 rounded-md bg-blue-500/10 text-white text-sm hover:bg-white hover:text-black transition-colors"
+                className="px-3 py-1.5 rounded-md bg-blue-100/10 text-white text-sm hover:bg-white hover:text-black transition-colors"
               >
                 Got it
               </button>
