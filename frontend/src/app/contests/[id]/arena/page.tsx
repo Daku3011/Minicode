@@ -17,6 +17,8 @@ import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import ContestTimer from "@/components/ContestTimer";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import MobileSubmitNotice from "@/components/MobileSubmitNotice";
 
 interface ContestArena {
     id: number;
@@ -55,6 +57,7 @@ export default function ContestArenaPage() {
     const [timeUp, setTimeUp] = useState(false);
 
     const contestId = Number(params.id);
+    const isMobile = useIsMobile();
     const problemLabels = contest?.problems_json
         ? JSON.parse(contest.problems_json).map((_: any, i: number) =>
               String.fromCharCode(65 + i)
@@ -273,19 +276,29 @@ export default function ContestArenaPage() {
                         </span>
                     </div>
 
-                    {/* Code Editor */}
+                    {/* Code Editor — submissions are desktop-only */}
                     <div className="flex-1 p-4 overflow-auto">
-                        <textarea
-                            value={code}
-                            onChange={(e) => setCode(e.target.value)}
-                            className="w-full h-full bg-slate-950 text-green-400 font-mono text-sm p-4 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 resize-none"
-                            placeholder={`# Write your solution for Problem ${selectedProblem} here\n\ndef solve():\n    pass\n`}
-                            spellCheck={false}
-                        />
+                        {isMobile ? (
+                            <div className="h-full flex items-center justify-center">
+                                <MobileSubmitNotice
+                                    title="Contest submission available on desktop"
+                                    description="Open MiniCode on a desktop browser to write and submit contest solutions."
+                                />
+                            </div>
+                        ) : (
+                            <textarea
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                className="w-full h-full bg-slate-950 text-green-400 font-mono text-sm p-4 rounded-lg border border-slate-700 focus:outline-none focus:border-violet-500 resize-none"
+                                placeholder={`# Write your solution for Problem ${selectedProblem} here\n\ndef solve():\n    pass\n`}
+                                spellCheck={false}
+                            />
+                        )}
                     </div>
 
                     {/* Bottom Bar */}
-                    <div className="bg-slate-800 border-t border-slate-700 px-4 py-3 flex items-center justify-between shrink-0">
+                    {!isMobile && (
+                        <div className="bg-slate-800 border-t border-slate-700 px-4 py-3 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-3">
                             {submitResult && (
                                 <div
@@ -324,6 +337,7 @@ export default function ContestArenaPage() {
                             Submit
                         </button>
                     </div>
+                    )}
                 </main>
             </div>
         </div>

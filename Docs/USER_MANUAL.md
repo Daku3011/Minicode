@@ -156,8 +156,16 @@ Click a problem to view:
 │ 9                                                           │
 │ Output:                                                     │
 │ 0 1                                                         │
+│ Explanation: nums[0] + nums[1] = 2 + 7 = 9                  │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+Problems follow a LeetCode-style structure designed to be self-explanatory even if you're new to DSA patterns:
+
+- **Overview** — story and context in plain language
+- **Understanding the Problem** — step-by-step explanation of input → expected output
+- **Examples** — worked examples, each with an **Explanation** showing exactly how the output is derived (shown under every sample test case)
+- **Approach Hints** — the relevant technique/pattern named for you (two pointers, BFS, DP, …) without spoiling the solution
 
 ### Page 2: Profile & Verification
 
@@ -178,11 +186,11 @@ To ensure secure communication and access to specific features, verify your stud
 #### Repository Creation
 
 1. Open problem details page
-2. Click the **"Start Problem"** button
+2. Click the **"Deploy Workspace"** button
 3. MiniCode creates a private repository in your GitHub:
    - **Repo Name:** `minicode-{username}-{problem-slug}`
    - **Visibility:** Private (only you can see)
-   - **Initial Files:** README.md (with problem description), solution.py (starter code)
+   - **Initial Files:** README.md (problem description + submission guidelines), solution.py (base file — rename its extension to match your language)
 
 > **Note:** This requires GitHub OAuth permissions. If repo creation fails, re-login with GitHub.
 
@@ -239,10 +247,36 @@ Some problems support in-browser editing:
 
 #### Submitting Your Solution
 
-1. Open problem details page
-2. Click **"Submit Solution"**
-3. Select language (Python, JavaScript, etc.)
-4. Confirm submission
+1. Open the problem detail page
+2. Click **"Deploy Workspace"** — MiniCode creates a private GitHub repo for you, seeded with a base `solution.py` and a README containing the submission guidelines
+3. Clone the repo and write your solution
+4. Click **"Evaluate Logic"** to run the judge on your latest push
+
+#### Supported Languages & File Naming
+
+All major languages are accepted. Rename your base file's extension so the judge finds it:
+
+| Language | Required filename |
+|----------|-------------------|
+| Python | `solution.py` |
+| C++ | `solution.cpp` |
+| C | `solution.c` |
+| Java | `solution.java` |
+| JavaScript | `solution.js` |
+| Go | `solution.go` |
+| Rust | `solution.rs` |
+
+Keep exactly one `solution.*` file at the repository root.
+
+#### Fair Play
+
+- Use AI minimally — treat it like a hint, not a solver.
+- Submissions are screened automatically; flagged work goes to faculty review.
+- Commit as you work: your commit history is part of the evaluation.
+
+#### Mobile Devices
+
+MiniCode is fully browsable on phones — you can read problems (with worked examples and explanations), view events, hackathons, leaderboards and profiles from the mobile menu. **Submissions are desktop-only**: the workspace/evaluation controls are replaced with a notice asking you to switch to a desktop browser.
 
 #### Submission States
 
@@ -462,7 +496,7 @@ Every problem now has a built-in discussion forum for asking questions and shari
 #### Accessing Discussions
 
 1. Open any problem detail page
-2. Click the **"Discussion"** panel (collapsible sidebar)
+2. Click the **"Discussions"** tab in the page header (next to Specifications / Final Result)
 3. Browse existing threads or start a new one
 
 #### Creating a Thread
@@ -658,7 +692,7 @@ Save, share, and discover reusable code snippets.
 #### Interacting with Snippets
 
 - **Upvote/Downvote** — Rate useful snippets
-- **Comment** — Discuss improvements
+- **Comment** — Discuss improvements and ask questions below the code
 - **Copy** — One-click copy to clipboard
 - **Report** — Flag inappropriate content
 
@@ -761,13 +795,15 @@ Your faculty dashboard provides:
 
 **Adding Test Cases:**
 
-| Input Data | Expected Output | Sample |
-|-----------|----------------|--------|
-| `4`<br>`2 7 11 15`<br>`9` | `0 1` | ✅ |
-| `3`<br>`3 2 4`<br>`6` | `0 1` | ✅ |
-| `2`<br>`1 1`<br>`2` | `0 1` | ❌ |
+| Input Data | Expected Output | Explanation | Sample |
+|-----------|----------------|-------------|--------|
+| `4`<br>`2 7 11 15`<br>`9` | `0 1` | indices 0 and 1 sum to 9 | ✅ |
+| `3`<br>`3 2 4`<br>`6` | `1 2` | indices 1 and 2 sum to 6 | ✅ |
+| `2`<br>`1 1`<br>`2` | `0 1` | — | ❌ |
 
-> **Sample** test cases are visible to students. Hidden cases are for judging only.
+> **Sample** test cases are visible to students. Hidden cases are for judging only. The optional **Explanation** appears under the sample on the problem page (LeetCode-style) — use it to show how the input leads to the output.
+
+> **AI Generation:** Uploading source material auto-generates a LeetCode-style statement (Overview, Understanding the Problem, worked Examples with Explanations, Approach Hints) plus ready-made test cases with explanations loaded into the form. The "Improve with AI" button expands short drafts into the same format.
 
 ### Page 3: Student Analytics
 
@@ -794,7 +830,7 @@ Your faculty dashboard provides:
 | Total Submissions | Count |
 | Acceptance Rate | % accepted |
 | Average Score | Mean score |
-| AI Detection Flag | Suspicious % |
+| AI Detection Flag | Estimated AI-assistance likelihood — heuristic only; only strong evidence (>85%) surfaces a note, and faculty review is required before any conclusion |
 
 ### Page 4: XP Management
 

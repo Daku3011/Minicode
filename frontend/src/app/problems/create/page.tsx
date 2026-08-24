@@ -58,7 +58,7 @@ export default function CreateProblemPage() {
         constraints: "",
     });
     const [testCases, setTestCases] = useState([
-        { id: 1, input_data: "", expected_output: "", is_sample: true },
+        { id: 1, input_data: "", expected_output: "", explanation: "", is_sample: true },
     ]);
     const [showSuccess, setShowSuccess] = useState(false);
 
@@ -97,6 +97,7 @@ export default function CreateProblemPage() {
                 await api.post(`/problems/${problemId}/testcases`, {
                     input_data: tc.input_data,
                     expected_output: tc.expected_output,
+                    explanation: tc.explanation?.trim() || null,
                     is_sample: tc.is_sample,
                 });
             }
@@ -116,7 +117,7 @@ export default function CreateProblemPage() {
     const addTestCase = () => {
         setTestCases([
             ...testCases,
-            { id: Date.now(), input_data: "", expected_output: "", is_sample: false },
+            { id: Date.now(), input_data: "", expected_output: "", explanation: "", is_sample: false },
         ]);
     };
 
@@ -150,7 +151,24 @@ export default function CreateProblemPage() {
                     ...prev,
                     title: res.data.title || prev.title,
                     description: res.data.description || prev.description,
+                    input_format: res.data.input_format || prev.input_format,
+                    output_format: res.data.output_format || prev.output_format,
+                    constraints: res.data.constraints || prev.constraints,
+                    hints: res.data.hints || prev.hints,
                 }));
+
+                // Load AI-generated test cases (incl. LeetCode-style explanations)
+                if (Array.isArray(res.data.test_cases) && res.data.test_cases.length > 0) {
+                    setTestCases(
+                        res.data.test_cases.map((tc: any, i: number) => ({
+                            id: Date.now() + i,
+                            input_data: tc.input_data || "",
+                            expected_output: tc.expected_output || "",
+                            explanation: tc.explanation || "",
+                            is_sample: Boolean(tc.is_sample) || i < 2,
+                        }))
+                    );
+                }
                 setActiveTab('editor');
             }
         } catch (error) {
@@ -395,6 +413,20 @@ export default function CreateProblemPage() {
                                                     placeholder="Expected standard output..."
                                                 />
                                             </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                                <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+                                                Explanation (shown to students under this example)
+                                            </label>
+                                            <textarea
+                                                value={tc.explanation || ""}
+                                                onChange={(e) => updateTestCase(tc.id, 'explanation', e.target.value)}
+                                                rows={2}
+                                                className="w-full bg-white border border-blue-100 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-slate-300 resize-none"
+                                                placeholder="e.g. The two numbers at indices 1 and 3 add up to the target 9."
+                                            />
                                         </div>
                                     </div>
                                 ))}

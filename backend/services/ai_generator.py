@@ -103,20 +103,29 @@ async def generate_problem_content(text_content: str) -> Dict[str, Any]:
     - If the source material ALREADY contains a structured problem statement (like a hackathon brief), PRESERVE and REFORMAT it faithfully. Do NOT summarize or lose technical details.
     - If the material is lecture notes/raw text, SYNTHESIZE a new problem around its core concepts.
 
+    AUDIENCE: Undergraduate students who may NOT know common DSA patterns yet. Write so a motivated beginner can understand the task without external help.
+
     GUIDELINES:
-    1. Rich Markdown: Use tables, code blocks, lists, and bold text for visual structure. 
+    1. Rich Markdown: Use headings, tables, code blocks, lists, and bold text for visual structure.
     2. Preservation: Keep all technical requirements, function names (e.g. 'init_game', 'sui::random'), and specific numbers (e.g. '60% drop rate') intact.
-    3. Structural Sections: Include "Overview", "Requirements", "Constraints", and "Evaluation Criteria" in the description.
+    3. Structural Sections — the description MUST contain, in this order:
+       * "## Overview" — 2-4 paragraphs of story/context explaining WHY this problem exists and WHAT is being asked in plain language.
+       * "## Understanding the Problem" — walk through what the input represents and what output is expected, step by step, in simple words.
+       * "## Examples" — at least TWO fully worked examples in LeetCode style:
+         **Example 1:** Input block, Output block, then "**Explanation:**" — 2-5 sentences walking through exactly HOW the input leads to that output.
+         **Example 2:** same structure, ideally an edge case.
+       * "## Approach Hints" — name the relevant technique/pattern (e.g. two pointers, prefix sums, BFS, sliding window, DP) with ONE sentence on why it fits. Do NOT give away the full solution.
+       * "## Requirements" / "## Constraints" / "## Evaluation Criteria" as applicable.
     4. Form Matching:
        - 'title': Concise (e.g., 'Sui Loot Box System').
-       - 'description': The full, professional problem body in Markdown.
+       - 'description': The full, professional problem body in Markdown following the section order above.
        - 'subject': Choose EXACTLY one from: [{", ".join(SUBJECTS)}].
        - 'difficulty': "Easy", "Medium", or "Hard".
-       - 'input_format': Describe the parameters/data input.
-       - 'output_format': Describe the return values/results.
+       - 'input_format': Describe the parameters/data input precisely (types, ranges, ordering).
+       - 'output_format': Describe the return values/results precisely.
        - 'constraints': List time/memory limits and tech-specific rules.
-       - 'hints': A small, helpful clue for the student.
-       - 'test_cases': A list of at least 5 objects (min 2 marked 'is_sample': True). Include: 1 Base Case, 1 Simple Varied Case, 1 Large Value Edge Case, 1 Empty/Null Edge Case, 1 Complex Case. Each with 'input_data', 'expected_output', and 'is_sample' (boolean).
+       - 'hints': 2-3 short lines separated by newline characters, escalating from gentle nudge to pattern name. Never reveal the full algorithm.
+       - 'test_cases': A list of at least 5 objects (min 2 marked 'is_sample': True). Include: 1 Base Case, 1 Simple Varied Case, 1 Large Value Edge Case, 1 Empty/Null Edge Case, 1 Complex Case. Each with 'input_data', 'expected_output', 'explanation' (1-3 sentences: why this input produces this output — shown to students under the sample), and 'is_sample' (boolean).
 
     PREDEFINED SUBJECTS: Use 'blockchain' for smart contracts, Web3, or crypto-specific challenges.
 
@@ -148,7 +157,7 @@ async def improve_problem_content(current_data: Dict[str, Any]) -> Dict[str, Any
     prompt = f"""
     TASK: You are an elite technical curriculum designer. Your task is to IMPROVE and POLISH the following draft coding problem.
 
-    Make it professional, clear, technically precise, and visually appealing using Markdown.
+    AUDIENCE: Undergraduate students who may NOT know common DSA patterns yet. The improved problem must be self-explanatory.
 
     CURRENT DRAFT DATA:
     - Title: {current_data.get('title', '')}
@@ -161,11 +170,16 @@ async def improve_problem_content(current_data: Dict[str, Any]) -> Dict[str, Any
     - Hints: {current_data.get('hints', '')}
 
     IMPROVEMENT GUIDELINES:
-    1. Expand the Description to be rigorous and professional (use tables, code blocks where relevant).
-    2. Ensure 'input_format' and 'output_format' are clear and well-structured.
+    1. Expand the Description into a complete, LeetCode-style statement with these sections (Markdown headings):
+       * "## Overview" — story/context in plain language (2-4 paragraphs).
+       * "## Understanding the Problem" — step-by-step plain-words explanation of input → expected output.
+       * "## Examples" — at least TWO worked examples, each with an Input block, an Output block, and a "**Explanation:**" paragraph walking through exactly how the output is derived.
+       * "## Approach Hints" — name the relevant technique/pattern (two pointers, prefix sums, BFS, DP…) with one sentence on why it fits, without revealing the full solution.
+       * Keep/expand any "Requirements" / "Constraints" sections.
+    2. Ensure 'input_format' and 'output_format' are precise (types, ranges, ordering).
     3. Provide realistic constraints if missing.
-    4. Write a highly valuable Hint.
-    5. Maintain the essence of the original draft.
+    4. Write 2-3 escalating hints separated by newline characters — gentle nudge first, pattern name later. Never reveal the full algorithm.
+    5. Maintain the essence of the original draft; do not change the actual task being asked.
 
     RESPONSE: Return ONLY a JSON object with matching keys: 'title', 'description', 'input_format', 'output_format', 'constraints', 'hints'. No markdown wrappers around the JSON.
     """

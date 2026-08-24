@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlmodel import Session, func, select
 
 from core.database import get_session
@@ -12,6 +13,30 @@ from services.auth import get_current_user
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/problems/{problem_id}/discussions", tags=["discussions"])
+
+
+class ThreadCreate(BaseModel):
+    title: str
+    content: str
+
+
+class ThreadUpdate(BaseModel):
+    title: str | None = None
+    content: str | None = None
+    is_resolved: bool | None = None
+
+
+class ReplyCreate(BaseModel):
+    content: str
+    parent_id: int | None = None
+
+
+class ReplyUpdate(BaseModel):
+    content: str
+
+
+class VoteInput(BaseModel):
+    vote_type: int = 1
 
 
 # ── Threads ─────────────────────────────────────────────
@@ -73,18 +98,19 @@ def list_threads(
 @router.post("", response_model=dict)
 def create_thread(
     problem_id: int,
-    title: str,
-    content: str,
+    data: ThreadCreate,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    if not title.strip() or not content.strip():
+    title = data.title.strip()
+    content = data.content.strip()
+    if not title or not content:
         raise HTTPException(status_code=400, detail="Title and content are required")
 
     thread = DiscussionThread(
         problem_id=problem_id,
-        title=title.strip(),
-        content=content.strip(),
+        title=title,
+        content=content,
         author_id=user.id,
     )
     session.add(thread)
@@ -138,9 +164,7 @@ def get_thread(
 def update_thread(
     problem_id: int,
     thread_id: int,
-    title: str | None = None,
-    content: str | None = None,
-    is_resolved: bool | None = None,
+    data: ThreadUpdate,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -150,12 +174,12 @@ def update_thread(
     if thread.author_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    if title is not None:
-        thread.title = title.strip()
-    if content is not None:
-        thread.content = content.strip()
-    if is_resolved is not None:
-        thread.is_resolved = is_resolved
+    if data.title is not None:
+        thread.title = data.title.strip()
+    if data.content is not None:
+        thread.content = data.content.strip()
+    if data.is_resolved is not None:
+        thread.is_resolved = data.is_resolved
     thread.updated_at = datetime.now(timezone.utc)
 
     session.add(thread)
@@ -234,17 +258,19 @@ def list_replies(
 def create_reply(
     problem_id: int,
     thread_id: int,
-    content: str,
-    parent_id: int | None = None,
+    data: ReplyCreate,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
+    content = data.content.strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="Content is required")
+
     thread = session.get(DiscussionThread, thread_id)
     if not thread or thread.problem_id != problem_id:
         raise HTTPException(status_code=404, detail="Thread not found")
-    if not content.strip():
-        raise HTTPException(status_code=400, detail="Content is required")
 
+    parent_id = data.parent_id
     if parent_id:
         parent = session.get(DiscussionReply, parent_id)
         if not parent or parent.thread_id != thread_id:
@@ -272,7 +298,7 @@ def update_reply(
     problem_id: int,
     thread_id: int,
     reply_id: int,
-    content: str,
+    data: ReplyUpdate,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -282,7 +308,7 @@ def update_reply(
     if reply.author_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    reply.content = content.strip()
+    reply.content = data.content.strip()
     reply.updated_at = datetime.now(timezone.utc)
     session.add(reply)
     session.commit()
@@ -345,7 +371,7 @@ def accept_reply(
 def vote_thread(
     problem_id: int,
     thread_id: int,
-    vote_type: int = 1,
+    data: VoteInput,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -353,6 +379,7 @@ def vote_thread(
     if not thread or thread.problem_id != problem_id:
         raise HTTPException(status_code=404, detail="Thread not found")
 
+    vote_type = data.vote_type
     existing = session.exec(
         select(DiscussionVote).where(
             DiscussionVote.user_id == user.id,
@@ -383,7 +410,7 @@ def vote_reply(
     problem_id: int,
     thread_id: int,
     reply_id: int,
-    vote_type: int = 1,
+    data: VoteInput,
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
@@ -391,6 +418,7 @@ def vote_reply(
     if not reply or reply.thread_id != thread_id:
         raise HTTPException(status_code=404, detail="Reply not found")
 
+    vote_type = data.vote_type
     existing = session.exec(
         select(DiscussionVote).where(
             DiscussionVote.user_id == user.id,

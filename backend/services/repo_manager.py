@@ -21,6 +21,52 @@ def build_repo_name(user: User, problem: Problem) -> str:
     return f"minicode-{user.username}-{problem.id}-{slug}"
 
 
+def build_readme_content(problem: Problem) -> str:
+    """Builds the README seeded into every student repository."""
+    return f"""# {problem.title}
+
+{problem.description}
+
+---
+
+## Submission Guidelines
+
+**All programming languages are accepted.** Your workspace starts with a base file
+named `solution.py` — if you use another language, change its extension so the judge
+can find your code:
+
+| Language   | Required filename |
+|------------|-------------------|
+| Python     | `solution.py`     |
+| C++        | `solution.cpp`    |
+| C          | `solution.c`      |
+| Java       | `solution.java`   |
+| JavaScript | `solution.js`     |
+| Go         | `solution.go`     |
+| Rust       | `solution.rs`     |
+
+Keep exactly **one** `solution.*` file at the repository root.
+
+### Command Notes
+
+```bash
+git clone <your-repo-url>
+# write your solution in solution.<ext>, then:
+git add .
+git commit -m "solve"
+git push origin main
+```
+
+After pushing, click **Evaluate Logic** on MiniCode to run the judge.
+
+### Fair Play Rules
+
+- Use AI minimally — treat it like a hint, not a solver.
+- Submissions are screened automatically; flagged work goes to faculty review.
+- Commit as you work: your commit history is part of the evaluation.
+"""
+
+
 def create_student_repo(user: User, problem: Problem, session: Session):
     """
     Creates a dedicated repository for a student to solve a specific problem.
@@ -49,14 +95,14 @@ def create_student_repo(user: User, problem: Problem, session: Session):
             auto_init=True,
         )
 
-        # Update the auto-generated README with problem description
+        # Update the auto-generated README with problem description + submission guidelines
         default_branch = repo.default_branch
         try:
             readme = repo.get_contents("README.md", ref=default_branch)
             repo.update_file(
                 "README.md",
                 "Initialize with problem description",
-                f"# {problem.title}\n\n{problem.description}",
+                build_readme_content(problem),
                 readme.sha,
                 branch=default_branch,
             )

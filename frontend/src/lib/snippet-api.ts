@@ -34,6 +34,9 @@ export const snippetApi = {
     vote: (id: number, voteType: "upvote" | "downvote") =>
         api.post(`/snippets/${id}/vote`, { vote_type: voteType }),
 
+    comment: (id: number, content: string) =>
+        api.post(`/snippets/${id}/comment`, { content }),
+
     trending: () => api.get("/snippets/trending"),
 
     my: () => api.get("/snippets/my"),

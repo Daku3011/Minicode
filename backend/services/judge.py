@@ -47,8 +47,8 @@ async def run_ai_judge(
     prompt = f"""
     ROLE: {role}
     
-    TASK: You are an AI Hackathon Judge. Analyze this student's code submission for the given problem. You are also performing a STRICT AI-plagiarism detection check.
-    
+    TASK: You are an AI Hackathon Judge. Analyze this student's code submission for the given problem. As a secondary check, you may estimate whether code shows signs of AI generation.
+
     PROBLEM STATEMENT:
     {problem_desc}
     
@@ -68,14 +68,17 @@ async def run_ai_judge(
     2. Respond with a JSON object (and ONLY a JSON object, no markdown fences) with these fields:
        - "status": "accepted" if the code is correct, "wrong_answer" if incorrect, "error" if the code has bugs
        - "score": a number from 0 to 100 based on correctness, code quality, and efficiency
-       - "ai_probability": a number from 0 to 100 representing the probability that this code was AI-generated. Be highly suspicious of generic variable names, standard AI boilerplate, excessive overly-explanatory comments, and suspicious commit histories (e.g., a single massive commit, or AI-like commit messages).
+       - "ai_probability": a number from 0 to 100 representing your confidence that this code was AI-generated. IMPORTANT — be conservative and fair to students:
+         * Clean formatting, helpful comments, descriptive variable names, standard algorithm implementations (sorting, two pointers, BFS/DFS, DP tables), or textbook-style structure are NOT evidence of AI. They are what students are taught.
+         * Do NOT treat generic variable names as suspicious for algorithmic problems — names like 'n', 'arr', 'i', 'j', 'dp', 'result' are conventional, not machine-generated.
+         * Only assign ai_probability > 70 when there is CONCRETE corroborating evidence, e.g.: commit history showing an entire solution pasted in one commit with no incremental work, comments that reference tools ("Generated with Copilot/ChatGPT"), or code far beyond the student's apparent level AND matching known LLM boilerplate patterns.
+         * If evidence is weak, mixed, or you are uncertain, return a LOW value (0-40). A false accusation harms an honest student more than a missed detection.
        - "feedback": a detailed markdown string with your analysis. Include:
          * Whether the solution is correct
          * Code quality observations
          * Time/space complexity analysis
          * Suggestions for improvement
          * If wrong, give hints without giving the full answer
-         * EXTREMELY IMPORTANT: If ai_probability > 60, you MUST include a brief explanation in the feedback about why you suspect AI generation.
     """
 
     try:
@@ -102,11 +105,17 @@ async def run_ai_judge(
 
         result = json.loads(text)
 
-        # Inject warning if AI probability is high
+        # Surface a soft note only when evidence is strong. AI detection is
+        # heuristic and prone to false positives on clean student code, so the
+        # bar for flagging is intentionally high and the wording non-accusatory.
         ai_prob = result.get("ai_probability", 0)
-        if isinstance(ai_prob, (int, float)) and ai_prob > 60:
-            warning_msg = f"""⚠️ WARNING: This submission has a high likelihood ({ai_prob}%) of being AI-generated based on code patterns and commit history.\n\n"""
-            result["feedback"] = warning_msg + result.get("feedback", "")
+        if isinstance(ai_prob, (int, float)) and ai_prob > 85:
+            note = (
+                f"ℹ️ Note: An automated review estimated a {int(ai_prob)}% likelihood that parts of this "
+                "solution were AI-assisted, based on patterns and commit history. This is an automated "
+                "heuristic and may be inaccurate — faculty review is required before any conclusion.\n\n"
+            )
+            result["feedback"] = note + result.get("feedback", "")
 
         return result, None
     except json.JSONDecodeError as e:

@@ -59,7 +59,7 @@ Middlewares and security:
 
 - `User` — Auth identity, role, XP, levels, login activity
 - `Problem` — Statement + metadata + unlock level + XP reward
-- `TestCase` — Input/output pairs, sample visibility
+- `TestCase` — Input/output pairs, sample visibility, optional LeetCode-style `explanation` shown with samples
 - `Submission` — Repo, language, status, score, AI feedback
 - `NewsItem` — Platform announcements
 - `Notification` — Per-user notifications
@@ -185,17 +185,18 @@ Google login rule:
 
 - `GET /problems`
 - `GET /problems/{problem_id}`
-- `GET /problems/{problem_id}/testcases`
+- `GET /problems/{problem_id}/testcases` — Sample cases incl. `explanation` field
 - `POST /problems` (faculty/admin)
 - `PUT /problems/{problem_id}` (owner/admin)
 - `DELETE /problems/{problem_id}` (owner/admin)
-- `POST /problems/{problem_id}/testcases` (owner/admin)
-- `POST /problems/generate-ai` (faculty/admin)
+- `POST /problems/{problem_id}/testcases` (owner/admin; accepts optional `explanation`)
+- `POST /problems/generate-ai` (faculty/admin) — LeetCode-style statements: Overview, Understanding the Problem, worked Examples with Explanations, Approach Hints
+- `POST /problems/improve-ai` (faculty/admin) — Expands short drafts into the same rich format
 
 ### Submissions
 
-- `POST /problems/{problem_id}/start`
-- `POST /problems/{problem_id}/submit`
+- `POST /problems/{problem_id}/start` — Provisions a private repo seeded with `solution.py` base file + README containing submission guidelines
+- `POST /problems/{problem_id}/submit` — Language whitelist: `py, python, js, javascript, java, cpp, c, go, rs`; judge reads any single `solution.*` file at repo root
 - `GET /submissions/{submission_id}`
 
 ### Leaderboard
@@ -245,14 +246,21 @@ Google login rule:
 
 ### Discussions
 
-- `GET /discussions?problem_id={id}` — List threads for a problem
-- `POST /discussions` — Create a thread
-- `GET /discussions/{id}` — Thread with replies
-- `PUT /discussions/{id}` — Update thread
-- `DELETE /discussions/{id}` — Delete thread
-- `POST /discussions/{id}/replies` — Add reply
-- `POST /discussions/replies/{id}/accept` — Mark as accepted answer
-- `POST /discussions/{id}/vote` — Vote on thread/reply
+All discussion routes are nested under a problem: `/problems/{problem_id}/discussions`.
+Thread/reply creation, updates and votes accept **JSON request bodies** (Pydantic models
+`ThreadCreate`, `ThreadUpdate`, `ReplyCreate`, `ReplyUpdate`, `VoteInput`).
+
+- `GET /problems/{id}/discussions?page=&per_page=&sort=` — List threads (`sort`: `top|unresolved|latest`)
+- `POST /problems/{id}/discussions` — Create a thread (body: `{title, content}`)
+- `GET /problems/{id}/discussions/{thread_id}` — Thread detail (increments view count)
+- `PUT /problems/{id}/discussions/{thread_id}` — Update thread (body: `{title?, content?, is_resolved?}`)
+- `DELETE /problems/{id}/discussions/{thread_id}` — Delete thread (author only)
+- `GET /problems/{id}/discussions/{thread_id}/replies` — List replies (accepted answer first)
+- `POST /problems/{id}/discussions/{thread_id}/replies` — Add reply (body: `{content, parent_id?}`)
+- `PUT/DELETE /problems/{id}/discussions/{thread_id}/replies/{reply_id}` — Edit/delete reply
+- `POST /problems/{id}/discussions/{thread_id}/replies/{reply_id}/accept` — Mark accepted answer (thread author)
+- `POST /problems/{id}/discussions/{thread_id}/vote` — Vote on thread (body: `{vote_type: 1|-1}`, toggling removes)
+- `POST /problems/{id}/discussions/{thread_id}/replies/{reply_id}/vote` — Vote on reply
 
 ### AI Teaching Assistant
 
@@ -326,10 +334,11 @@ Google login rule:
 
 - `POST /snippets` — Create snippet
 - `GET /snippets` — List with search/filter/pagination
-- `GET /snippets/{id}` — Snippet detail
+- `GET /snippets/{id}` — Snippet detail (includes comments with author names)
 - `PUT /snippets/{id}` — Update snippet
 - `DELETE /snippets/{id}` — Delete snippet
 - `POST /snippets/{id}/vote` — Vote on snippet
+- `POST /snippets/{id}/comment` — Comment on a snippet (body: `{content}`)
 - `GET /snippets/trending` — Trending snippets
 - `GET /snippets/my` — My snippets
 
@@ -380,7 +389,7 @@ Trigger path:
 6. `run_ai_judge(...)` prompts Gemini for:
    - status
    - score
-   - ai_probability
+   - ai_probability (conservative, evidence-based: style alone is never sufficient; only >70 with concrete corroboration such as single-commit paste of a full solution or tool references in comments)
    - markdown feedback
 7. Submission updated and committed.
 8. XP and leaderboard cache are updated when accepted improvements occur.
@@ -389,6 +398,7 @@ Operational note:
 
 - Judge performs both sandbox execution (actual test case results) AND AI-assisted analysis.
 - If Docker sandbox is unavailable, falls back to AI-only evaluation.
+- AI-detection note: the heuristic warning banner only appears when `ai_probability > 85`, and its wording is non-accusatory with an explicit disclaimer that faculty review is required — this avoids false-positive shaming of students who write clean, well-commented code.
 
 ### Sandbox Architecture (`backend/sandbox/`)
 

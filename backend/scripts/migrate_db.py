@@ -89,6 +89,15 @@ def run_migrations():
             except Exception as e:
                 print(f"Column is_deleted in problem: {e}")
 
+            # Add explanation to testcase table (LeetCode-style sample explanations)
+            try:
+                conn.execute(
+                    text("ALTER TABLE testcase ADD COLUMN IF NOT EXISTS explanation TEXT;")
+                )
+                print("Added explanation to testcase")
+            except Exception as e:
+                print(f"Column explanation in testcase: {e}")
+
             # Create email_verifications table
             try:
                 conn.execute(
@@ -207,6 +216,18 @@ def run_migrations():
                     print("Column is_deleted already exists in problem")
                 else:
                     print(f"Column is_deleted in problem: {e}")
+
+            # Add explanation to testcase table (LeetCode-style sample explanations)
+            try:
+                conn.execute(
+                    text("ALTER TABLE testcase ADD COLUMN explanation TEXT;")
+                )
+                print("Added explanation to testcase")
+            except Exception as e:
+                if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                    print("Column explanation already exists in testcase")
+                else:
+                    print(f"Column explanation in testcase: {e}")
 
             # Add status to cohorts table
             try:

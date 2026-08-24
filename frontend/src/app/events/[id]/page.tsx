@@ -9,6 +9,8 @@ import remarkGfm from "remark-gfm";
 import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import MobileSubmitNotice from "@/components/MobileSubmitNotice";
 
 interface EventDetail {
     id: number;
@@ -76,6 +78,7 @@ export default function EventDetailPage() {
     const params = useParams();
     const router = useRouter();
     const { user } = useAuth();
+    const isMobile = useIsMobile();
     const [event, setEvent] = useState<EventDetail | null>(null);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [loading, setLoading] = useState(true);
@@ -353,6 +356,12 @@ export default function EventDetailPage() {
                                             )}
                                             {/* Only show submit button if submitted but not yet reviewed */}
                                             {(!event.user_submission_status || event.user_submission_status === "submitted") && (
+                                                isMobile ? (
+                                                    <MobileSubmitNotice
+                                                        title="Event submission available on desktop"
+                                                        description="Open MiniCode on a desktop browser to submit your event work."
+                                                    />
+                                                ) : (
                                                 <button
                                                     onClick={() => setShowSubmitForm(!showSubmitForm)}
                                                     className={clsx(
@@ -365,6 +374,7 @@ export default function EventDetailPage() {
                                                     <Send className="w-4 h-4" />
                                                     {event.user_submission_status === "submitted" ? "Update Submission" : "Submit Work"}
                                                 </button>
+                                                )
                                             )}
                                             <button
                                                 onClick={handleLeave}
@@ -406,7 +416,7 @@ export default function EventDetailPage() {
                     </div>
 
                     {/* Submit Form */}
-                    {showSubmitForm && (
+                    {showSubmitForm && !isMobile && (
                         <div className="mt-6 p-6 bg-white rounded-xl border border-blue-100 shadow-sm">
                             <h3 className="text-lg font-black uppercase text-slate-900 tracking-tight mb-4">Submit Your Work</h3>
                             <div className="space-y-4">

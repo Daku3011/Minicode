@@ -66,13 +66,14 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 - [x] **AI-Generated Learning Materials** - Personalized hints and resources for each milestone
 - [x] **Events System** - Hackathons, contests, and team collaboration
 - [x] **Real-time Updates** - WebSocket-powered submission status
-- [x] **AI Plagiarism Detection** - Identifies AI-generated submissions
+- [x] **AI Plagiarism Detection** - Conservative, evidence-based screening of AI-generated submissions (style alone never flags a student; high-confidence findings route to faculty review)
+- [x] **Mobile Support** - Fully responsive browsing on phones (problems, events, hackathons, leaderboards, profile); submissions are desktop-only by design
 - [x] **Cohorts & Labs** - Organized student groups for faculty management
 - [x] **Dynamic Email Verification** - Secure student email verification flow correctly routing codes to users
 - [x] **CI/CD Pipeline** - Automated testing, linting, and deployment via GitHub Actions
 - [x] **Code Execution Sandbox** - Isolated Docker-based execution for Python, Node.js, and Java with seccomp security profiles
 - [x] **Collaborative Coding** - Real-time collaborative sessions with WebSocket-based synchronization
-- [x] **Discussion Forum** - Per-problem threaded discussions with voting and markdown support
+- [x] **Discussion Forum** - Per-problem threaded discussions with voting, accepted answers and markdown support (linked from every problem page)
 - [x] **AI Chatbot Assistant** - Platform-wide AI assistant for coding help, hints, and explanations
 - [x] **Achievements & Badges** - Gamified achievement system with unlockable badges and progress tracking
 - [x] **Streaks** - Daily login streaks with motivational tracking and rewards
@@ -80,7 +81,7 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 - [x] **Team Formation** - Matchmaking system for finding coding partners and forming teams
 - [x] **Code Reviews** - Peer code review system with inline comments and approval workflow
 - [x] **Plugin System** - Extensible plugin architecture for custom functionality
-- [x] **Code Snippets** - Reusable code snippet library with search and voting
+- [x] **Code Snippets** - Reusable code snippet library with search, voting and comments
 - [x] **Learning Dashboard** - Personalized recommendations and weak area analysis
 - [x] **Interview Mode** - Simulated technical interview environment with timed sessions
 - [x] **Portfolio Pages** - Public portfolio profiles with XP charts and activity heatmaps
@@ -95,11 +96,19 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 
 ### For Faculty
 
-- Problem creation with AI generation assistance
+- Problem creation with AI generation assistance — produces LeetCode-style statements (Overview, Understanding the Problem, worked Examples with Explanations, Approach Hints)
+- Sample test cases support per-example explanations shown to students
 - Student analytics and submission tracking
 - XP awarding and progress monitoring
 - Event management
 - Cohort and lab organization
+
+### Submission Guidelines (shown on every problem)
+
+- All languages accepted: Python, C++, C, Java, JavaScript, Go, Rust
+- Workspaces start with a base `solution.py` — rename the extension to match your language (`solution.cpp`, `solution.java`, …); the judge reads any single `solution.*` file at the repo root
+- Seeded repo READMEs include the language/filename table, git command notes and fair-play rules
+- Use AI minimally; submissions are screened and commit history is part of the evaluation
 
 ### For Admins
 
@@ -352,6 +361,8 @@ Seed data provides:
 | Repo creation fails | Ensure FERNET_KEY is stable |
 | AI judge error | Verify GEMINI_API_KEY and quota |
 | WebSocket disconnect | Check Redis connectivity |
+| Can't submit from phone | By design — mobile is view-only (browse problems/events/hackathons/profile); submissions require a desktop browser (≥1024px) |
+| Judge says `solution.*` not found | Ensure exactly one `solution.<ext>` file exists at the repo root with the correct extension for your language |
 
 ### Debug Commands
 

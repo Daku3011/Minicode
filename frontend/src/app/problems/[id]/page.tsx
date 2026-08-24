@@ -21,7 +21,8 @@ import {
     FileCode,
     Settings,
     ArrowRight,
-    Lock
+    Lock,
+    MessagesSquare
 } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import Link from "next/link";
@@ -30,6 +31,9 @@ import { clsx } from "clsx";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import remarkGfm from 'remark-gfm';
+import { useIsMobile } from "@/hooks/useIsMobile";
+import MobileSubmitNotice from "@/components/MobileSubmitNotice";
+import SubmissionGuide from "@/components/SubmissionGuide";
 
 // Dynamically import ReactMarkdown for performance
 const ReactMarkdown = dynamic(() => import('react-markdown'), { 
@@ -40,6 +44,7 @@ interface TestCaseExample {
     id: number;
     input: string;
     expected_output: string;
+    explanation?: string | null;
 }
 
 function ProblemDetailContent() {
@@ -62,6 +67,8 @@ function ProblemDetailContent() {
     const isFaculty = user?.role === "faculty" || user?.role === "admin";
     const userUnlockedLevel = user?.unlocked_level || 1;
     const isLocked = problem && !isFaculty && problem.level > userUnlockedLevel;
+    const isMobile = useIsMobile();
+    const canSubmitOnDevice = !isMobile;
 
     useEffect(() => {
         const fetchProblem = async () => {
@@ -291,15 +298,23 @@ function ProblemDetailContent() {
                                 )}
                             </button>
                         ))}
+                        <Link
+                            href={`/problems/${id}/discussion`}
+                            className="relative flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 hover:text-blue-600 transition-all py-1.5"
+                        >
+                            <MessagesSquare className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Discussions</span>
+                            <span className="sm:hidden">Discuss</span>
+                        </Link>
                     </nav>
                 </div>
             </header>
 
             <div className="flex-1 overflow-hidden relative">
                 {activeTab === "description" ? (
-                    <main className="h-full flex overflow-hidden p-6 md:p-8 gap-8">
+                    <main className="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-6 md:p-8 gap-8">
                         {/* Left Column: Specs */}
-                        <div className="flex-1 flex flex-col gap-8 overflow-y-auto pr-4 custom-scrollbar">
+                        <div className="flex-1 flex flex-col gap-8 min-h-0 lg:overflow-y-auto lg:pr-4 custom-scrollbar">
                             <div className="space-y-6">
                                 <div className="flex items-center gap-4">
                                     <div className={clsx(
@@ -417,15 +432,29 @@ function ProblemDetailContent() {
                                                         </pre>
                                                     </div>
                                                 </div>
+                                                {tc.explanation && (
+                                                    <div className="rounded-xl bg-blue-50 border border-blue-100 px-5 py-4 space-y-1.5">
+                                                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
+                                                            <Sparkles className="w-3.5 h-3.5" />
+                                                            Explanation
+                                                        </div>
+                                                        <p className="text-sm font-medium leading-relaxed text-slate-600 whitespace-pre-wrap">
+                                                            {tc.explanation}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             )}
+
+                            <SubmissionGuide />
                         </div>
 
                         {/* Right Column: Deployment */}
-                        <div className="w-full max-w-md flex flex-col gap-6">
+                        <div className="w-full max-w-md flex flex-col gap-6 self-center lg:self-auto shrink-0">
+                            {canSubmitOnDevice ? (
                             <div className="bg-white rounded-3xl border border-blue-100 overflow-hidden flex flex-col shadow-lg relative">
                                 <div className="bg-blue-50 px-6 py-5 border-b border-blue-100 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -510,6 +539,9 @@ function ProblemDetailContent() {
                                     )}
                                 </div>
                             </div>
+                            ) : (
+                                <MobileSubmitNotice />
+                            )}
 
                             {repoError && (
                                 <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-[10px] font-black uppercase tracking-widest leading-relaxed">

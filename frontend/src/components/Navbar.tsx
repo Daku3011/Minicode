@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles, Map, Sun, Moon } from "lucide-react";
+import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles, Map, Sun, Moon, Menu, X, Target, FileCode } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -18,6 +18,7 @@ export default function Navbar() {
 
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNews, setShowNews] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const fetchUnreadCount = async () => {
         if (!user) return;
@@ -64,7 +65,9 @@ export default function Navbar() {
             { name: "Alumni", href: "/alumni", icon: User },
             { name: "Cohorts", href: "/cohorts", icon: User },
             { name: "Problems", href: "/problems", icon: Code2 },
+            { name: "Contests", href: "/contests", icon: Target },
             { name: "Events", href: "/events", icon: Calendar },
+            { name: "Snippets", href: "/snippets", icon: FileCode },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
             { name: "Hackathons", href: "/hackathons", icon: Sparkles },
             { name: "Roadmap", href: "/roadmap", icon: Map },
@@ -72,7 +75,9 @@ export default function Navbar() {
         : [
             { name: "Cohorts", href: "/cohorts", icon: User },
             { name: "Problems", href: "/problems", icon: Code2 },
+            { name: "Contests", href: "/contests", icon: Target },
             { name: "Events", href: "/events", icon: Calendar },
+            { name: "Snippets", href: "/snippets", icon: FileCode },
             { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
             { name: "Hackathons", href: "/hackathons", icon: Sparkles },
             { name: "Alumni", href: "/alumni/profiles", icon: User },
@@ -85,6 +90,29 @@ export default function Navbar() {
         window.addEventListener('minicode:openNews', handleOpenNews);
         return () => window.removeEventListener('minicode:openNews', handleOpenNews);
     }, []);
+
+    // Close the mobile menu whenever the route changes.
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [pathname]);
+
+    // Mobile browsing is view-only: problems, events, hackathons, leaderboard and profile.
+    const mobileNavItems = user?.role === 'faculty' || user?.role === 'admin'
+        ? [
+            { name: "Problems", href: "/faculty/problems", icon: Code2 },
+            { name: "Events", href: "/faculty/events", icon: Calendar },
+            { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+            { name: "Hackathons", href: "/hackathons", icon: Sparkles },
+            { name: "Profile", href: "/faculty/profile", icon: User },
+        ]
+        : [
+            { name: "Problems", href: "/problems", icon: Code2 },
+            { name: "Events", href: "/events", icon: Calendar },
+            { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+            { name: "Hackathons", href: "/hackathons", icon: Sparkles },
+            ...(user?.role === 'alumni' ? [{ name: "Alumni", href: "/alumni/profiles", icon: User }] : []),
+            { name: "Profile", href: "/profile", icon: User },
+        ];
 
     if (pathname === "/login" || pathname === "/faq") return null;
 
@@ -126,6 +154,19 @@ export default function Navbar() {
                             );
                         })}
                     </nav>
+                )}
+
+                {/* Mobile Menu Toggle */}
+                {user && (
+                    <button
+                        onClick={() => setMobileMenuOpen((open) => !open)}
+                        aria-expanded={mobileMenuOpen}
+                        aria-controls="mobile-nav"
+                        aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                        className="lg:hidden p-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all"
+                    >
+                        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    </button>
                 )}
 
                 {/* Profile & Actions */}
@@ -201,6 +242,37 @@ export default function Navbar() {
                 </div>
             </div>
             
+            {/* Mobile Navigation — view-only browsing (submissions require desktop) */}
+            {user && mobileMenuOpen && (
+                <nav
+                    id="mobile-nav"
+                    aria-label="Mobile navigation"
+                    className="lg:hidden mt-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden"
+                >
+                    <ul className="p-2 space-y-1">
+                        {mobileNavItems.map((item) => {
+                            const isActive = pathname.startsWith(item.href);
+                            return (
+                                <li key={item.name}>
+                                    <Link
+                                        href={item.href}
+                                        className={clsx(
+                                            "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
+                                            isActive
+                                                ? "text-white bg-blue-600 shadow-sm"
+                                                : "text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-gray-800"
+                                        )}
+                                    >
+                                        <item.icon className="w-4 h-4 shrink-0" />
+                                        <span>{item.name}</span>
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
+            )}
+
             <NewsPanel 
                 isOpen={showNews} 
                 onClose={() => setShowNews(false)} 

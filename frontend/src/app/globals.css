@@ -5,11 +5,14 @@
 /* ============================================
    OCEANIC CLARITY — Light Blue Design System
    ============================================ */
-:root {
-  --background: 210 40% 98%;
-  --foreground: 215 25% 15%;
 
-  /* Primary surface palette */
+/*
+ * Color tokens are registered through Tailwind v4's @theme so that
+ * utility classes (bg-primary, text-primary, bg-primary/10,
+ * border-primary/20, text-muted-foreground …) actually generate styles.
+ * Without this, every primary/muted/accent utility silently no-ops.
+ */
+@theme {
   --color-background: hsl(210 40% 98%);
   --color-foreground: hsl(215 25% 15%);
 
@@ -43,7 +46,9 @@
   /* Refined blue shadows */
   --shadow-weightless: 0 4px 16px -4px rgba(14, 113, 219, 0.12);
   --shadow-antigravity: 0 12px 40px -12px rgba(14, 113, 219, 0.18);
+}
 
+:root {
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
   --radius-sm: 0.75rem;

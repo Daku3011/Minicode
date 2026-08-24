@@ -8,11 +8,12 @@ import {
     ThumbsUp,
     ThumbsDown,
     Trash2,
-    Edit3,
     Clock,
     User,
     Globe,
     Lock,
+    MessageSquare,
+    Send,
 } from "lucide-react";
 import { snippetApi } from "@/lib/snippet-api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,9 @@ interface Snippet {
 interface Comment {
     id: number;
     content: string;
+    user_id?: number;
+    author_name?: string;
+    author_avatar?: string | null;
     created_at: string;
 }
 
@@ -44,6 +48,9 @@ export default function SnippetDetailPage() {
     const { user } = useAuth();
     const [snippet, setSnippet] = useState<Snippet | null>(null);
     const [votes, setVotes] = useState({ upvotes: 0, downvotes: 0 });
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState("");
+    const [postingComment, setPostingComment] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -53,6 +60,7 @@ export default function SnippetDetailPage() {
             .then((res: any) => {
                 setSnippet(res.data.snippet);
                 setVotes({ upvotes: res.data.snippet.upvotes, downvotes: res.data.snippet.downvotes });
+                setComments(res.data.comments || []);
             })
             .catch(() => router.push("/snippets"))
             .finally(() => setLoading(false));
@@ -64,6 +72,19 @@ export default function SnippetDetailPage() {
             const res: any = await snippetApi.vote(snippet.id, voteType);
             setVotes(res.data);
         } catch {}
+    };
+
+    const handleComment = async () => {
+        if (!snippet || !newComment.trim()) return;
+        setPostingComment(true);
+        try {
+            const res: any = await snippetApi.comment(snippet.id, newComment.trim());
+            setComments((prev) => [...prev, res.data]);
+            setNewComment("");
+        } catch {}
+        finally {
+            setPostingComment(false);
+        }
     };
 
     const handleDelete = async () => {
@@ -111,20 +132,13 @@ export default function SnippetDetailPage() {
                             </div>
                             <div className="flex items-center gap-2 shrink-0 ml-4">
                                 {isOwner && (
-                                    <>
-                                        <button
-                                            onClick={() => router.push(`/snippets/${snippet.id}/edit`)}
-                                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        >
-                                            <Edit3 className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={handleDelete}
-                                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </>
+                                    <button
+                                        onClick={handleDelete}
+                                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                        aria-label="Delete snippet"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 )}
                             </div>
                         </div>
@@ -172,6 +186,7 @@ export default function SnippetDetailPage() {
                         <button
                             onClick={() => handleVote("upvote")}
                             className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-colors"
+                            aria-label="Upvote snippet"
                         >
                             <ThumbsUp className="w-4 h-4" />
                             {votes.upvotes}
@@ -179,10 +194,93 @@ export default function SnippetDetailPage() {
                         <button
                             onClick={() => handleVote("downvote")}
                             className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm hover:bg-rose-50 hover:border-rose-200 hover:text-rose-700 transition-colors"
+                            aria-label="Downvote snippet"
                         >
                             <ThumbsDown className="w-4 h-4" />
                             {votes.downvotes}
                         </button>
+                    </div>
+
+                    {/* Comments */}
+                    <div className="border-t border-slate-100 p-6 space-y-5">
+                        <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                            <MessageSquare className="w-4 h-4 text-blue-600" />
+                            Comments ({comments.length})
+                        </h2>
+
+                        {comments.length === 0 && (
+                            <p role="status" className="text-sm text-slate-400 py-2">
+                                No comments yet. Start the conversation.
+                            </p>
+                        )}
+
+                        {comments.length > 0 && (
+                            <ul role="list" className="space-y-4">
+                                {comments.map((comment) => (
+                                    <li key={comment.id} className="flex gap-3">
+                                        <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center text-slate-500">
+                                            {comment.author_avatar ? (
+                                                <img
+                                                    src={comment.author_avatar}
+                                                    alt=""
+                                                    referrerPolicy="no-referrer"
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <User className="w-4 h-4" />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1 rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
+                                            <div className="flex flex-wrap items-center gap-x-2 text-xs">
+                                                <span className="font-semibold text-slate-700">
+                                                    {comment.author_name || "unknown"}
+                                                </span>
+                                                <span className="text-slate-400">
+                                                    {new Date(comment.created_at).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <p className="mt-1 whitespace-pre-wrap break-words text-sm text-slate-600">
+                                                {comment.content}
+                                            </p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
+                        {user ? (
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleComment();
+                                }}
+                                className="flex items-end gap-3 pt-1"
+                            >
+                                <label htmlFor="snippet-comment" className="sr-only">
+                                    Add a comment
+                                </label>
+                                <textarea
+                                    id="snippet-comment"
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    placeholder="Add a comment…"
+                                    rows={2}
+                                    className="flex-1 resize-none rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={postingComment || !newComment.trim()}
+                                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                                    aria-label="Post comment"
+                                >
+                                    <Send className="w-4 h-4" />
+                                </button>
+                            </form>
+                        ) : (
+                            <p className="text-sm text-slate-400">
+                                Log in to join the discussion.
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

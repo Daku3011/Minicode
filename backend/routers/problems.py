@@ -92,7 +92,12 @@ def get_problem_testcases(problem_id: int, session: Session = Depends(get_sessio
     if not samples:
         samples = test_cases
     return [
-        {"id": tc.id, "input": tc.input_data, "expected_output": tc.expected_output}
+        {
+            "id": tc.id,
+            "input": tc.input_data,
+            "expected_output": tc.expected_output,
+            "explanation": tc.explanation,
+        }
         for tc in samples
     ]
 
@@ -100,6 +105,7 @@ def get_problem_testcases(problem_id: int, session: Session = Depends(get_sessio
 class TestCaseCreate(BaseModel):
     input_data: str
     expected_output: str
+    explanation: Optional[str] = None
     is_sample: bool = False
 
 
@@ -139,6 +145,7 @@ def add_test_case(
         problem_id=problem_id,
         input_data=test_case.input_data,
         expected_output=test_case.expected_output,
+        explanation=test_case.explanation,
         is_sample=test_case.is_sample,
     )
     session.add(db_test_case)

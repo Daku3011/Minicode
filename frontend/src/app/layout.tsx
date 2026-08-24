@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import InteractiveBackground from "@/components/InteractiveBackground";
 import PageLoader from "@/components/PageLoader";
-import DesktopEnforcer from "@/components/DesktopEnforcer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import WelcomeModal from '@/components/WelcomeModal';
@@ -13,6 +12,11 @@ import ChatAssistant from '@/components/ChatAssistant';
 export const metadata: Metadata = {
   title: "MiniCode | Code. Compete. Evolve.",
   description: "A modern coding arena where students build real skills, compete with peers, and level up through real-world challenges.",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -30,8 +34,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
         <ThemeProvider>
-        <AuthProvider>
-          <DesktopEnforcer>
+          <AuthProvider>
             <Suspense fallback={null}>
               <PageLoader />
             </Suspense>
@@ -42,10 +45,9 @@ export default function RootLayout({
                 {children}
               </Suspense>
             </main>
-              <WelcomeModal />
-              <ChatAssistant />
-          </DesktopEnforcer>
-        </AuthProvider>
+            <WelcomeModal />
+            <ChatAssistant />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -73,6 +73,7 @@ class TestCase(SQLModel, table=True):
     problem_id: int = Field(foreign_key="problem.id")
     input_data: str
     expected_output: str
+    explanation: Optional[str] = None  # LeetCode-style "why this output" note shown with samples
     is_sample: bool = Field(default=False)
 
     problem: Problem = Relationship(back_populates="test_cases")

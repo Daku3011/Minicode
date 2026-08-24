@@ -118,9 +118,20 @@ def get_snippet(
     comments = session.exec(
         select(SnippetComment).where(SnippetComment.snippet_id == snippet_id)
     ).all()
+    comment_list = [
+        {
+            "id": c.id,
+            "content": c.content,
+            "user_id": c.user_id,
+            "author_name": c.author.username if c.author else "unknown",
+            "author_avatar": c.author.avatar_url if c.author else None,
+            "created_at": c.created_at.isoformat(),
+        }
+        for c in comments
+    ]
     return {
         "snippet": snippet,
-        "comments": comments,
+        "comments": comment_list,
     }
 
 
@@ -170,3 +181,34 @@ def vote_snippet(
         return svc_vote(snippet_id, user.id, data.vote_type, session=session)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/{snippet_id}/comment")
+def comment_snippet(
+    snippet_id: int,
+    data: SnippetCommentInput,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    content = data.content.strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="Comment cannot be empty")
+    snippet = svc_get(snippet_id, session=session)
+    if not snippet:
+        raise HTTPException(status_code=404, detail="Snippet not found")
+
+    comment = SnippetComment(
+        snippet_id=snippet_id,
+        user_id=user.id,
+        content=content,
+    )
+    session.add(comment)
+    session.commit()
+    session.refresh(comment)
+    return {
+        "id": comment.id,
+        "content": comment.content,
+        "author_name": user.username,
+        "author_avatar": user.avatar_url if hasattr(user, "avatar_url") else None,
+        "created_at": comment.created_at.isoformat(),
+    }
