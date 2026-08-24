@@ -14,6 +14,9 @@ elif [ "$1" = "api" ]; then
     exec gunicorn main:app \
         --workers 2 \
         --worker-class uvicorn.workers.UvicornWorker \
+        --timeout "${GUNICORN_TIMEOUT:-180}" \
+        --graceful-timeout 60 \
+        --keep-alive 5 \
         --bind 0.0.0.0:$PORT
 else
     echo "Starting all services..."
@@ -22,5 +25,8 @@ else
     gunicorn main:app \
         --workers 1 \
         --worker-class uvicorn.workers.UvicornWorker \
+        --timeout "${GUNICORN_TIMEOUT:-180}" \
+        --graceful-timeout 60 \
+        --keep-alive 5 \
         --bind 0.0.0.0:$PORT
 fi

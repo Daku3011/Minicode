@@ -283,7 +283,12 @@ async def judge_submission(
             "submission_id": submission.id,
             "status": submission.status
         }))
-        await r.aclose()
+        # redis-py < 5 exposes close(), >= 5.0.1 exposes aclose()
+        closer = getattr(r, "aclose", None) or getattr(r, "close", None)
+        if closer is not None:
+            result = closer()
+            if hasattr(result, "__await__"):
+                await result
     except Exception as e:
         logger.error(f"Failed to publish WebSocket event: {e}")
 

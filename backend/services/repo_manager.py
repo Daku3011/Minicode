@@ -119,7 +119,12 @@ def create_student_repo(user: User, problem: Problem, session: Session):
 
         return repo.html_url
     except Exception as e:
-        logger.error(f"Error creating repo: {e}")
+        # "name already exists" is expected when a student re-opens a problem —
+        # the fallback below returns the existing repo, so log it as info.
+        if "already exists" in str(e):
+            logger.info(f"Repo {repo_name} already exists for {user.username}; returning existing repository.")
+        else:
+            logger.error(f"Error creating repo: {e}")
         # If repo already exists, just return its URL or handle accordingly
         try:
             # Prefer authenticated owner login over local username to avoid mismatch issues.

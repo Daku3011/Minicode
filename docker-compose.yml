@@ -4,7 +4,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    command: ["gunicorn", "main:app", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+    command: ["gunicorn", "main:app", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "--timeout", "180", "--graceful-timeout", "60", "--keep-alive", "5", "--bind", "0.0.0.0:8000"]
     ports:
       - "8000:8000"
     environment:
