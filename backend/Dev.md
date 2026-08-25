@@ -410,6 +410,13 @@ Operational note:
 - If Docker sandbox is unavailable, falls back to AI-only evaluation.
 - AI-detection note: the heuristic warning banner only appears when `ai_probability > 85`, and its wording is non-accusatory with an explicit disclaimer that faculty review is required — this avoids false-positive shaming of students who write clean, well-commented code.
 
+### Redis / Celery cost notes (managed providers)
+
+- Celery's Redis transport polls queues continuously; on command-metered providers (Upstash) this dominates usage. `broker_transport_options.polling_interval` (default 5 s via `CELERY_POLLING_INTERVAL`) throttles it.
+- Task results are disabled by default (`task_ignore_result=True`); enable only via `CELERY_RESULT_BACKEND`.
+- HTTP cache can bypass Redis entirely with `CACHE_BACKEND=memory` (`main.py`).
+- Full audit and hosting options: `Docs/ARCHITECTURE.md`.
+
 ### Sandbox Architecture (`backend/sandbox/`)
 
 ```

@@ -51,8 +51,12 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize database: {e}")
 
     # Initialize Cache (Redis or InMemory)
+    # HTTP response cache: "auto" uses Redis when reachable, or force
+    # CACHE_BACKEND=memory to keep command-based providers (Upstash) cheap.
+    cache_backend = os.getenv("CACHE_BACKEND", "auto").lower()
     redis_url = os.getenv("REDIS_URL")
-    if redis_url:
+    use_redis_cache = cache_backend == "redis" or (cache_backend == "auto" and bool(redis_url))
+    if use_redis_cache and redis_url:
         try:
             redis = aioredis.from_url(redis_url)
             await redis.ping()
@@ -69,7 +73,10 @@ async def lifespan(app: FastAPI):
         from fastapi_cache.backends.inmemory import InMemoryBackend
 
         FastAPICache.init(InMemoryBackend(), prefix="minicode-cache")
-        logger.info("InMemory cache initialized (No REDIS_URL provided)")
+        if cache_backend == "memory":
+            logger.info("InMemory cache initialized (CACHE_BACKEND=memory)")
+        else:
+            logger.info("InMemory cache initialized (No REDIS_URL provided)")
 
     # Start Redis websocket listener
     manager.redis_task = asyncio.create_task(manager.listen_redis_events())

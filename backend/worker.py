@@ -30,15 +30,28 @@ if redis_url.startswith("rediss://") and "ssl_cert_reqs" not in redis_url:
 
 celery_config = {
     "broker_url": redis_url,
-    "result_backend": redis_url,
-    "result_expires": 3600,
     "task_serializer": "json",
     "accept_content": ["json"],
     "result_serializer": "json",
     "timezone": "UTC",
     "enable_utc": True,
     "broker_connection_retry_on_startup": True,
+    # Viscous polling: BRPOP every N seconds instead of continuously.
+    # Critical for metered Redis providers (Upstash bills per command).
+    "broker_transport_options": {
+        "polling_interval": float(os.getenv("CELERY_POLLING_INTERVAL", "5")),
+        "visibility_timeout": int(os.getenv("CELERY_VISIBILITY_TIMEOUT", "3600")),
+    },
+    "worker_prefetch_multiplier": 1,
 }
+
+# Task results are never consumed by the app — persisting them to Redis costs
+# commands for nothing. Only enable when CELERY_RESULT_BACKEND is explicitly set.
+if os.getenv("CELERY_RESULT_BACKEND"):
+    celery_config["result_backend"] = os.getenv("CELERY_RESULT_BACKEND")
+    celery_config["result_expires"] = int(os.getenv("CELERY_RESULT_EXPIRES", "3600"))
+else:
+    celery_config["task_ignore_result"] = True
 
 if redis_url.startswith("rediss://"):
     import ssl
@@ -193,13 +206,16 @@ def send_faculty_reports_task():
 
 
 celery_app.conf.beat_schedule = {
-    "sync-xp-every-5-minutes": {
+    "sync-xp-every-30-minutes": {
         "task": "sync_xp_task",
-        "schedule": 300.0,
+        # XP also syncs on every accepted submission; the periodic sweep is a safety net.
+        "schedule": float(os.getenv("SYNC_XP_INTERVAL_SECONDS", "1800")),
     },
-    "refresh-leaderboard-every-5-minutes": {
+    "refresh-leaderboard-every-15-minutes": {
         "task": "refresh_leaderboard_task",
-        "schedule": 300.0,
+        # The leaderboard endpoint is cached for 60s and invalidated on every
+        # submission — this periodic refresh is only a consistency backstop.
+        "schedule": float(os.getenv("LEADERBOARD_REFRESH_INTERVAL_SECONDS", "900")),
     },
     "send-inactive-reminders-daily": {
         "task": "send_inactive_reminders_task",

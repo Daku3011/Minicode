@@ -67,10 +67,14 @@ if DATABASE_URL.startswith("sqlite"):
 else:
     engine = create_engine(
         DATABASE_URL,
-        pool_size=10,        # Connections to stay alive
-        max_overflow=20,     # Extra connections during bursts
+        # Keep totals modest for managed Postgres connection limits (e.g.
+        # Supabase): 2 gunicorn workers + celery worker × (pool + overflow)
+        # must stay under the plan cap. Prefer the Supavisor pooler (port
+        # 6543) for the app URL; use the direct 5432 URL only for migrations.
+        pool_size=int(os.getenv("DB_POOL_SIZE", "5")),
+        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "5")),
         pool_pre_ping=True,   # Verify connection is up before giving it to user
-        pool_recycle=300,    # Recycle connections every 5 minutes to avoid stale pools
+        pool_recycle=int(os.getenv("DB_POOL_RECYCLE", "300")),  # Recycle connections to avoid stale pools
     )
 
 def get_session():

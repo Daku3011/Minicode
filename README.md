@@ -379,6 +379,16 @@ Seed data provides:
 | WebSocket disconnect | Check Redis connectivity |
 | Can't submit from phone | By design — mobile is view-only (browse problems/events/hackathons/profile); submissions require a desktop browser (≥1024px) |
 | Judge says `solution.*` not found | Ensure exactly one `solution.<ext>` file exists at the repo root with the correct extension for your language |
+| Upstash command quota exhausted | Switch `REDIS_URL` to Render Key Value (free, no per-command billing) and set `CACHE_BACKEND=memory`; see [ARCHITECTURE.md](./Docs/ARCHITECTURE.md) |
+| Too many DB connections | Use the Supabase Supavisor pooler URL (port 6543) and lower `DB_POOL_SIZE`/`DB_MAX_OVERFLOW` |
+
+---
+
+## Production Hosting
+
+Current production layout: **Vercel** (frontend) · **Render** (API + Celery worker) · **Supabase** (Postgres) · **Redis** (Render Key Value recommended over command-metered Upstash — free tier has no command limits).
+
+See **[Docs/ARCHITECTURE.md](./Docs/ARCHITECTURE.md)** for the full architecture review: Redis command audit, provider comparison, connection-pool tuning, cost options and the improvement roadmap.
 
 ### Debug Commands
 

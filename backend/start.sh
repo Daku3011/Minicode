@@ -5,7 +5,10 @@ echo "Starting MiniCode services..."
 
 if [ "$1" = "celery-worker" ]; then
     echo "Starting Celery Worker..."
-    exec celery -A worker.celery_app worker --loglevel=info --concurrency=4
+    # Concurrency 1 is sufficient: judging is I/O-bound (AI provider calls).
+    # Fewer consumer processes = fewer Redis BRPOP polling commands.
+    exec celery -A worker.celery_app worker --loglevel=info \
+        --concurrency="${CELERY_CONCURRENCY:-1}"
 elif [ "$1" = "celery-beat" ]; then
     echo "Starting Celery Beat..."
     exec celery -A worker.celery_app beat --loglevel=info -s /tmp/celerybeat-schedule
@@ -20,7 +23,8 @@ elif [ "$1" = "api" ]; then
         --bind 0.0.0.0:$PORT
 else
     echo "Starting all services..."
-    celery -A worker.celery_app worker --loglevel=info --concurrency=1 &
+    celery -A worker.celery_app worker --loglevel=info \
+        --concurrency="${CELERY_CONCURRENCY:-1}" &
     celery -A worker.celery_app beat --loglevel=info -s /tmp/celerybeat-schedule &
     gunicorn main:app \
         --workers 1 \
