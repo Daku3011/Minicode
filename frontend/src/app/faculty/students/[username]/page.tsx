@@ -32,11 +32,18 @@ export default function FacultyStudentProfilePage() {
                 ]);
 
                 const student = studentRes.data;
-                const problems = problemsRes.data || [];
-                const leaderboard = leaderboardRes.data || [];
+                // Endpoints may return wrapped payloads ({items: [...]}) — normalize to arrays.
+                const problems = Array.isArray(problemsRes.data)
+                    ? problemsRes.data
+                    : problemsRes.data?.items || [];
+                const leaderboard = Array.isArray(leaderboardRes.data)
+                    ? leaderboardRes.data
+                    : leaderboardRes.data?.items || [];
 
                 // Find rank in leaderboard
-                const entry = leaderboard.find((e: any) => e.username === username);
+                const entry = Array.isArray(leaderboard)
+                    ? leaderboard.find((e: any) => e.username === username)
+                    : undefined;
                 const rank = entry ? entry.rank : (student.stats?.rank || 0);
 
                 setProfileData({
