@@ -22,11 +22,21 @@ Backend responsibilities:
 - SQLModel + SQLAlchemy engine management
 - Celery + Redis
 - PyGithub
-- Google Gemini API (`google-genai`)
+- Multi-provider AI layer (`services/ai_generator.py`): OpenRouter / NVIDIA NIM / OpenCode Zen / Google Gemini — OpenAI-compatible HTTP via `httpx`, Gemini via `google-genai`
 - JWT (`python-jose`) + password hashing (`passlib[bcrypt]`)
 - Caching (`fastapi-cache2`)
 - Security sanitization (`bleach`)
 - Docker SDK for Python (sandbox execution)
+
+### AI Provider Configuration
+
+All AI features route through `services/ai_generator.generate_content_with_retry(prompt, response_mime_type=None)`:
+
+- Providers are tried in `AI_PROVIDER_ORDER` (default `openrouter,nvidia,zen,gemini`), skipping any without an API key.
+- Each provider has a configurable comma-separated model list (`OPENROUTER_MODELS`, `NVIDIA_MODELS`, `ZEN_MODELS`, `GEMINI_MODELS`).
+- Retry/failover: up to 3 attempts per model on 429/503/quota errors, then the next model, then the next provider.
+- JSON mode (`response_mime_type="application/json"`) sends `response_format: json_object` and silently retries without it for models that reject it.
+- `has_ai_provider()` gates feature availability; with zero keys configured, generation raises `RuntimeError("No AI provider configured…")`.
 
 ## 3. Runtime Entry Points
 
@@ -225,7 +235,7 @@ Google login rule:
 - `GET /roadmap/streams/{id}` — Stream detail with milestone progress for user
 - `POST /roadmap/milestones/{id}/start` — Start a milestone
 - `POST /roadmap/milestones/{id}/submit` — Upload file for AI evaluation
-- `POST /roadmap/milestones/{id}/learning-materials` — Generate personalized hints/resources via Gemini
+- `POST /roadmap/milestones/{id}/learning-materials` — Generate personalized hints/resources via the configured AI provider
 - `POST /roadmap/streams/{id}/chat` — Stream-specific AI chatbot
 - `POST /roadmap/milestones/{id}/subtask-toggle` — Toggle subtask completion
 - `POST /roadmap/milestones/{id}/generate-subtasks` — AI subtask generation
@@ -386,7 +396,7 @@ Trigger path:
 3. Celery worker loads submission/user/problem/test cases.
 4. `judge_submission(...)` fetches repository solution and commit history.
 5. **Sandbox execution** (if available): Code runs in Docker container against test cases.
-6. `run_ai_judge(...)` prompts Gemini for:
+6. `run_ai_judge(...)` prompts the configured AI provider for:
    - status
    - score
    - ai_probability (conservative, evidence-based: style alone is never sufficient; only >70 with concrete corroboration such as single-commit paste of a full solution or tool references in comments)
@@ -425,7 +435,7 @@ Sandbox runner features:
 | Service | File | Responsibility |
 |---------|------|---------------|
 | Auth | `services/auth.py` | Password hashing, token management, OAuth, role guards |
-| Judge | `services/judge.py` | AI code evaluation via Gemini |
+| Judge | `services/judge.py` | AI code evaluation via configured provider |
 | Sandbox Judge | `services/sandbox_judge.py` | Docker sandbox execution + AI quality feedback |
 | AI Generator | `services/ai_generator.py` | AI content generation with model failover |
 | Repo Manager | `services/repo_manager.py` | GitHub repo creation and file management |

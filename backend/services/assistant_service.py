@@ -1,11 +1,8 @@
 import logging
-import os
 import time
 from collections import defaultdict
 
-from google import genai
-
-from services.ai_generator import generate_content_with_retry
+from services.ai_generator import generate_content_with_retry, has_ai_provider
 
 logger = logging.getLogger(__name__)
 
@@ -55,11 +52,9 @@ async def chat_with_assistant(
     user_level: int | None = None,
     recent_problems: list[str] | None = None,
 ) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set")
+    if not has_ai_provider():
+        raise RuntimeError("No AI provider configured")
 
-    client = genai.Client(api_key=api_key)
     context = _build_context_prompt(user_level, recent_problems)
     history = memory.get_history(user_id)
 
@@ -90,7 +85,7 @@ Guidelines:
 6. If the query is off-topic or inappropriate, politely redirect to programming topics."""
 
     try:
-        response_text = await generate_content_with_retry(client, prompt)
+        response_text = await generate_content_with_retry(prompt)
         memory.add_message(user_id, "user", query)
         memory.add_message(user_id, "assistant", response_text)
         return response_text
@@ -105,11 +100,9 @@ async def generate_hint(
     problem_description: str,
     user_level: int | None = None,
 ) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set")
+    if not has_ai_provider():
+        raise RuntimeError("No AI provider configured")
 
-    client = genai.Client(api_key=api_key)
     level_label = _get_user_level_label(user_level)
 
     prompt = f"""You are a helpful coding tutor on MiniCode. Generate a contextual hint for the following problem.
@@ -128,7 +121,7 @@ Provide 2-3 hints that:
 Respond with a concise hint in Markdown format."""
 
     try:
-        return await generate_content_with_retry(client, prompt)
+        return await generate_content_with_retry(prompt)
     except Exception as e:
         logger.error(f"Hint generation error: {e}")
         raise
@@ -141,11 +134,8 @@ async def explain_submission_failure(
     judge_output: str | None = None,
     language: str | None = None,
 ) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set")
-
-    client = genai.Client(api_key=api_key)
+    if not has_ai_provider():
+        raise RuntimeError("No AI provider configured")
 
     prompt = f"""You are a code review assistant on MiniCode. A student's submission failed.
 Explain why in a helpful, educational way.
@@ -171,7 +161,7 @@ Provide:
 Format your response in Markdown with code snippets where helpful."""
 
     try:
-        return await generate_content_with_retry(client, prompt)
+        return await generate_content_with_retry(prompt)
     except Exception as e:
         logger.error(f"Submission explanation error: {e}")
         raise

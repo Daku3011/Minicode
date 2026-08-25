@@ -4,7 +4,6 @@ import os
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from sqlmodel import Session, select
-from google import genai
 
 from core.models import User, Problem
 from core.models_interview import Interview, InterviewSession
@@ -125,8 +124,8 @@ def evaluate_interview(session_id: int, db_session: Session) -> dict:
     code_snapshots = json.loads(interview_session.code_snapshots_json) if interview_session.code_snapshots_json else {}
     recording = json.loads(interview_session.recording_json) if interview_session.recording_json else []
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    from services.ai_generator import has_ai_provider
+    if not has_ai_provider():
         return {"error": "AI evaluation not available"}
 
     prompt = f"""You are an AI interview evaluator. Evaluate the candidate's performance.
@@ -158,12 +157,14 @@ Return a JSON object:
 """
 
     try:
-        from services.ai_generator import generate_content_with_retry
+        from services.ai_generator import generate_content_with_retry, has_ai_provider
         import anyio
 
-        client = genai.Client(api_key=api_key)
+        if not has_ai_provider():
+            raise RuntimeError("No AI provider configured")
+
         response_text = anyio.run(
-            generate_content_with_retry, client, prompt, "gemini-3-flash-preview", "application/json"
+            generate_content_with_retry, prompt, "application/json"
         )
         result = json.loads(response_text)
 

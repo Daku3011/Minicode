@@ -179,7 +179,7 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 | **Backend** | FastAPI | 0.115+ |
 | **Database** | SQLModel + PostgreSQL | 15 |
 | **Cache/Broker** | Redis + Celery | 5.4+ |
-| **AI Judge** | Google Gemini | 2.5 |
+| **AI Judge** | Multi-provider (OpenRouter / NVIDIA NIM / OpenCode Zen / Gemini) | Free-tier friendly, auto-failover |
 | **Auth** | JWT + OAuth2 | - |
 | **Container** | Docker | 24+ |
 | **Sandbox** | Docker + seccomp | Python/Node/Java |
@@ -301,6 +301,22 @@ Seed data provides:
 | `FRONTEND_API_URL` | Backend URL for frontend |
 | `RESEND_API_KEY` | Email provider API key |
 | `SMTP_EMAIL` / `SMTP_PASSWORD` | SMTP fallback credentials |
+
+### AI Providers (pick any — first configured wins, with automatic failover)
+
+| Variable | Description |
+|----------|-------------|
+| `AI_PROVIDER_ORDER` | Priority order, default `openrouter,nvidia,zen,gemini` |
+| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) — free-tier models (`deepseek-chat-v3:free`, `llama-3.3-70b:free`, …) |
+| `OPENROUTER_MODELS` | Comma-separated model list override |
+| `NVIDIA_API_KEY` | [NVIDIA NIM](https://build.nvidia.com) — free credits, very fast (`meta/llama-3.3-70b-instruct`, …) |
+| `NVIDIA_MODELS` | Comma-separated model list override |
+| `ZEN_API_KEY` | [OpenCode Zen](https://opencode.ai/zen) — code-focused gateway |
+| `ZEN_BASE_URL` / `ZEN_MODELS` | Zen gateway overrides (default `https://opencode.ai/zen/v1`, `grok-code`) |
+| `GEMINI_API_KEY` | Google Gemini — kept as fallback provider |
+| `GEMINI_MODELS` | Default `gemini-2.5-flash,gemini-2.0-flash` |
+
+> **Recommendation:** Set `OPENROUTER_API_KEY` + `NVIDIA_API_KEY` together — OpenRouter's free models handle day-to-day load and NVIDIA NIM absorbs spikes; Gemini remains a last-resort fallback if already configured.
 
 ---
 

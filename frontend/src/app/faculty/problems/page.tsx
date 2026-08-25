@@ -162,6 +162,22 @@ export default function FacultyProblemsPage() {
                     </div>
                 </div>
 
+                {/* What's new for faculty */}
+                <div className="mb-10 bg-blue-50/60 border border-blue-100 rounded-2xl p-5 sm:p-6">
+                    <h2 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-blue-700 mb-3">
+                        <Sparkles className="w-4 h-4" />
+                        Updated authoring tools
+                    </h2>
+                    <ul className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-2 text-[13px] font-medium text-slate-600 leading-relaxed list-disc pl-5 marker:text-blue-400">
+                        <li>AI generation now produces LeetCode-style statements — Overview, Understanding the Problem, worked Examples with Explanations and Approach Hints — and auto-fills the test-case table with explanations.</li>
+                        <li>Add an optional Explanation per test case; students see it under each sample like LeetCode.</li>
+                        <li>Every problem page now shows Submission Guidelines (all languages accepted, base-file renaming, git command notes, fair-play rules) and seeded repo READMEs include them too.</li>
+                    </ul>
+                    <p className="mt-3 text-xs font-semibold text-slate-500">
+                        Tip: use the AI Improve action while editing a problem to expand older short statements into the new format instantly.
+                    </p>
+                </div>
+
                 {/* Search & Filters */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
                     <div className="relative flex-1 group">

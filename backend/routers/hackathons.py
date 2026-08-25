@@ -6,14 +6,11 @@ from pydantic import BaseModel
 import os
 import logging
 import json
-from google import genai
-from google.genai import types
-import anyio
 
 from core.models import Hackathon, User
 from services.auth import get_session, get_current_user
 from services.hackathon_scraper import update_hackathons_cache
-from services.ai_generator import generate_content_with_retry
+from services.ai_generator import generate_content_with_retry, has_ai_provider
 
 logger = logging.getLogger(__name__)
 
@@ -86,9 +83,8 @@ async def hackathon_ai_chat(
         
     context_str = json.dumps(context_data, indent=2)
     
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="AI configuration missing (GEMINI_API_KEY).")
+    if not has_ai_provider():
+        raise HTTPException(status_code=500, detail="AI assistant is not configured.")
         
     prompt = f"""
     You are an AI Hackathon Assistant on the MiniCode platform. Your goal is to help technical students register, discover, and participate in hackathons successfully.
@@ -106,9 +102,8 @@ async def hackathon_ai_chat(
     """
     
     try:
-        client = genai.Client(api_key=api_key)
-        response_text = await generate_content_with_retry(client, prompt)
+        response_text = await generate_content_with_retry(prompt)
         return {"response": response_text}
     except Exception as e:
-        logger.error(f"Gemini Chat Error: {e}")
+        logger.error(f"AI Chat Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to process AI request.")

@@ -8,13 +8,12 @@ import os
 import re
 from datetime import datetime, timezone
 from urllib.parse import urlparse
-from google import genai
 
 from core.database import get_session, engine
 from core.models import User, Stream, Milestone, UserMilestoneProgress, Notification
 from services.auth import get_current_user
 from services.sync_xp import calculate_unlocked_level_from_xp
-from services.ai_generator import generate_content_with_retry, extract_text_from_file
+from services.ai_generator import generate_content_with_retry, extract_text_from_file, has_ai_provider
 
 logger = logging.getLogger(__name__)
 
@@ -401,11 +400,9 @@ async def submit_milestone(
     if not combined_text:
         raise HTTPException(status_code=400, detail="Could not extract text from any uploaded file")
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    if not has_ai_provider():
         raise HTTPException(status_code=500, detail="AI configuration missing")
 
-    client = genai.Client(api_key=api_key)
 
     stream_name = milestone.stream.name if milestone.stream else "Unknown"
 
@@ -443,7 +440,7 @@ async def submit_milestone(
     """
 
     try:
-        response_text = await generate_content_with_retry(client, prompt, response_mime_type="application/json")
+        response_text = await generate_content_with_retry(prompt, response_mime_type="application/json")
         result = json.loads(response_text)
     except Exception as e:
         logger.error(f"Gemini evaluation failed: {e}")
@@ -550,8 +547,7 @@ async def stream_chat(
         for m in milestones
     )
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    if not has_ai_provider():
         raise HTTPException(status_code=500, detail="AI configuration missing")
 
     prompt = f"""
@@ -574,8 +570,7 @@ async def stream_chat(
     """
 
     try:
-        client = genai.Client(api_key=api_key)
-        response_text = await generate_content_with_retry(client, prompt)
+        response_text = await generate_content_with_retry(prompt)
         return {"response": response_text}
     except Exception as e:
         logger.error(f"Gemini Chat Error: {e}")
@@ -618,8 +613,7 @@ async def generate_learning_materials(
     if req.context:
         user_context += f"\nStudent's specific request: {req.context}"
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    if not has_ai_provider():
         raise HTTPException(status_code=500, detail="AI configuration missing")
 
     prompt = f"""
@@ -654,8 +648,7 @@ async def generate_learning_materials(
     """
 
     try:
-        client = genai.Client(api_key=api_key)
-        response_text = await generate_content_with_retry(client, prompt, response_mime_type="application/json")
+        response_text = await generate_content_with_retry(prompt, response_mime_type="application/json")
         result = json.loads(response_text)
         return {
             "hints": result.get("hints", ""),
@@ -711,8 +704,7 @@ async def generate_subtasks(
         for idx, m in enumerate(all_milestones)
     )
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    if not has_ai_provider():
         raise HTTPException(status_code=500, detail="AI configuration missing")
 
     prompt = f"""You are an expert curriculum designer and mentor on the MiniCode coding education platform.
@@ -764,7 +756,6 @@ Make the guidance PRACTICAL and SPECIFIC. Students are beginners to intermediate
 """
 
     try:
-        client = genai.Client(api_key=api_key)
         response_text = await generate_content_with_retry(
             client, prompt, response_mime_type="application/json"
         )
@@ -838,8 +829,7 @@ async def generate_next_milestone(session: Session, milestone: Milestone):
         for m in existing
     )
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    if not has_ai_provider():
         return None
 
     prompt = f"""
@@ -876,8 +866,7 @@ async def generate_next_milestone(session: Session, milestone: Milestone):
     """
 
     try:
-        client = genai.Client(api_key=api_key)
-        response_text = await generate_content_with_retry(client, prompt, response_mime_type="application/json")
+        response_text = await generate_content_with_retry(prompt, response_mime_type="application/json")
         result = json.loads(response_text)
 
         new_milestone = Milestone(

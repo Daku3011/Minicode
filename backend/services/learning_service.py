@@ -4,7 +4,6 @@ import os
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 from sqlmodel import Session, select, func
-from google import genai
 
 from core.models import User, Problem, Submission
 from services.sync_xp import XP_TO_LEVEL, LEVEL_NAMES
@@ -261,12 +260,13 @@ def get_stats_summary(user_id: int, session: Session) -> dict:
 
 
 def get_ai_recommendations(user_id: int, session: Session) -> list:
+    from services.ai_generator import has_ai_provider
+
     weak_areas = get_weak_areas(user_id, session)
     stats = get_stats_summary(user_id, session)
     user = session.get(User, user_id)
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    if not has_ai_provider():
         return []
 
     weak_subjects_str = ", ".join(
@@ -295,12 +295,14 @@ Return a JSON object with 3-5 recommendations:
 """
 
     try:
-        client = genai.Client(api_key=api_key)
-        from services.ai_generator import generate_content_with_retry
+        from services.ai_generator import generate_content_with_retry, has_ai_provider
         import anyio
 
+        if not has_ai_provider():
+            return []
+
         response_text = anyio.run(
-            generate_content_with_retry, client, prompt, "gemini-3-flash-preview", "application/json"
+            generate_content_with_retry, prompt, "application/json"
         )
         result = json.loads(response_text)
         return result.get("recommendations", [])

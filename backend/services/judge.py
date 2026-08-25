@@ -1,21 +1,20 @@
 import os
 import logging
 import json
-from google import genai
 from core.models import Submission, TestCase, User, Problem
 from github import Github
 from services.auth import decrypt_token
 from utils.utils_cache import invalidate_leaderboard_cache
 from services.sync_xp import calculate_unlocked_level_from_xp
 from tenacity import retry, stop_after_attempt, wait_exponential
-from services.ai_generator import generate_content_with_retry
+from services.ai_generator import generate_content_with_retry, has_ai_provider
 from sqlmodel import Session
 
 logger = logging.getLogger(__name__)
 
 
 @retry(
-    stop=stop_after_attempt(3),
+    stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=10),
     reraise=True,
 )
@@ -27,13 +26,10 @@ async def run_ai_judge(
     persona: str = "standard",
 ):
     """
-    Uses Gemini to analyze the code, act as judge, and provide feedback + score.
+    Uses the configured AI provider to analyze the code, act as judge, and provide feedback + score.
     """
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        return None, "AI Judge unavailable (API key missing)."
-
-    client = genai.Client(api_key=api_key)
+    if not has_ai_provider():
+        return None, "AI Judge unavailable (no AI provider configured)."
 
     persona_prompts = {
         "standard": "You are a Fair & Experienced Coding Mentor and Judge.",
@@ -82,14 +78,7 @@ async def run_ai_judge(
     """
 
     try:
-        from google.genai import types
-
-        text = await generate_content_with_retry(
-            client,
-            prompt,
-            default_model="gemini-3-flash-preview",
-            response_mime_type="application/json"
-        )
+        text = await generate_content_with_retry(prompt, response_mime_type="application/json")
 
         # text already retrieved
         import re
@@ -124,7 +113,7 @@ async def run_ai_judge(
             fallback_feedback += f"\n\nRaw Output: {text}"
         return {"status": "error", "score": 0, "feedback": fallback_feedback}, None
     except Exception as e:
-        return None, f"Gemini Error: {str(e)}"
+        return None, f"AI Provider Error: {str(e)}"
 
 
 async def judge_submission(

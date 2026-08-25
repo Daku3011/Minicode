@@ -1,59 +1,176 @@
 import os
-import json
+import asyncio
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
+
+import httpx
 import anyio
-from google import genai
-from google.genai import types
 from pypdf import PdfReader
 from fastapi import UploadFile
 
 logger = logging.getLogger(__name__)
 
-async def generate_content_with_retry(client, prompt, default_model='gemini-3-flash-preview', response_mime_type=None) -> str:
-    models = [default_model, 'gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-3.1-flash-lite-preview']
-    last_exception = None
-    
-    unique_models = []
-    for m in models:
-        if m not in unique_models:
-            unique_models.append(m)
-            
-    for model_name in unique_models:
-        for attempt in range(3):
-            try:
-                logger.info(f"Attempting generation with model={model_name}, attempt={attempt+1}")
-                if hasattr(client, 'aio'):
-                    response = await client.aio.models.generate_content(
-                        model=model_name,
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            response_mime_type=response_mime_type,
-                        ) if response_mime_type else None
-                    )
-                else:
-                    response = await anyio.to_thread.run_sync(
-                        lambda: client.models.generate_content(
-                            model=model_name,
-                            contents=prompt,
-                            config=types.GenerateContentConfig(
-                                response_mime_type=response_mime_type,
-                            ) if response_mime_type else None
-                        )
-                    )
-                return response.text.strip()
-            except Exception as e:
-                last_exception = e
-                error_msg = str(e)
-                logger.warning(f"Gemini model {model_name} failed (attempt {attempt+1}): {error_msg}")
-                if "503" in error_msg or "demand" in error_msg or "quota" in error_msg or "429" in error_msg:
-                    await anyio.sleep(1.5 * (attempt + 1))
-                    continue
-                else:
-                    break
-    raise last_exception
+REQUEST_TIMEOUT = float(os.getenv("AI_REQUEST_TIMEOUT", "90"))
+ATTEMPTS_PER_MODEL = int(os.getenv("AI_ATTEMPTS_PER_MODEL", "3"))
+
+
+def _csv_env(name: str, default: List[str]) -> List[str]:
+    raw = os.getenv(name, "")
+    items = [x.strip() for x in raw.split(",") if x.strip()]
+    return items or default
+
+
+def _provider_chain() -> List[Dict[str, Any]]:
+    """
+    Builds the ordered provider chain from environment configuration.
+
+    Env vars:
+      AI_PROVIDER_ORDER   comma list, e.g. "openrouter,nvidia,gemini" (default order below)
+      OPENROUTER_API_KEY  https://openrouter.ai/keys          (free tier models available)
+      OPENROUTER_MODELS   e.g. "deepseek/deepseek-chat-v3-0324:free,meta-llama/llama-3.3-70b-instruct:free"
+      NVIDIA_API_KEY      https://build.nvidia.com            (free credits, fast NIM endpoints)
+      NVIDIA_MODELS       e.g. "meta/llama-3.3-70b-instruct,nvidia/llama-3.3-nemotron-super-49b-v1"
+      ZEN_API_KEY         https://opencode.ai/zen             (code-focused gateway)
+      ZEN_BASE_URL        default https://opencode.ai/zen/v1
+      ZEN_MODELS          e.g. "grok-code"
+      GEMINI_API_KEY      Google AI Studio (kept as a fallback provider)
+      GEMINI_MODELS       default "gemini-2.5-flash,gemini-2.0-flash"
+    """
+    default_order = ["openrouter", "nvidia", "zen", "gemini"]
+    order = [p.strip().lower() for p in os.getenv("AI_PROVIDER_ORDER", ",".join(default_order)).split(",") if p.strip()]
+    chain: List[Dict[str, Any]] = []
+
+    for name in order:
+        if name == "openrouter" and os.getenv("OPENROUTER_API_KEY"):
+            chain.append({
+                "name": "openrouter",
+                "kind": "openai",
+                "base_url": "https://openrouter.ai/api/v1",
+                "api_key": os.getenv("OPENROUTER_API_KEY"),
+                "models": _csv_env("OPENROUTER_MODELS", [
+                    "deepseek/deepseek-chat-v3-0324:free",
+                    "meta-llama/llama-3.3-70b-instruct:free",
+                ]),
+            })
+        elif name == "nvidia" and os.getenv("NVIDIA_API_KEY"):
+            chain.append({
+                "name": "nvidia",
+                "kind": "openai",
+                "base_url": "https://integrate.api.nvidia.com/v1",
+                "api_key": os.getenv("NVIDIA_API_KEY"),
+                "models": _csv_env("NVIDIA_MODELS", [
+                    "meta/llama-3.3-70b-instruct",
+                    "nvidia/llama-3.3-nemotron-super-49b-v1",
+                ]),
+            })
+        elif name == "zen" and os.getenv("ZEN_API_KEY"):
+            chain.append({
+                "name": "zen",
+                "kind": "openai",
+                "base_url": os.getenv("ZEN_BASE_URL", "https://opencode.ai/zen/v1").rstrip("/"),
+                "api_key": os.getenv("ZEN_API_KEY"),
+                "models": _csv_env("ZEN_MODELS", ["grok-code"]),
+            })
+        elif name == "gemini" and os.getenv("GEMINI_API_KEY"):
+            chain.append({
+                "name": "gemini",
+                "kind": "gemini",
+                "api_key": os.getenv("GEMINI_API_KEY"),
+                "models": _csv_env("GEMINI_MODELS", ["gemini-2.5-flash", "gemini-2.0-flash"]),
+            })
+
+    return chain
+
+
+def has_ai_provider() -> bool:
+    """True when at least one AI provider API key is configured."""
+    return len(_provider_chain()) > 0
+
+
+async def _call_openai_compatible(provider: Dict[str, Any], model: str, prompt: str, json_mode: bool) -> str:
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    headers = {
+        "Authorization": f"Bearer {provider['api_key']}",
+        "Content-Type": "application/json",
+    }
+    if provider["name"] == "openrouter":
+        headers["X-Title"] = "MiniCode"
+
+    async def _post(use_json_mode: bool) -> httpx.Response:
+        body = dict(payload)
+        if use_json_mode:
+            body["response_format"] = {"type": "json_object"}
+        async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
+            return await client.post(
+                f"{provider['base_url']}/chat/completions",
+                json=body,
+                headers=headers,
+            )
+
+    response = await _post(json_mode)
+    # Some models reject response_format — retry once without it.
+    if json_mode and response.status_code == 400:
+        response = await _post(False)
+    response.raise_for_status()
+    data = response.json()
+    content = data["choices"][0]["message"]["content"]
+    return (content or "").strip()
+
+
+async def _call_gemini(provider: Dict[str, Any], model: str, prompt: str, json_mode: bool) -> str:
+    from google import genai
+    from google.genai import types
+
+    client = genai.Client(api_key=provider["api_key"])
+    config = types.GenerateContentConfig(response_mime_type="application/json") if json_mode else None
+    if hasattr(client, "aio"):
+        response = await client.aio.models.generate_content(model=model, contents=prompt, config=config)
+    else:
+        response = await anyio.to_thread.run_sync(
+            lambda: client.models.generate_content(model=model, contents=prompt, config=config)
+        )
+    return (response.text or "").strip()
+
+
+async def generate_content_with_retry(prompt: str, response_mime_type: Optional[str] = None) -> str:
+    """
+    Generates text through the first available configured provider, failing over
+    across providers and models with retries (mirrors the previous Gemini-only loop).
+    """
+    json_mode = response_mime_type == "application/json"
+    providers = _provider_chain()
+    if not providers:
+        raise RuntimeError(
+            "No AI provider configured. Set one of OPENROUTER_API_KEY, NVIDIA_API_KEY, "
+            "ZEN_API_KEY or GEMINI_API_KEY."
+        )
+
+    last_exception: Optional[Exception] = None
+    for provider in providers:
+        for model in provider["models"]:
+            for attempt in range(1, ATTEMPTS_PER_MODEL + 1):
+                try:
+                    logger.info(f"AI generation via {provider['name']} model={model} attempt={attempt}")
+                    if provider["kind"] == "openai":
+                        return await _call_openai_compatible(provider, model, prompt, json_mode)
+                    return await _call_gemini(provider, model, prompt, json_mode)
+                except Exception as e:
+                    last_exception = e
+                    msg = str(e)
+                    logger.warning(f"{provider['name']}:{model} failed (attempt {attempt}): {msg}")
+                    if any(code in msg for code in ("503", "429", "quota", "demand", "rate")):
+                        await asyncio.sleep(1.5 * attempt)
+                        continue
+                    break  # non-retryable for this model — move to next model/provider
+
+    raise last_exception if last_exception else RuntimeError("AI generation failed.")
+
 
 _generate_content_with_retry = generate_content_with_retry
+
 
 # Predefined subjects mapping (matching frontend IDs)
 def extract_text_from_file(file_content: bytes, filename: str) -> str:
@@ -83,23 +200,17 @@ def extract_text_from_file(file_content: bytes, filename: str) -> str:
             return file_content.decode("latin-1").strip()
 
 async def generate_problem_content(text_content: str) -> Dict[str, Any]:
-    """Uses Gemini to generate problem content from extracted text."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set.")
-
-    client = genai.Client(api_key=api_key)
-    
+    """Uses the configured AI provider to generate problem content from extracted text."""
     SUBJECTS = [
-        "data-structures", "algorithms", "dp", "graphs", "math", 
-        "strings", "number-theory", "combinatorics", "geometry", 
+        "data-structures", "algorithms", "dp", "graphs", "math",
+        "strings", "number-theory", "combinatorics", "geometry",
         "game-theory", "blockchain"
     ]
-    
+
     prompt = f"""
     TASK: You are an elite curriculum designer for a technical coding platform. Your goal is to transform the following material into a professional, high-fidelity coding problem statement AND a set of valid test cases.
 
-    CORE PRINCIPLE: 
+    CORE PRINCIPLE:
     - If the source material ALREADY contains a structured problem statement (like a hackathon brief), PRESERVE and REFORMAT it faithfully. Do NOT summarize or lose technical details.
     - If the material is lecture notes/raw text, SYNTHESIZE a new problem around its core concepts.
 
@@ -136,24 +247,17 @@ async def generate_problem_content(text_content: str) -> Dict[str, Any]:
 
     RESPONSE: Return JSON only. No wrappers or markdown code blocks.
     """
-    
+
     try:
-        # Using robust Gemini failover logic
-        response_text = await generate_content_with_retry(client, prompt, response_mime_type="application/json")
+        response_text = await generate_content_with_retry(prompt, response_mime_type="application/json")
         return json.loads(response_text)
 
     except Exception as e:
-        logger.error(f"Gemini Problem Generation Error: {e}")
+        logger.error(f"Problem Generation Error: {e}")
         raise e
 
 async def improve_problem_content(current_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Uses Gemini 2.5 to improve the problem content."""
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is not set.")
-
-    client = genai.Client(api_key=api_key)
-    
+    """Uses the configured AI provider to improve the problem content."""
     prompt = f"""
     TASK: You are an elite technical curriculum designer. Your task is to IMPROVE and POLISH the following draft coding problem.
 
@@ -185,11 +289,9 @@ async def improve_problem_content(current_data: Dict[str, Any]) -> Dict[str, Any
     """
 
     try:
-        # Using robust Gemini failover logic
-        response_text = await generate_content_with_retry(client, prompt, default_model='gemini-3-flash-preview', response_mime_type="application/json")
+        response_text = await generate_content_with_retry(prompt, response_mime_type="application/json")
         return json.loads(response_text)
 
     except Exception as e:
-        logger.error(f"Gemini Problem Improvement Error: {e}")
+        logger.error(f"Problem Improvement Error: {e}")
         raise e
-
