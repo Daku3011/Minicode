@@ -5,6 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const api = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 90000, // Allow a sleeping API to start, but never wait indefinitely.
 });
 
 api.interceptors.request.use(
@@ -25,9 +26,10 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             // Clear token and redirect to login
-            document.cookie = 'minicode_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             if (typeof window !== 'undefined') {
-                window.location.href = '/login';
+                document.cookie = 'minicode_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+                delete api.defaults.headers.common.Authorization;
+                if (window.location.pathname !== '/login') window.location.href = '/login';
             }
         }
         return Promise.reject(error);

@@ -187,3 +187,23 @@
 .animate-shine {
   animation: shine 3s infinite linear;
 }
+
+.dark {
+  --color-background: #0b1220;
+  --color-foreground: #e2e8f0;
+  --color-card: #111c30;
+  --color-card-foreground: #e2e8f0;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+  --color-border: #29364c;
+  --color-input: #29364c;
+  --color-accent: #172b48;
+  --color-accent-foreground: #93c5fd;
+}
+body { background: var(--color-background); color: var(--color-foreground); }
+:focus-visible { outline: 3px solid #3b82f6; outline-offset: 4px; }
+.skip-link { position: fixed; top: -100px; left: 1rem; z-index: 100; padding: .8rem 1rem; background: var(--color-card); border-radius: .75rem; }
+.skip-link:focus { top: 1rem; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}

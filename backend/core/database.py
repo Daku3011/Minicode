@@ -45,7 +45,7 @@ def sanitize_database_url(url: str) -> str:
                 
                 # We unquote first to avoid double-encoding (if it was partially encoded already)
                 # then quote everything to ensure it's SQL-safe
-                sanitized_password = quote(unquote(password))
+                sanitized_password = quote(unquote(password), safe="")
                 
                 new_url = f"{protocol_part}://{user}:{sanitized_password}@{hostinfo}"
                 return new_url
@@ -68,11 +68,13 @@ else:
     engine = create_engine(
         DATABASE_URL,
         # Keep totals modest for managed Postgres connection limits (e.g.
-        # Supabase): 2 gunicorn workers + celery worker × (pool + overflow)
-        # must stay under the plan cap. Prefer the Supavisor pooler (port
-        # 6543) for the app URL; use the direct 5432 URL only for migrations.
-        pool_size=int(os.getenv("DB_POOL_SIZE", "5")),
-        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "5")),
+        # Supabase): total processes × (pool + overflow) must stay under
+        # the plan cap. Choose direct/session/transaction mode according
+        # to network reachability and session requirements; see the review.
+        pool_size=int(os.getenv("DB_POOL_SIZE", "2")),
+        max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "1")),
+        pool_timeout=int(os.getenv("DB_POOL_TIMEOUT", "15")),
+        connect_args={"connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "10"))},
         pool_pre_ping=True,   # Verify connection is up before giving it to user
         pool_recycle=int(os.getenv("DB_POOL_RECYCLE", "300")),  # Recycle connections to avoid stale pools
     )

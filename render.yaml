@@ -1,4 +1,7 @@
 # Render Infrastructure-as-Code Blueprint
+# Paid full-stack blueprint: API, worker and scheduler use starter plans.
+# Free web services alone cannot run this queue-based architecture.
+# See Docs/EXPERIENCE_REVIEW.md before applying to an existing deployment.
 # Deploy: Connect repo to Render, it auto-detects this file
 # Stack: Render (Backend) + Vercel (Frontend) + Supabase (PostgreSQL) + Render Redis
 #
@@ -26,11 +29,11 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerCommand: "gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120"
+    dockerCommand: "gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120"
     plan: starter
     region: oregon
     branch: main
-    preDeployCommand: "CREATE_TABLES=1 python main.py"
+    preDeployCommand: "python -c 'from scripts.migrate_db import run_migrations; run_migrations()'"
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
@@ -69,7 +72,7 @@ services:
       - key: ENVIRONMENT
         value: "production"
       - key: WEB_CONCURRENCY
-        value: "4"
+        value: "1"
       - key: RESEND_API_KEY
         sync: false  # Set in Render dashboard
       - key: SMTP_EMAIL
@@ -85,7 +88,7 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    dockerCommand: "celery -A worker.celery_app worker --loglevel=info"
+    dockerCommand: "celery -A worker.celery_app worker --loglevel=info --concurrency=1"
     plan: starter
     region: oregon
     branch: main
