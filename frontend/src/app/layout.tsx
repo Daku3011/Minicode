@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import WelcomeModal from '@/components/WelcomeModal';
 import ChatAssistant from '@/components/ChatAssistant';
+import AccountStatus from '@/components/AccountStatus';
 
 export const metadata: Metadata = {
   title: "MiniCode | Code. Compete. Evolve.",
@@ -39,8 +40,10 @@ export default function RootLayout({
               <PageLoader />
             </Suspense>
             <InteractiveBackground />
+            <a href="#main-content" className="skip-link">Skip to content</a>
             <Navbar/>
-            <main>
+            <AccountStatus />
+            <main id="main-content" tabIndex={-1}>
               <Suspense fallback={null}>
                 {children}
               </Suspense>

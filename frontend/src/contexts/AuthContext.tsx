@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { deleteCookie, getCookie, setCookie } from "cookies-next";
 import api, { userApi } from "../lib/api";
@@ -34,6 +35,7 @@ export interface User {
 interface AuthContextType {
     user: User | null;
     loading: boolean;
+    error: string | null;
     login: (token: string) => Promise<void>;
     logout: () => void;
     refreshUser: () => Promise<void>;
@@ -42,6 +44,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
+    error: null,
     login: async () => { },
     logout: () => { },
     refreshUser: async () => { },
@@ -50,8 +53,11 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const fetchUser = async () => {
+        setError(null);
+        setLoading(true);
         try {
             const token = getCookie("minicode_token");
             if (!token) {
@@ -62,8 +68,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(response.data);
         } catch (error) {
             console.error("Failed to fetch user:", error);
-            deleteCookie("minicode_token");
-            setUser(null);
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                deleteCookie("minicode_token");
+                setUser(null);
+            } else {
+                setError("We couldn’t load your account. The server may be starting up. Your session is saved; please retry.");
+            }
         } finally {
             setLoading(false);
         }
@@ -87,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout, refreshUser: fetchUser }}>
+        <AuthContext.Provider value={{ user, loading, error, login, logout, refreshUser: fetchUser }}>
             {children}
         </AuthContext.Provider>
     );

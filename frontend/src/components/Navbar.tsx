@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles, Map, Sun, Moon, Menu, X, Target, FileCode } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { LogOut, Code2, Calendar, Trophy, Bell, User, HelpCircle, Sparkles, Map, Home, Menu, X, Target, FileCode } from "lucide-react";
 import { clsx } from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
@@ -13,7 +13,6 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
     const { user, logout, loading } = useAuth();
-    const router = useRouter();
     const pathname = usePathname();
 
     const [unreadCount, setUnreadCount] = useState(0);
@@ -121,7 +120,7 @@ export default function Navbar() {
             <div className="max-w-[1600px] mx-auto bg-white dark:bg-gray-900 rounded-2xl h-16 flex items-center justify-between px-6 relative border border-gray-200 dark:border-gray-700 shadow-sm">
                 {/* Logo Section */}
                 <Link 
-                    href={user ? (user.role === 'admin' ? '/admin/users' : user.role === 'faculty' ? '/faculty/profile' : '/problems') : "/"} 
+                    href="/" aria-label="MiniCode home"
                     className="flex items-center gap-3 transition-opacity hover:opacity-80"
                 >
                     <div className="bg-primary/5 p-1 rounded-xl shadow-lg shadow-primary/5 border border-white/5">
@@ -135,14 +134,14 @@ export default function Navbar() {
                 {/* Navigation Links */}
                     {user && (
                     <nav className="hidden lg:flex items-center gap-1 bg-white/[0.02] dark:bg-gray-800/[0.02] p-1 rounded-xl border border-white/5">
-                        {navItems.map((item) => {
-                            const isActive = pathname.startsWith(item.href);
+                        {[{ name: "Home", href: "/", icon: Home }, ...navItems.slice(0, 4)].map((item) => {
+                            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
                             return (
                                 <Link 
                                     key={item.name}
                                     href={item.href} 
                                     className={clsx(
-                                        "relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all",
+                                        "relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
                                         isActive 
                                             ? "text-white bg-blue-600 shadow-sm" 
                                             : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-gray-800"
@@ -250,8 +249,8 @@ export default function Navbar() {
                     className="lg:hidden mt-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg overflow-hidden"
                 >
                     <ul className="p-2 space-y-1">
-                        {mobileNavItems.map((item) => {
-                            const isActive = pathname.startsWith(item.href);
+                        {[{ name: "Home & all tools", href: "/", icon: Home }, ...mobileNavItems].map((item) => {
+                            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
                             return (
                                 <li key={item.name}>
                                     <Link

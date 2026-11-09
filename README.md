@@ -144,7 +144,7 @@ MiniCode transforms competitive programming from a cold, intimidating terminal e
 │                          │     - Rate Limiting                      │ │
 │                          └──────────────┬───────────────────────────┘ │
 │                                         │                             │
-│     ┌─────────────────────────────────────────────────────────────────┤
+│     ┌──────────────────────────────────────────────┐                  │
 │     │                    │                         │                  │
 │     ▼                    ▼                         ▼                  │
 │  ┌──────────┐     ┌──────────┐             ┌──────────────┐           │
@@ -340,15 +340,15 @@ Seed data provides:
 │   Start     │───▶│    Code     │───▶│   Submit    │───▶│   Pending   │
 │  Problem    │    │   Locally   │    │   Code      │    │   Queue     │
 └─────────────┘    └─────────────┘    └─────────────┘    └─────┬───────┘
-                                                                │
-         ┌──────────────────────────────────────────────────────┘
+                                                               │
+         ┌─────────────────────────────────────────────────────┘
          ▼
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   Fetch     │───▶│   Sandbox   │───▶│   AI Judge  │───▶│   Update    │
-│  from GitHub│    │  Execution   │    │  (Gemini)   │    │  & Score    │
+│  from GitHub│    │  Execution  │    │  (Gemini)   │    │  & Score    │
 └─────────────┘    └─────────────┘    └─────────────┘    └──────┬──────┘
-                                                                 │
-                                                          ┌──────▼──────┐
+                                                                │
+                                                          ┌─────▼───────┐
                                                           │   Notify    │
                                                           │ (WebSocket) │
                                                           └─────────────┘
@@ -415,10 +415,3 @@ curl http://localhost:8000/health
 5. Open a Pull Request
 
 ---
-
-<div align="center">
-
-**Built with passion for the next generation of developers**
-
-
-</div>

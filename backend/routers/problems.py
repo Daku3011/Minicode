@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Query
 from sqlmodel import Session, select
+from sqlalchemy import func, or_
 from typing import List, Optional
 import bleach
 import logging
@@ -17,38 +18,35 @@ router = APIRouter(prefix="/problems", tags=["problems"])
 
 @router.get("")
 def get_problems(
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=100),
+    search: str = Query(default="", max_length=200),
+    subject: str = Query(default="", max_length=100),
+    difficulty: str = Query(default="", pattern="^(Easy|Medium|Hard)?$"),
+    sort: str = Query(default="newest", pattern="^(newest|title|level|xp)$"),
     user: User = Depends(get_current_user),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
 ):
-    if user.role in ["admin", "faculty"]:
-        base_query = select(Problem).where(Problem.is_deleted == False)
-        total_count = len(session.exec(base_query).all())
-        problems = session.exec(base_query.offset(skip).limit(limit)).all()
-        return {"items": problems, "total_count": total_count}
-    
-    public_problems = session.exec(select(Problem).where(Problem.visibility == "public", Problem.is_deleted == False)).all()
-    
-    private_problems = []
-    if user.cohorts:
-        student_lab_ids = []
-        for cohort in user.cohorts:
-            for lab in cohort.labs:
-                student_lab_ids.append(lab.id)
-        
-        if student_lab_ids:
-            private_problems = session.exec(
-                select(Problem)
-                .join(LabProblemLink)
-                .where(Problem.visibility == "private", Problem.is_deleted == False)
-                .where(LabProblemLink.lab_id.in_(student_lab_ids))
-            ).all()
-            
-    all_problems = list({p.id: p for p in public_problems + private_problems}.values())
-    total_count = len(all_problems)
-    paginated = all_problems[skip:skip + limit]
-    return {"items": paginated, "total_count": total_count}
+    """Search the accessible catalog before pagination, without loading all rows."""
+    conditions = [Problem.is_deleted == False]
+    if user.role not in ["admin", "faculty"]:
+        lab_ids = [lab.id for cohort in user.cohorts for lab in cohort.labs]
+        visibility = Problem.visibility == "public"
+        if lab_ids:
+            assigned = select(LabProblemLink.problem_id).where(LabProblemLink.lab_id.in_(lab_ids))
+            visibility = or_(visibility, (Problem.visibility == "private") & Problem.id.in_(assigned))
+        conditions.append(visibility)
+    if search.strip():
+        conditions.append(Problem.title.icontains(search.strip(), autoescape=True))
+    if subject:
+        conditions.append(Problem.subject == subject)
+    if difficulty:
+        conditions.append(Problem.difficulty == difficulty)
+    order = {"newest": Problem.id.desc(), "title": Problem.title.asc(),
+             "level": Problem.level.asc(), "xp": Problem.xp_reward.desc()}[sort]
+    total = session.exec(select(func.count()).select_from(Problem).where(*conditions)).one()
+    items = session.exec(select(Problem).where(*conditions).order_by(order, Problem.id).offset(skip).limit(limit)).all()
+    return {"items": items, "total_count": total}
 
 
 @router.get("/{problem_id}")

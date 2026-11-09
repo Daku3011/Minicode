@@ -31,3 +31,7 @@ backend/ORGANIZATION.md
 .agents/rules/use-skills.md
 .opencode
 TASK_BOARD.md
+my-history/
+*.patch
+README.txt
+
